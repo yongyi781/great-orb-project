@@ -1,0 +1,27 @@
+﻿@model IEnumerable<ChatInfoView>
+@{
+    ViewData["Title"] = "Chat Info";
+}
+
+<h1>@ViewData["Title"]</h1>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Connection ID</th>
+            <th>Connection Time</th>
+            <th>IP Address</th>
+            <th>User ID</th>
+            <th>Username</th>
+        </tr>
+    </thead>
+    @foreach (var entry in Model)
+    {
+        <tr>
+            <td>@entry.ConnectionID</td>
+            <td>@entry.ConnectionTime</td>
+            <td>@entry.IpAddress</td>
+            <td>@entry.UserId</td>
+            <td>@entry.Username</td>
+        </tr>
+    }
+</table>

@@ -1,0 +1,187 @@
+﻿
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Pitch Matching</title>
+    <link href="http://netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css" rel="stylesheet" />
+    <style>
+        input,
+        select,
+        textarea {
+            max-width: 150px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Pitch Matching</h1>
+
+        <form id="parameters" class="form-horizontal" role="form" action="javascript:void(0)" data-bind="with: parameters">
+            <h2>Instructions</h2>
+            <p>Enter parameters in the fields below, then click begin.</p>
+            <h2>Parameters</h2>
+            <div class="form-group">
+                <label class="control-label col-md-4">Order:</label>
+                <select class="form-control" data-bind="value: order">
+                    <option value="ll">Left, Left</option>
+                    <option value="lr" selected>Left, Right</option>
+                    <option value="rl">Right, Left</option>
+                    <option value="rr">Right, Right</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-md-4">Calibration (dB):</label>
+                <input class="form-control" type="number" data-bind="value: calibration" autocomplete="off" />
+            </div>
+            <div class="form-group">
+                <label class="control-label col-md-4">Frequency 1 (Hz):</label>
+                <input class="form-control" type="number" data-bind="value: leftFreq" min="10" max="20000" step="0.01" autocomplete="off" />
+            </div>
+            <div class="form-group">
+                <label class="control-label col-md-4">Frequency 2 (Hz):</label>
+                <input class="form-control" type="number" data-bind="value: rightFreq" min="10" max="20000" step="0.01" autocomplete="off" />
+            </div>
+            <div class="form-group">
+                <label class="control-label col-md-4">Tone level 1 (dB SPL):</label>
+                <input class="form-control" type="number" data-bind="value: leftToneLevel, attr: { min: minLevel - calibration(), max: maxLevel - calibration() }" autocomplete="off" />
+            </div>
+            <div class="form-group">
+                <label class="control-label col-md-4">Tone level 2 (dB SPL):</label>
+                <input class="form-control" type="number" data-bind="value: rightToneLevel, attr: { min: minLevel - calibration(), max: maxLevel - calibration() }" autocomplete="off" />
+            </div>
+            <div class="form-group">
+                <label class="control-label col-md-4">Time gap (ms):</label>
+                <input class="form-control" type="number" data-bind="value: timeGap" autocomplete="off" />
+            </div>
+            <!--<div class="form-group">
+                <label class="control-label col-md-4">Noise level (dB SPL):</label>
+                <input class="form-control" type="number" data-bind="value: noiseLevel, attr: { min: minLevel - calibration(), max: maxLevel - calibration() }" autocomplete="off" />
+            </div>
+            <div class="form-group">
+                <label class="control-label col-md-4">Noise low pass cutoff (Hz):</label>
+                <input class="form-control" type="number" data-bind="value: noiseLpf" min="-1" max="20000" autocomplete="off" />
+            </div>
+            <div class="form-group">
+                <label class="control-label col-md-4">Noise high pass cutoff (Hz):</label>
+                <input class="form-control" type="number" data-bind="value: noiseHpf" min="-1" max="20000" autocomplete="off" />
+            </div>-->
+            <div class="form-group">
+                <label class="control-label col-md-4">Show audio player?</label>
+                <input class="checkbox checkbox-inline" type="checkbox" data-bind="checked: showAudioPlayer" />
+            </div>
+            <div class="form-group">
+                <div class="col-md-offset-4 col-md-8">
+                    <button class="btn btn-default" id="beginButton">Play</button>
+                </div>
+            </div>
+        </form>
+        <div>
+            <h2>Sound Generator Result</h2>
+            <span id="serverResult"></span>
+            <span id="soundspan"></span>
+        </div>
+    </div>
+
+    <script src="http://code.jquery.com/jquery-1.11.0.min.js"></script>
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/knockout/3.3.0/knockout-min.js"></script>
+    <script src="http://balsatree.mit.edu/SoundProcessor/SoundProcessorBeta.js"></script>
+    <script src="http://balsatree.mit.edu/SoundProcessor/soundgen2.js"></script>
+    <script>
+        var soundgen_callback = (function ($) {
+            function soundgen_callback(obj) {
+                if (obj.result === "success") {
+                    $("#soundspan").html("<embed src='" + obj.sound + "' volume='0'" + (experimentViewModel.parameters.showAudioPlayer ? "" : " width='1' height='1' ") + "autostart='true' loop='false' />");
+                    $("#serverResult").html("Success! Server processing time: " + obj.statistics.gentime);
+                }
+                else
+                    $("#serverResult").html(obj.result);
+            }
+
+            function randomFloat(min, max) {
+                return min + Math.random() * (max - min);
+            }
+
+            function randomInt(min, max) {
+                return Math.floor(randomFloat(min, max));
+            }
+
+            // This is to force numbers entered in text fields to be interpreted as JavaScript numbers.
+            ko.numericObservable = function (initialValue) {
+                var actual = ko.observable(initialValue);
+                var result = ko.dependentObservable({
+                    read: function () {
+                        return actual();
+                    },
+                    write: function (newValue) {
+                        var parsedValue = parseFloat(newValue);
+                        actual(isNaN(parsedValue) ? newValue : parsedValue);
+                    }
+                });
+
+                return result;
+            };
+
+            function ParameterViewModel() {
+                var self = this;
+
+                this.minLevel = -300;
+                this.maxLevel = 0;
+
+                this.order = 'l';
+                this.calibration = ko.numericObservable(-115);
+                this.leftFreq = ko.numericObservable(1000);
+                this.rightFreq = ko.numericObservable(1000);
+                this.leftToneLevel = ko.numericObservable(100);
+                this.rightToneLevel = ko.numericObservable(100);
+                this.skipTurnarounds = 3;
+                this.maxTurnarounds = 9;
+                this.showFeedback = true;
+                this.showAudioPlayer = false;
+                this.timeGap = ko.numericObservable(700);
+
+                // Unused for now
+                this.noiseLevel = ko.numericObservable(0);
+                this.noiseLpf = ko.numericObservable(4000);
+                this.noiseHpf = ko.numericObservable(100);
+
+                this.riseTime = ko.numericObservable(25);
+                this.onTime = ko.numericObservable(250);
+                this.fallTime = ko.numericObservable(25);
+
+                this.minLevel = function () { return -300; }
+                this.maxLevel = function () { return 0; }
+
+                this.toneDuration = function () { return this.riseTime() + this.onTime() + this.fallTime(); };
+                this.sampleRate = function () { return 44100; };
+            }
+
+            function ExperimentViewModel() {
+                this.parameters = new ParameterViewModel();
+
+                this.play = function () {
+                    var secondToneTime = this.parameters.timeGap();
+
+                    soundgen([
+                        new Tone(0,
+                            this.parameters.riseTime(), this.parameters.onTime(), this.parameters.fallTime(),
+                            this.parameters.leftToneLevel() + this.parameters.calibration(), this.parameters.leftFreq(), 0, this.parameters.order[0]),
+                        new Tone(secondToneTime,
+                            this.parameters.riseTime(), this.parameters.onTime(), this.parameters.fallTime(),
+                            this.parameters.rightToneLevel() + this.parameters.calibration(), this.parameters.rightFreq(), 0, this.parameters.order[1]),
+                    ], this.parameters.sampleRate());
+                };
+            };
+
+            var experimentViewModel = new ExperimentViewModel();
+
+            $("#parameters").submit(function () {
+                experimentViewModel.play();
+            });
+
+            ko.applyBindings(experimentViewModel);
+
+            return soundgen_callback;
+        })(jQuery);
+    </script>
+</body>
+</html>

@@ -1,0 +1,21 @@
+﻿{
+  "version": "1.0.0-*",
+  "description": "GOP.Tests",
+  "authors": [ "Yongyi" ],
+  "tags": [ "" ],
+  "projectUrl": "",
+  "licenseUrl": "",
+
+  "dependencies": {
+    "GOP": "",
+    "xunit.runner.aspnet": "2.0.0-aspnet-*"
+  },
+
+  "commands": {
+    "test": "xunit.runner.aspnet"
+  },
+
+  "frameworks": {
+    "dnx451": { }
+  }
+}

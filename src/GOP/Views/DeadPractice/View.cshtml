@@ -1,0 +1,121 @@
+﻿@model DeadPracticeResultViewModel
+@{
+    
+}
+
+<h2>Dead Practice Result: @Model.Id</h2>
+<h3>Settings</h3>
+<table class="table">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Value</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>Background color</td>
+            <td><span style="background-color: @Model.Settings.backgroundColor; padding: 5px;">@Model.Settings.backgroundColor</span></td>
+        </tr>
+        <tr>
+            <td>Orb size</td>
+            <td>@Model.Settings.orbSize pixels</td>
+        </tr>
+        <tr>
+            <td>Countdown</td>
+            <td>@Model.Settings.countdown</td>
+        </tr>
+        <tr>
+            <td>Randomize time?</td>
+            <td>@Model.Settings.randomizeTime</td>
+        </tr>
+        <tr>
+            <td>Team</td>
+            <td>@Model.Settings.team</td>
+        </tr>
+        <tr>
+            <td>New orb on misclick?</td>
+            <td>@Model.Settings.noMisclick</td>
+        </tr>
+    </tbody>
+</table>
+
+<h3>Results</h3>
+<table class="table">
+    <thead>
+        <tr>
+            <th># orbs</th>
+            <th>Median</th>
+            <th>Mean</th>
+            <th>Min</th>
+            <th>Avg. misclicks/orb</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>@Model.Data.Count</td>
+            <td>@Model.MedianTime.ToString("F1") ms</td>
+            <td>@Model.AverageTime.ToString("F1") ms</td>
+            <td>@Model.MinTime ms</td>
+            <td>@Model.MisclickRate.ToString("F3")</td>
+        </tr>
+    </tbody>
+</table>
+<h6 class="text-center">Probability of deading vs. latency</h6>
+<canvas id="pingGraphCanvas" width="768" height="384" style="display: block; margin: auto"></canvas>
+
+<h3 class="accordion-toggle collapsed" data-toggle="collapse" data-target="#rawGraphDataContainer">Raw graph data</h3>
+<div id="rawGraphDataContainer" class="collapse">
+    <pre id="rawGraphData"></pre>
+</div>
+
+<h3 class="accordion-toggle collapsed" data-toggle="collapse" data-target="#rawDataContainer">Raw data</h3>
+<div id="rawDataContainer" class="collapse">
+    <pre id="rawData"></pre>
+</div>
+
+@section scripts {
+    <script src="//cdnjs.cloudflare.com/ajax/libs/Chart.js/1.0.2/Chart.min.js"></script>
+    <script>
+        $(function () {
+            // Gets the fraction of clicks that were faster than the given time.
+            function getFractionLessThan(data, time) {
+                return data.filter(function (x) {
+                    return x.click.time < time;
+                }).length / data.length;
+            }
+
+            var rawData = JSON.parse('@Html.Raw(Model.Data.ToString(Newtonsoft.Json.Formatting.None))');
+
+            var chartData = {
+                labels: [],
+                datasets: [{
+                    label: "Probability of deading",
+                    strokeColor: "#5a8",
+                    data: []
+                }]
+            };
+
+            for (var i = 0; i <= 500; i += 25) {
+                chartData.labels.push(i);
+                chartData.datasets[0].data.push(getFractionLessThan(rawData, 600 - i));
+            }
+
+            $("#rawData").text(JSON.stringify(rawData, null, 2));
+            $("#rawGraphData").text(JSON.stringify({ labels: chartData.labels, values: chartData.datasets[0].data }));
+            new Chart($("#pingGraphCanvas")[0].getContext("2d")).Line(chartData, {
+                bezierCurve: false,
+                datasetFill: false,
+                scaleOverride: true,
+                scaleSteps: 5,
+                scaleStepWidth: 0.2,
+                scaleStartValue: 0,
+                scaleShowGridLines: true,
+                scaleLineColor: "rgba(255, 255, 255, 0.1)",
+                scaleGridLineColor: "rgba(255, 255, 255, 0.05)",
+                scaleShowVerticalLines: false,
+                pointDot: false
+            });
+        });
+    </script>
+}

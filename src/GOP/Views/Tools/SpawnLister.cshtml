@@ -1,0 +1,86 @@
+﻿@{
+    ViewData["Title"] = "Spawn Lister";
+}
+
+<h2>Altar</h2>
+<div>
+    <button name="altar" id="noneButton" class="btn btn-primary" value="0">None</button>
+    <button name="altar" id="airButton" class="btn btn-primary" value="1">Air altar</button>
+    <button name="altar" id="mindButton" class="btn btn-primary" value="2">Mind altar</button>
+    <button name="altar" id="waterButton" class="btn btn-primary" value="3">Water altar</button>
+    <button name="altar" id="earthButton" class="btn btn-primary" value="4">Earth altar</button>
+    <button name="altar" id="fireButton" class="btn btn-primary" value="5">Fire altar</button>
+    <button name="altar" id="bodyButton" class="btn btn-primary" value="6">Body altar</button>
+</div>
+<p id="coordsParagraph" class="align-center">Mouse coordinates: <span id="coords">(0,&nbsp;0)</span> | Player coordinates: <span id="playerCoords">N/A</span> | Orb coordinates: <span id="orbCoords">N/A</span> | Distance from orb to altar: <span id="orbDistance">Infinity</span></p>
+<div id="canvasContainer" class="center">
+    <canvas id="gameCanvas" width="848" height="848">You do not have a HTML5-enabled browser. You should download the latest version of your browser.</canvas>
+    <button id="deleteLastSpawnButton" class="btn btn-danger">Delete last spawn</button>
+    <a id="spawnLink" href="~/Solo" target="_blank"></a>
+</div>
+<h2 id="games">Mapped Games</h2>
+<ul>
+    <li>64 air duo yellow (Icy001 and iMaster Mike) • <a href="https://www.youtube.com/watch?v=QYt2eLWNDLE">Video</a> • <a href="~/Solo?altar=1&spawns=[[2,-4],[-8,0],[7,2],[-5,2],[-1,-6],[2,-6],[1,7],[-4,3],[-3,4],[4,7],[2,4],[3,-4],[-5,3],[6,6],[6,3],[7,6],[5,-6],[1,-5],[4,-3],[-5,-6],[-5,-2],[6,-2],[4,8],[0,-6],[-1,-7],[7,-4],[-3,8],[-5,-3],[3,-5],[-6,-8],[-3,8],[-7,0],[-4,6],[-2,6],[7,1],[2,4],[0,-9],[7,2],[-5,8],[-3,5],[7,2],[-5,-8],[-6,5],[-7,1],[-5,-7],[3,-7],[6,-4],[-4,-3],[7,-1],[-5,2],[-1,-7],[-1,8],[2,6],[-3,-5],[2,8],[3,-4],[5,-3],[-4,3],[-5,1],[5,-1],[4,-3],[6,-3],[5,0],[0,-6],[-5,6],[-2,-6]]">Play</a></li>
+    <li>55 body duo yellow (Icy001 and Hoppeeee) • <a href="https://www.youtube.com/watch?v=e2CgoCXvfSY">Video</a> • <a href="~/Solo?altar=6&spawns=[[2,4],[7,-4],[3,-9],[-5,5],[-4,-8],[-7,5],[2,-4],[-8,-4],[-6,-4],[-8,0],[7,6],[-7,-2],[-11,1],[5,-3],[3,7],[1,-6],[-10,-3],[-8,2],[3,-6],[1,-5],[-5,0],[6,-4],[4,0],[-2,7],[6,0],[-4,-5],[-5,7],[3,-4],[-11,5],[0,-5],[6,-1],[-2,7],[-4,5],[-5,6],[-1,5],[-8,4],[-5,-4],[-4,-6],[0,-8],[-8,1],[4,-3],[-3,-4],[3,-5],[-3,6],[-8,-1],[8,0],[-5,-3],[3,-4],[5,0],[-15,5],[-4,-3],[-4,6],[-6,0],[-6,-5],[-7,5]]">Play</a></li>
+    <li>12 mind solo green (Icy001) • <a href="https://www.youtube.com/watch?v=25r3Z7OgAqQ&t=15m48s">Video</a> • <a href="~/Solo?altar=2&spawns=[[15,1],[10,5],[3,12],[10,-2],[13,-8],[1,-14],[6,-16],[11,-12],[4,-9],[-16,-5],[7,-12],[-4,-16],[9,-12],[-11,11]]">Play</a></li>
+    <li>45 air solo green (Timo) • <a href="~/Solo?altar=1&spawns=[[4,6],[5,0],[1,5],[6,5],[4,-2],[4,-5],[6,-4],[6,4],[-3,7],[2,-6],[2,-7],[-3,5],[-5,-4],[-4,-6],[4,2],[-8,-2],[-6,7],[4,3],[-4,-3],[-1,6],[-2,4],[-5,7],[6,4],[2,4],[-7,2],[-4,6],[-8,2],[5,8],[-4,6],[-7,3],[-1,-9],[-8,1],[5,-7],[-1,-7],[-4,8],[-6,-5],[3,6],[-6,2],[4,-6],[-6,-2],[3,6],[-5,-1],[4,-2],[2,-6],[7,-3],[-2,4],[7,4]]">Play</a></li>
+    <li>49 water duo yellow (Icy001 and iMaster Mike) • <a href="https://www.youtube.com/watch?v=S4k9ZogtrZY">Video</a> • <a href="~/Solo?altar=3&spawns=[[2,4],[-6,-4],[8,-12],[12,-5],[-4,-4],[-2,6],[4,0],[-1,8],[7,2],[10,-9],[-9,3],[6,-1],[-3,-5],[5,-1],[11,0],[0,-5],[-3,-4],[4,3],[-4,-3],[8,2],[-6,-6],[-8,1],[-6,-2],[12,4],[5,-6],[-6,2],[7,-8],[6,-2],[-7,0],[-3,4],[13,-1],[-3,-5],[6,-6],[12,-2],[0,5],[-2,4],[-6,-2],[-9,1],[11,-6],[4,0],[-6,-1],[8,-5],[2,4],[2,5],[9,-2],[2,7],[-8,8],[5,-13],[11,-6]]">Play</a></li>
+    <li>49 water duo green (Icy001 and iMaster Mike) • <a href="https://www.youtube.com/watch?v=HyxpQ9BXpzI">Video</a> • <a href="~/Solo?altar=3&spawns=[[2,4],[4,3],[8,0],[12,4],[2,4],[-8,3],[5,7],[8,6],[4,-5],[7,3],[-4,5],[3,-11],[0,-4],[10,-4],[14,-2],[6,-2],[14,2],[-6,-5],[-7,1],[-4,3],[8,-7],[4,8],[5,-3],[-6,0],[-5,-5],[8,-9],[-2,6],[7,-1],[5,2],[3,-12],[6,-6],[4,-8],[4,-12],[5,-3],[0,-8],[2,-12],[-4,-3],[3,-5],[7,-10],[-10,5],[10,-3],[-5,-2],[8,-3],[-3,4],[-4,4],[-6,2],[-6,-6],[-6,2],[0,-6]]">Play</a></li>
+    <li>10 earth solo green (Icy001) • <a href="https://www.youtube.com/watch?v=fstbhUmjq3s&t=7m11s">Video</a> • <a href="~/Solo?altar=4&spawns=[[15,4],[16,5],[19,1],[-14,9],[-14,8],[4,11],[-10,10],[11,7],[-12,6],[-7,-15],[-13,-12],[11,-15],[-14,5]]">Play</a></li>
+    <li>31 body solo yellow (Icy001) • <a href="https://www.youtube.com/watch?v=5PX4_9Ufr3M&t=11m52s">Video</a> • <a href="~/Solo?altar=6&spawns=[[4,2],[2,-7],[-12,4],[0,6],[7,6],[7,1],[6,-6],[-7,-4],[-10,2],[-10,6],[-1,5],[-6,5],[-3,-5],[-8,3],[-4,3],[8,1],[-4,-2],[-12,7],[-5,3],[-6,-6],[-3,4],[-9,3],[0,-7],[-4,-7],[4,4],[-6,-1],[-11,-3],[-9,7],[-3,8],[4,-6],[6,-1],[6,2],[6,0]]">Play</a></li>
+    <li>13 mind solo yellow (9h3) • <a href="https://www.youtube.com/watch?v=mz1pS5blI3g&t=2m14s">Video</a> • <a href="~/Solo?altar=2&spawns=[[-16,7],[-16,-4],[-12,-8],[-1,-16],[9,0],[-3,-8],[-15,-7],[-2,12],[-12,-3],[-7,-9],[-9,8],[2,-11],[14,-3],[-13,0],[0,8],[12,-3]]">Play</a></li>
+    <li>32 fire solo green (Icy001) • <a href="https://www.youtube.com/watch?v=Yt8c_FpMehQ">Video</a> • <a href="~/Solo?altar=5&spawns=[[3,4],[6,0],[4,9],[-4,-3],[-4,3],[-7,10],[6,6],[-5,1],[5,6],[-4,11],[-6,-5],[4,-3],[2,-4],[-7,-1],[3,10],[-8,0],[3,11],[0,9],[6,1],[4,7],[-7,8],[1,6],[3,-5],[-2,5],[-8,10],[7,1],[2,-5],[-8,-6],[-6,-2],[7,-2],[-6,-6],[0,10],[5,-3],[5,0]]">Play</a> • <a href="~/Solo?altar=5&spawns=[[3,4],[6,0],[4,9],[-4,-3],[-4,3],[-7,10],[6,6],[-5,1],[5,6],[-4,11],[-6,-5],[4,-3],[2,-4],[-7,-1],[3,10],[-8,0],[3,11],[0,9],[6,1],[4,7],[-7,8],[1,6],[3,-5],[-2,5],[-8,10],[7,1],[2,-5],[-8,-6],[-6,-2],[7,-2],[-6,-6],[0,10],[5,-3],[5,0]]&code={5489 5 (0,-2)r}A(-2,0)[2]B[4]A(0,-2)[2]AA(2,-2)CCCB(0,4)[3]AAA(0,-3)(0,-2)[4]C[4]AABBAABBCC(0,-2)[2]CCA[4]C(-7,6)[6]BB(-6,4)AABB(-2,0)(1,2)(0,2)CCCBBA(2,0)[2]BB(2,2)C[5](6,4)[3]AA(2,1)[2]BBBAABB(6,4)[2]CCCB(2,1)[2]BBBCCBB(0,-2)[3]AAACCB-B-AACCCA-CC(-2,-2)BBBAAACCBBB(-5,0)*AA(-4,0)B[4]-AAB(2,-1)AAACCA(1,-2)BBB{r}B-CCCA{r}ABBA(2,0)[2]CCCB(3,2)A[4]CCA(2,0)[2]A-[4]">How Icy001 played</a></li>
+    <li>19 mind solo yellow (Uryuu Sado) • <a href="https://www.youtube.com/watch?v=rR5CGqDGmvs">Video</a> • <a href="~/Solo?altar=2&spawns=[[8,6],[-11,-4],[-7,-10],[-10,8],[-12,-3],[11,-1],[7,-7],[8,6],[-5,-8],[8,-1],[-12,10],[-9,8],[-11,-5],[12,-7],[10,-2],[9,-2],[8,1],[8,0],[13,-3],[-4,-8],[15,-6],[12,-9]]">Play</a> • <a href="~/Solo?altar=2&spawns=[[8,6],[-11,-4],[-7,-10],[-10,8],[-12,-3],[11,-1],[7,-7],[8,6],[-5,-8],[8,-1],[-12,10],[-9,8],[-11,-5],[12,-7],[10,-2],[9,-2],[8,1],[8,0],[13,-3],[-4,-8],[15,-6],[12,-9]]&code={5489 2 (2,0)r}-AAA(0,-2)[2]AAABBB(-4,-2)C[4](-2,-2)B[4](-2,0)(-2,2)A[5](0,2)BBBC[4](2,0)[2]AAA(0,-2)B[7](-2,2)[2]A[6](2,0)[3]B[4](2,4)[2]CC(2,3)[2]C[5]A(0,2)[2]C(-2,0)[2]A[4]B[4](-2,-4)BB(-1,-2)BB(-2,-1)BB(-2,1)C[5](0,2)CCB[5]A[4](-4,2)CCC(0,-2)[4]B[4]A[5]C[5]A[7]C[6](2,-3)A[4](0,-2)AA(2,-3)C[4](0,-2)CCA[6]C[4](2,0)CC(2,-2)AA(2,-1)AA(1,-2)AA-[9]">How Uryuu Sado played</a></li>
+    <li>14 mind solo green (Icy001) • <a href="https://youtube.com/watch?v=J71xSVXepus&t=2m">Video</a> • <a href="~/Solo?altar=2&spawns=[[1,9],[9,8],[11,4],[-14,9],[10,-8],[-11,0],[8,-7],[12,-5],[-10,12],[-2,12],[-7,12],[9,-13],[13,-8],[-16,2],[-16,-6],[13,-16],[-14,8]]">Play</a></li>
+    <li>Bad mind spawns • <a href="~/Solo?altar=2&spawns=[[14,-2],[1,-13],[-11,-1],[8,-15],[-13,0],[-12,7],[4,9],[-12,-10],[10,5],[-14,-2],[14,1],[14,-4],[-16,-6]]">Play</a></li>
+    <li>28 mind duo yellow (Icy001 and iMaster Mike) • <a href="https://www.youtube.com/watch?v=D1z8ySwFiaE">Watch</a> • <a href="~/Solo?altar=2&spawns=[[5,-14],[7,8],[14,2],[0,-14],[4,-15],[9,4],[8,2],[-13,4],[13,0],[0,-12],[4,8],[1,-9],[11,5],[4,-8],[0,-11],[8,6],[2,-15],[-15,-5],[-15,-4],[-3,-8],[9,-13],[6,8],[-2,11],[3,9],[8,6],[14,-9],[-11,9],[-10,9],[-12,6],[5,-16],[-11,-1]]">Play</a> • <a href="~/Solo?altar=2&spawns=[[5,-14],[7,8],[14,2],[0,-14],[4,-15],[9,4],[8,2],[-13,4],[13,0],[0,-12],[4,8],[1,-9],[11,5],[4,-8],[0,-11],[8,6],[2,-15],[-15,-5],[-15,-4],[-3,-8],[9,-13],[6,8],[-2,11],[3,9],[8,6],[14,-9],[-11,9],[-10,9],[-12,6],[5,-16],[-11,-1]]&code={0 2 (-5,1)r (2,-4)r}[(4,2)[4]*BB(6,-1)[2]*CC-*C(2,0)[2]*CC[4](1,-2)[2]*BB[6]*CC[4](-1,-8)[2]*CC*C{q}CC[7](1,-9){q}(1,-9)(3,-9)[2]*CC(2,-4)[3]*CC(0,-2){r}*AA[7]{r}(0,-5){q}*AA(0,-2){q}(0,-2)(0,-2)-*CC(8,-2)[4]*AA{r}AAA{r}(10,0){q}*AA[6](2,0){q}(2,0)(2,0)*BB-*C(2,0)(2,-4)[2]{r}*BB[9]{r}(2,-3)*CCC*AA*CCC*AAA(2,-4)[2]*CC-*C-*CCC(4,-6)[2]{q}*CC(2,-2){q}(2,-2)*AAAA*CC(0,-2)(2,-4)[2](4,-8)[2]{r}*BBB{r}(4,-3)(4,-3)*B{r}BBB{r}*AA[4]*C(2,-2)(1,-4)[2](2,-4)[2](0,-8)[2]*BBBB(-1,-8)[2]*BB*B{q}BB[9]-[7];(-1,-5)[2]*AAA-*A(-2,-2)[2]*BB[4](-2,0)(-2,1)[2]{r}*AAAA*CC*A{r}(-5,1)(-3,0)(-2,0)[2](-1,-3)[2]*AA{q}A{q}AA(0,-2)*BBB*A(-3,1)(-3,-1)*BB(-2,0)*AAAA*BBB*A(-3,-1)[2]*BBB-*BB*C{r}{q}C{q}C*B*C{r}CC(-2,2)[2]*BBBB(-2,0)[2]*B*CC-*CC*BBBB(0,-2)*CC[6](-2,0)[3]*A-*AAA-*C{r}CCC*AA*CC*AA*BB{r}(-2,0)(-2,0)*BBBB-*BB(0,2)[2]*BBB*AA(-2,0)[3]*AA{r}*BBB*BB[5](-2,0)*AAA*CC--{r}*AAA{r}*CC[5]*BBBB{r}(-5,1)(-5,1)[2]-(-11,9)[5]*AA(-9,9)*AA(-6,4)[3]*CC(-4,3)[2]*CC*A(-6,2){q}*CCCC(-2,0){q}(-2,0)(-2,0)[2]]">A sample 30 duo with these spawns</a>  • <a href="~/Solo?altar=2&spawns=[[5,-14],[7,8],[14,2],[0,-14],[4,-15],[9,4],[8,2],[-13,4],[13,0],[0,-12],[4,8],[1,-9],[11,5],[4,-8],[0,-11],[8,6],[2,-15],[-15,-5],[-15,-4],[-3,-8],[9,-13],[6,8],[-2,11],[3,9],[8,6],[14,-9],[-11,9],[-10,9],[-12,6],[5,-16],[-11,-1]]&code={0 2 (-5,1)r (2,-4)r}[(2,1)[4]*BB(7,0)(7,-1){r}*CCC-*C{r}(10,0)(10,0){q}*CC[5](2,0)[2]{q}(2,0)(2,0)[2](2,-1)*AAA(0,2)[3]*BBB*AAA*BB(-2,2)[2]*AA[4]*BBBB{r}BB{r}(-2,1)(-2,1)*BBB(-1,2)*B*BB(1,2)[2]*AAAA(-5,1)(-6,1)(-5,1)[2]*CCCC(-4,0)*BBBB*CCC*B(-5,1)[3]-(-2,0)(0,-2)*CC(0,-2)[2]*BB*CC*BB*C(-2,0)[2]*CC*B{r}BBB*CC*BB*CC{r}(-2,0)(-2,0)[2]-*A(-4,0)(-5,1)[2]--(-2,0)[3]*BB-{r}*CCC*BBB*CCC{r}CC(-2,0)[2]*A-*AAA*BB---*A{r}A*BBB*CC[5](-8,8){r}(-8,8)(-9,9)[2](-11,9)[2]*CC(-9,8)*CC(-6,5)(-5,5)*BB(-4,3)[2]*BB(-1,2)[2]*BBBB-[7];(-1,-5)[2]*AAA-*A(-2,0)[2]*BB[4]*AA(-1,-2)*AAA*A{q}A{q}*B*BB[4](0,-8)[2]*CCC(-1,-8)[2]*CC*C{q}CC[6]{q}(2,-4)(2,-4)[3](2,-8)[2]*CCC*A(2,-4)[2]*CCC*AA*C(1,-2)*CCC*B(-1,-2)[2]*BBB(7,-1)[2](8,-2)[3]*AA{r}AAA{r}(10,0)(10,0){q}*AA[5](2,0){q}(2,0)(2,-3)(1,-3)(2,-4)*AA[7](2,-1)[2]*AA[4](1,-2)(0,-4)(0,-2)[2]{r}*AAAA*BB*CC*BBB*CCC{r}*AAA-*A-*AAA(4,-6){q}*AAA(2,-2){q}*BB[4](2,-5)[2](5,-8)[2]{r}*CC{r}CC(7,-6)*CC(5,-4)*A*AAA*BB*AA*B(0,-2)[2]--(0,-5)[2]*AA[4](2,-14){q}(2,-14)*AA[13]---]">Another 30 duo with these spawns</a></li>
+</ul>
+
+@section Scripts {
+    <script src="~/js/gop.min.js"></script>
+    <script src="~/js/anglemap.js"></script>
+    <script>
+        $(function () {
+            var anglemap = new Anglemap($("#gameCanvas")[0]);
+            var spawnList = [];
+
+            function updateCoords(element, p) {
+                if (isNaN(p.x) || isNaN(p.y))
+                    element.innerText = "N/A";
+                else
+                    element.innerText = "(" + p.x + ",\u00A0" + p.y + ")";
+            }
+
+            function updateSpawnListDisplay() {
+                var str = "http://@(Context.Request.Host)/Solo?altar=" + anglemap.currentAltar + "&spawns=" + JSON.stringify(spawnList);
+                $("#spawnLink").text(str).attr("href", str);
+            }
+
+            $("#gameCanvas").mousedown(function (e) {
+                if (e.button !== 0)
+                    return;
+                var offX = (e.offsetX || e.pageX - $(e.target).offset().left);
+                var offY = (e.offsetY || e.pageY - $(e.target).offset().top);
+                var p = anglemap.fromScreenCoords(offX, offY);
+
+                spawnList.push([p.x, p.y]);
+                updateSpawnListDisplay();
+
+                updateCoords(playerCoords, new Point(anglemap.playerX, anglemap.playerY));
+                updateCoords(orbCoords, new Point(anglemap.orbX, anglemap.orbY));
+            });
+
+            $("#gameCanvas").mousemove(function (e) { updateCoords(coords, anglemap.fromScreenCoords(e.offsetX, e.offsetY)); });
+
+            $("button[name='altar']").click(function () {
+                anglemap.setAltar(parseInt($(this).val()));
+                updateSpawnListDisplay();
+            });
+
+            $("#deleteLastSpawnButton").click(function () {
+                spawnList.pop();
+                updateSpawnListDisplay();
+            });
+        });
+    </script>
+}

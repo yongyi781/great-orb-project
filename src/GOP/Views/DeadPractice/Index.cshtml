@@ -1,0 +1,298 @@
+﻿@{
+    ViewData["Title"] = "Dead Practice";
+}
+
+@section styles {
+    <link rel="stylesheet" href="~/css/deadpractice.css" />
+}
+
+<h2>Dead Practice</h2>
+<div id="wrap">
+    <div id="lastResult" class="message message-top-left"></div>
+    <div id="cumulativeResults" class="message message-bottom-left"></div>
+    <div id="stage" class="stage"></div>
+    <div id="startGame" class="message clickable">Start</div>
+    <div id="message" class="message" style="display: none;"></div>
+</div>
+<h3>Share</h3>
+<div>
+    <button id="shareButton" class="btn btn-lg btn-default">Share this result</button>
+    <span id="shareResultText" class="alert alert-success" style="display: none;">Result shared successfully! Share this link: </span>
+</div>
+<h3>Results</h3>
+<div>
+    <h6 class="text-center">Probability of deading vs. latency</h6>
+    <canvas id="pingGraphCanvas" width="768" height="384" style="display: block; margin: auto"></canvas>
+    <h4>Raw graph data</h4>
+    <pre id="rawGraphData" class="text-nowrap"></pre>
+</div>
+<h3>Raw data</h3>
+<pre id="rawData" class="text-nowrap">
+</pre>
+<h3>Advanced</h3>
+You can customize this game by adding the following parameters to the URL query string:
+<ul>
+    <li><code>bg=&lt;color&gt;</code>: The background color. Any format recognized by CSS is accepted.</li>
+    <li><code>orbsize=&lt;positive integer&gt;</code>: Orb size in pixels.</li>
+    <li><code>count=&lt;nonnegative integer&gt;</code>: The number of ticks to countdown. 0 means that the orb spawns in the next immediate tick.</li>
+    <li><code>rand=&lt;0|1&gt;</code>: Whether to spawn the orb at a random time instead of a fixed time.</li>
+    <li><code>team=&lt;vief|acantha&gt;</code>: Whether to use yellow orbs or green orbs.</li>
+    <li><code>nomisclick=&lt;0|1&gt;</code>: 1 to generate a new orb on misclick.</li>
+</ul>
+Here are some examples of ways you can customize this game:
+<ul>
+    <li><a href="?count=0">Mouse sprint test</a></li>
+    <li><a href="?rand=1&count=0">Randomized orb appearance time</a></li>
+    <li><a href="?bg=rgb(255,255,90)">Color difference detection test</a></li>
+    <li><a href="?orbsize=512">Timing accuracy test</a></li>
+    <li><a href="?orbsize=2">Extreme mouse precision speed test</a></li>
+    <li><a href="?count=0&rand=1&orbsize=512&nomisclick=1">Reaction time test</a></li>
+    <li><a href="?orbsize=2&bg=rgb(255,255,90)">Something a little bit harder...</a></li>
+</ul>
+
+@section scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/1.0.2/Chart.min.js"></script>
+    <script src="~/js/utils.js"></script>
+    <script>
+        $(function () {
+            var gameWidth = 960,
+                gameHeight = 480,
+                tickLength = 600,
+                settings = {
+                    backgroundColor: Utils.getQueryAsString("bg", "rgba(0, 0, 17, 0.4)"),
+                    orbSize: Utils.getQueryAsNumber("orbsize", 64),
+                    countdown: Utils.getQueryAsNumber("count", 3),
+                    randomizeTime: Utils.getQueryAsBoolean("rand"),
+                    team: Utils.getQueryAsString("team") === "acantha" ? "acantha" : "vief",
+                    noMisclick: Utils.getQueryAsBoolean("nomisclick"),
+                },
+                orbClassName = settings.team === "acantha" ? "orb green-orb" : "orb",
+                countdown = settings.countdown,
+                orbLocation = { x: 0, y: 0 },
+                misclicks = [],
+                startMouseLocation = {},
+                orbAppearTime = new Date().getTime(),
+                data = [],
+                pingGraph = null,
+                timeoutHandle = null;
+
+            // Default orb size for Acantha is 32.
+            if (settings.team === "acantha")
+                settings.orbSize = Utils.getQueryAsNumber("orbsize", 32);
+
+            var chartData = {
+                labels: [],
+                datasets: [{
+                    label: "Probability of deading",
+                    strokeColor: "#5a8",
+                    data: []
+                }]
+            };
+
+            function placeOrb() {
+                var top = Math.floor((gameHeight - settings.orbSize) * Math.random());
+                var left = Math.floor((gameWidth - settings.orbSize) * Math.random());
+
+                // Record center location of orb
+                orbLocation = { x: left + settings.orbSize / 2, y: top + settings.orbSize / 2 };
+
+                $("<div/>")
+                    .addClass(orbClassName)
+                    .css({ top: top, left: left })
+                    .appendTo("#stage");
+                orbAppearTime = new Date().getTime();
+            }
+
+            function removeOrb() {
+                $("#stage .orb").remove();
+            }
+
+            function resetCountdown() {
+                countdown = settings.countdown;
+                misclicks = [];
+            }
+
+            function tick() {
+                if (countdown > 0) {
+                    $("#message")
+                        .text(countdown--)
+                        .show();
+                } else if (countdown === 0) {
+                    // Time to start measuring
+                    $("#message").hide();
+                    if (settings.randomizeTime) {
+                        // Delay between 1 and 5 ticks
+                        var delay = 600 + 2400 * Math.random();
+                        timeoutHandle = setTimeout(placeOrb, delay);
+                    } else {
+                        placeOrb();
+                    }
+                    countdown = -1;
+                }
+            }
+
+            function startGame() {
+                resetCountdown();
+                tick();
+                setInterval(tick, tickLength);
+            }
+
+            function isGameRunning() { return countdown == -1; }
+
+            function restartGame() {
+                data = [];
+                initPingGraph();
+            }
+
+            // Gets the fraction of clicks that were faster than the given time.
+            function getFractionLessThan(time) {
+                return data.filter(function (x) {
+                    return x.click.time < time;
+                }).length / data.length;
+            }
+
+            // Gets the fraction of clicks that were between two times. Precondition: time1 <= time2. time1 is inclusive while time2 is exclusive.
+            function getFractionBetween(time1, time2) {
+                return data.filter(function (x) {
+                    return x.click.time >= time1 && x.click.time < time2;
+                }).length / data.length;
+            }
+
+            function median(values) {
+                values.sort(function (a, b) { return a - b; });
+                var half = Math.floor(values.length / 2);
+                if (values.length % 2 !== 0)
+                    return values[half];
+                else
+                    return (values[half - 1] + values[half]) / 2;
+            }
+
+            function getCumulativeResults() {
+                var minTime = data.reduce(function (prev, curr) {
+                    return Math.min(prev, curr.click.time);
+                }, Infinity);
+
+                var sum = data.reduce(function (prev, curr) {
+                    return {
+                        time: prev.time + curr.click.time,
+                        misclicks: prev.misclicks + curr.misclicks.length
+                    };
+                }, { time: 0, misclicks: 0 });
+                var medianTime = median(data.map(function (x) { return x.click.time; }));
+
+                return {
+                    minTime: minTime,
+                    avgTime: sum.time / data.length,
+                    medianTime: medianTime,
+                    avgMisclicks: sum.misclicks / data.length
+                };
+            }
+
+            function initPingGraph() {
+                for (var i = 0; i <= 500; i += 25) {
+                    chartData.labels.push(i);
+                    chartData.datasets[0].data.push(0);
+                }
+                var ctx = $("#pingGraphCanvas")[0].getContext("2d");
+                pingGraph = new Chart(ctx).Line(chartData, {
+                    bezierCurve: false,
+                    datasetFill: false,
+                    scaleOverride: true,
+                    scaleSteps: 5,
+                    scaleStepWidth: 0.2,
+                    scaleStartValue: 0,
+                    scaleShowGridLines: true,
+                    scaleLineColor: "rgba(255, 255, 255, 0.1)",
+                    scaleGridLineColor: "rgba(255, 255, 255, 0.05)",
+                    scaleShowVerticalLines: false,
+                    pointDot: false
+                });
+            }
+
+            function updatePingGraph() {
+                var newData = { labels: [], values: [] };
+                chartData.labels.forEach(function (x, i) {
+                    var t = tickLength - x;
+                    var y = getFractionLessThan(t);
+
+                    newData.labels.push(x);
+                    newData.values.push(Math.round(1000 * y) / 1000);
+                    pingGraph.datasets[0].points[i].value = y;
+                });
+                pingGraph.update();
+                $("#rawGraphData").text(JSON.stringify(newData));
+            }
+
+            $("#startGame").click(function () {
+                $(this).hide();
+                startGame();
+            });
+
+            $("#stage").width(settings.orbSize).height(settings.orbSize).on("mousedown", ".orb", function (e) {
+                time = new Date().getTime();
+                result = {
+                    orbLocation: orbLocation,
+                    click: {
+                        time: time - orbAppearTime,
+                        x: e.offsetX - settings.orbSize / 2,
+                        y: e.offsetY - settings.orbSize / 2
+                    },
+                    misclicks: misclicks
+                };
+                data.push(result);
+
+                $("#lastResult").text("Last orb: Time = " + result.click.time + " ms | Misclicks = " + result.misclicks.length);
+                var cumResults = getCumulativeResults();
+                $("#cumulativeResults").text(
+                    "Number of orbs: " + data.length +
+                    " | Min time: " + cumResults.minTime +
+                    " | Median time: " + cumResults.medianTime +
+                    " | Average misclicks: " + cumResults.avgMisclicks.toFixed(3) +
+                    " | < 600 ms: " + (100 * getFractionLessThan(600)).toFixed(1) + "%" +
+                    " | < 500 ms: " + (100 * getFractionLessThan(500)).toFixed(1) + "%" +
+                    " | < 400 ms: " + (100 * getFractionLessThan(400)).toFixed(1) + "%");
+                $("#rawData").text(JSON.stringify(data));
+                updatePingGraph();
+
+                removeOrb();
+                resetCountdown();
+            });
+
+            $("#wrap")
+                .width(gameWidth)
+                .height(gameHeight)
+                .css("background-color", settings.backgroundColor)
+                .mousedown(function (e) {
+                    // Record misclicks. Clicking the orb will not fire this event.
+                    if (isGameRunning()) {
+                        if (settings.noMisclick) {
+                            clearTimeout(timeoutHandle);
+                            removeOrb();
+                            countdown = 0;
+                        } else {
+                            misclicks.push({
+                                time: new Date().getTime() - orbAppearTime,
+                                x: e.offsetX - orbLocation.x,
+                                y: e.offsetY - orbLocation.y
+                            });
+                        }
+                    }
+                });
+
+            $("#shareButton").click(function () {
+                if (data.length < 10) {
+                    alert("Please do at least 10 trials before sharing!");
+                } else {
+                    $.post("/api/DeadPractice", { settings: JSON.stringify(settings), data: JSON.stringify(data) }, function (data) {
+                        $("#shareResultText")
+                            .html("Success! Share the following link: <a href=\"" + data + "\">" + data + "</a>")
+                            .show();
+                    });
+                }
+            });
+
+            initPingGraph();
+            $("#message").hide();
+        });
+    </script>
+}

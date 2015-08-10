@@ -1,0 +1,144 @@
+﻿@model PuzzleViewModel
+@{
+    var puzzle = Model.PuzzleView;
+    ViewData["Title"] = "Puzzle " + puzzle.Id;
+}
+
+@section styles {
+    <link rel="stylesheet" href="https://cdn.datatables.net/plug-ins/1.10.7/integration/bootstrap/3/dataTables.bootstrap.css" />
+}
+
+<div>
+    <a class="pull-left" href="~/Puzzle/@(puzzle.Id - 1)"><img src="~/images/icon-back-green.png" alt="Previous puzzle" /></a>
+    <a class="pull-right" href="~/Puzzle/@(puzzle.Id + 1)"><img src="~/images/icon-next-green.png" alt="Next puzzle" /></a>
+</div>
+<br />
+<h1>@ViewData["Title"]</h1>
+<p>
+    <strong>Par</strong>: @Model.PuzzleView.Par<br />
+    <strong>Solved by:</strong> @Model.PuzzleView.NumberOfSolvers<br />
+    <strong>Your score:</strong> @Model.PuzzleView.Score (+@Model.PuzzleView.PuzzlePoints points)
+</p>
+@if (puzzle.Id <= 25)
+{
+    <p>Tip: Press "Save this game" after you've scored the orb(s) to record your puzzle solution and receive points.</p>
+}
+@if (puzzle.NumberOfPlayers > 1)
+{
+    <p>Tip: Press the 2 key to switch to the second (magenta) player, and the 1 key to switch back. Also, you should make use of the -5 ticks button.</p>
+}
+
+<div id="game" class="align-center">
+</div>
+
+<h2>@(Model.PuzzleView.IsSolved() ? "All" : "My") Submissions</h2>
+<table id="submissionsTable" class="table table-striped table-condensed table-hover table-clickable-rows" data-order='[[ 0, "desc" ]]'>
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Timestamp</th>
+            <th>Username</th>
+            <th>Score</th>
+        </tr>
+    </thead>
+</table>
+
+@section scripts {
+    <script src="https://cdn.datatables.net/1.10.7/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/plug-ins/1.10.7/integration/bootstrap/3/dataTables.bootstrap.js"></script>
+    <script src="~/js/gop.js"></script>
+    <script src="~/js/gopui.js"></script>
+    <script src="~/js/utils.js"></script>
+    <script>
+        var gopui, table, data;
+
+        $(function () {
+            var options = {
+                game: {
+                    altar: @puzzle.Altar,
+                    code: Utils.getQueryAsString("code"),
+                    numberOfOrbs:@puzzle.NumberOfOrbs,
+                    startLocations: Utils.toPointArray(@puzzle.StartLocations),
+                    presetSpawns: Utils.toPointArray(@puzzle.Orbs),
+                    suppressRandomSpawns: true
+                },
+                client: {
+                    visibilityRadius: Utils.getQueryAsNumber("visibility"),
+                    latency: Utils.getQueryAsNumber("latency"),
+                    tickInterval: Utils.getQueryAsNumber("tickinterval") || 450,
+                    altarAndStartLocationForced: true
+                },
+                interface: {
+                    showRestart: true,
+                    plusMinusTicksAdvance: Utils.getQueryAsNumber("advance") || 5,
+                    showScore: false,
+                    showGameCode: false,
+                    showTickTextSuffix: false
+                },
+                callbacks: {
+                    isGameFinished: function () {
+                        return gopui.gameState.score >= gopui.options.game.numberOfOrbs;
+                    },
+                    tick: function () {
+                        @if (Model.RequireLogin)
+                        {
+                            @: gopui.$saveButton.text("Log in in to save").prop("disabled", true);
+                        }
+                        else
+                        {
+                            // Finished when there are zero orbs left.
+                            @: gopui.$saveButton.text("Save").prop("disabled", !gopui.options.callbacks.isGameFinished());
+                        }
+                    }
+                }
+            };
+
+            gopui = new GopUI($("#game")[0], options);
+
+            gopui.$saveButton.click(function () {
+                gopui.$saveButton.text("Saving...").prop("disabled", true);
+                $.post("/api/puzzles/@puzzle.Id", {
+                    score: gopui.gameState.scoredTicks[gopui.gameState.scoredTicks.length - 1],
+                    code: gopui.gameplayData.toString()
+                }, function (data) {
+                    gopui.$saveButton.text("Saved");
+                    data.Timestamp = new Date(s.Timestamp);
+                    table.row.add(data);
+                    table.draw();
+                });
+                gopui.$saveButton.button("saved");
+            });
+
+            $("#submissionsTable").on("click", "tbody > tr", function () {
+                var data = table.row(this).data();
+                if (data !== void 0) {
+                    gopui.restartGame(data.Code);
+                    gopui.$rootContainer[0].scrollIntoView(true);
+                }
+            });
+
+            data = @Json.Serialize(Model.Submissions);
+            data.forEach(function (s) {
+                s.Timestamp = new Date(s.Timestamp);
+            });
+
+            table = $("#submissionsTable").DataTable({
+                data: data,
+                deferRender: true,
+                columns: [
+                    { data: "Id" },
+                    {
+                        data: "Timestamp",
+                        render: function (data, type, row) {
+                            if (type === "display")
+                                return data.toLocaleString();
+                            return data;
+                        }
+                    },
+                    { data: "Username" },
+                    { data: "Score" }
+                ]
+            });
+        })
+    </script>
+}

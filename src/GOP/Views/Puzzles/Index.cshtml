@@ -1,0 +1,55 @@
+﻿@model IEnumerable<PuzzleView>
+@{
+    ViewData["Title"] = "Puzzles";
+}
+
+@section styles {
+    <link rel="stylesheet" href="https://cdn.datatables.net/plug-ins/1.10.7/integration/bootstrap/3/dataTables.bootstrap.css" />
+}
+
+<h2>@ViewData["Title"]</h2>
+
+<div id="puzzles"></div>
+
+@foreach (var p in Model)
+{
+    var canvasClass = p.IsSolved() ? "puzzle puzzle-solved" : "puzzle";
+    <div style="display: inline-block; margin: 2px;">
+        <div>
+            <span class="h6">Puzzle @p.Id</span>
+            @if (p.IsSolved())
+            {
+                <span class="puzzle-solved-text"><span class="solved-tick"></span> +@p.PuzzlePoints</span>
+            }
+            else if (p.IsAttempted())
+            {
+                <span class="puzzle-attempted-text"><span class="attempted-tick"></span> +@p.PuzzlePoints</span>
+            }
+        </div>
+        <a asp-controller="Puzzles" asp-action="Puzzle" asp-route-id="@p.Id" class="puzzle-link" style="position: relative;" target="_blank"><canvas class="@canvasClass" width="124" height="124" data-altar="@p.Altar" data-numorbs="@p.NumberOfOrbs" data-orbs="@p.Orbs" data-start="@p.StartLocations" data-par="@p.Par" data-solvedby="@p.NumberOfSolvers" data-score="@p.Score" data-points="@p.PuzzlePoints"></canvas></a>
+    </div>
+}
+
+@section scripts {
+    <script src="https://cdn.datatables.net/1.10.7/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/plug-ins/1.10.7/integration/bootstrap/3/dataTables.bootstrap.js"></script>
+    <script src="~/js/gop.js"></script>
+    <script src="~/js/utils.js"></script>
+    <script>
+        var data;
+
+        $(function () {
+            var maxPoints = @GOP.Controllers.PuzzlesController.MaxScorePerPuzzle;
+
+            $("canvas[data-altar]").each(function () {
+                new GopCanvas(this,
+                    new GameState(
+                        new GopBoard(53, 53),
+                        Utils.toPointArray($(this).data("start")),
+                        Utils.toPointArray($(this).data("orbs")),
+                        $(this).data("numorbs"), 0, $(this).data("altar")),
+                    15, 0, 4, 0, false);
+            });
+        });
+    </script>
+}

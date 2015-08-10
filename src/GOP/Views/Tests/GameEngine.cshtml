@@ -1,0 +1,18 @@
+﻿@{
+    ViewData["Title"] = "Game Engine Tests";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="http://code.jquery.com/qunit/qunit-1.18.0.css" type="text/css" />
+}
+
+<div id="qunit"></div>
+<div id="qunit-fixture"></div>
+
+@section Scripts {
+    <script src="http://code.jquery.com/qunit/qunit-1.18.0.js"></script>
+    <script src="~/js/gop.js"></script>
+
+    <script src="~/js/tests/parsingFormatting.js"></script>
+    <script src="~/js/tests/engine.js"></script>
+}

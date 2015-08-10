@@ -1,0 +1,175 @@
+﻿html, body {
+    height: 100%;
+}
+
+body {
+    background-image: url(/images/bg.jpg);
+    background-attachment: fixed;
+}
+
+footer {
+    border-top: 1px solid black;
+    border-bottom: 1px solid black;
+    text-align: center;
+    font-size: 8pt;
+}
+
+
+footer, .push {
+    height: 20px;
+}
+
+footer, .container {
+    background-color: rgb(5, 5, 7);
+}
+
+.form-control {
+    color: #555;
+}
+
+.monospaced {
+    font: 13px Consolas, Monospace;
+}
+
+.break-word {
+    -ms-word-break: break-all;
+    word-break: break-all;
+}
+
+.fill-height {
+    min-height: 100%;
+    margin: 0 auto -20px;
+    padding-bottom: 20px;
+}
+
+.timestamp {
+    font-family: "Droid Sans","Helvetica Neue",Helvetica,Arial,sans-serif;
+    color: #666;
+}
+
+.chatbox-container {
+    border: 1px solid #999;
+    background-color: black;
+    margin: 4px auto;
+    padding: 0 4px;
+}
+
+.chatbox-sidebar {
+    margin: 10px;
+    min-width: 150px;
+}
+
+.chatbox {
+    color: #999;
+    height: 400px;
+    min-width: 300px;
+    overflow-y: auto;
+    padding: 0 3px;
+    white-space: pre-wrap;
+    -ms-word-wrap: break-word;
+    word-wrap: break-word;
+}
+
+.chat-font {
+    font-size: 13px;
+    font-family: Verdana, Geneva, 'DejaVu Sans', sans-serif;
+    line-height: normal;
+}
+
+.context-menu {
+    margin: 0;
+    padding: 2px 2px 2px 2px;
+    border: 1px solid #333333;
+    background-color: #1b1b1b;
+    box-shadow: rgba(0, 0, 0, 0.5) 5px 5px 10px;
+}
+
+.context-menu-item {
+    display: block;
+    padding: 3px 30px 3px 30px;
+    color: #f0f0f0;
+    font-size: 9pt;
+    cursor: pointer;
+}
+
+    .context-menu-item:hover {
+        background-color: #333333;
+        color: #f0f0f0;
+        text-decoration: none;
+    }
+
+.side-container {
+    margin: 0 15px 15px 15px;
+    padding: 10px;
+    width: 250px;
+    border: 1px solid #161c1c;
+    border-radius: 5px;
+    background-color: #233e3e;
+    color: #66CCCC;
+    text-align: center;
+    font-size: 14px;
+}
+
+    .side-container header {
+        margin-bottom: 10px;
+        background-color: inherit;
+        color: #6ce;
+        font-weight: bold;
+    }
+
+.side {
+    margin: 0 16px 15px 16px;
+    width: 248px;
+}
+
+.form-control.longer {
+    width: 600px;
+    max-width: 600px;
+}
+
+.table-clickable-rows > tbody > tr {
+    cursor: pointer;
+}
+
+/* Canvas showing miniature of puzzle */
+.puzzle {
+    opacity: 0.7;
+    -moz-transition: opacity ease-in-out 0.05s;
+    -o-transition: opacity ease-in-out 0.05s;
+    -webkit-transition: opacity ease-in-out 0.05s;
+    transition: opacity ease-in-out 0.05s;
+}
+
+    .puzzle:hover {
+        opacity: 1;
+    }
+
+.puzzle-solved {
+    opacity: 0.4;
+}
+
+.puzzle-solved-text {
+    font-size: smaller;
+    color: #5c5;
+}
+
+.puzzle-attempted-text {
+    font-size: smaller;
+    color: #fa0;
+}
+
+.solved-tick {
+    background: url(/images/icon-tick.png) no-repeat;
+    width: 18px;
+    height: 16px;
+    margin-bottom: -2px;
+    display: inline-block;
+}
+
+.attempted-tick {
+    background: url(/images/icon-tick-yellow.png) no-repeat;
+    width: 18px;
+    height: 16px;
+    margin-bottom: -2px;
+    display: inline-block;
+}

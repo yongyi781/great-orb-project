@@ -1,0 +1,66 @@
+﻿@{
+    ViewData["Title"] = "3D Test Page";
+}
+
+<h1>@ViewData["Title"]</h1>
+<div id="animationContainer"></div>
+
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r71/three.js"></script>
+    <script>
+        (function () {
+            var WIDTH = 960,
+                HEIGHT = 540,
+                VIEW_ANGLE = 75,
+                ASPECT = WIDTH / HEIGHT,
+                NEAR = 0.1,
+                FAR = 10000;
+
+            var scene = new THREE.Scene();
+            var camera = new THREE.PerspectiveCamera(VIEW_ANGLE, ASPECT, NEAR, FAR);
+            var renderer = new THREE.WebGLRenderer({ antialias: true });
+            camera.position.z = 300;
+
+            var sphereMaterial = new THREE.MeshLambertMaterial({
+                color: 0xccccff,
+                refractionRatio: 0.985,
+                reflectivity: 0.9
+            });
+            var sphere = new THREE.Mesh(new THREE.SphereGeometry(50, 16, 16), sphereMaterial);
+            scene.add(sphere);
+
+            var skyboxGeometry = new THREE.CubeGeometry(10000, 10000, 10000);
+            var skyboxMaterial = new THREE.MeshBasicMaterial({ color: 0x333F47, side: THREE.BackSide });
+            var skybox = new THREE.Mesh(skyboxGeometry, skyboxMaterial);
+
+            scene.add(skybox);
+
+            renderer.setClearColor(0x333F47, 1);
+
+            // create a point light
+            var pointLight = new THREE.PointLight(0xFFFFFF);
+
+            // set its position
+            pointLight.position.x = 10;
+            pointLight.position.y = 50;
+            pointLight.position.z = 130;
+
+            // add to the scene
+            scene.add(pointLight);
+
+            renderer.setSize(WIDTH, HEIGHT);
+            $("#animationContainer").append(renderer.domElement);
+
+            // draw!
+            function render(timestamp) {
+                requestAnimationFrame(render);
+                sphere.position.x = 300 * Math.sin(0.005 * timestamp);
+                sphere.position.y = 30 * Math.cos(0.005 * timestamp);
+                sphere.position.z = -300 + 300 * Math.sin(0.005 * timestamp);
+                renderer.render(scene, camera);
+            }
+
+            requestAnimationFrame(render);
+        })();
+    </script>
+}

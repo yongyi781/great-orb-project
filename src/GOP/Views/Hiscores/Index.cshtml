@@ -1,0 +1,111 @@
+﻿@model HiscoresViewModel
+@{
+    ViewData["Title"] = "Hiscores";
+    ViewData["UseDataTable"] = true;
+}
+
+<ul class="nav nav-tabs">
+    @foreach (var name in Enum.GetNames(typeof(HiscoresGameType)))
+    {
+        <li class="@ViewData[name + "Active"]"><a asp-controller="Hiscores" asp-action="Index" asp-route-type="@name">@name</a></li>
+    }
+</ul>
+<h1>@ViewData["Title"]</h1>
+<table id="hiscoresTable" class="table table-striped table-condensed">
+    <thead>
+        <tr>
+            <th>Seed</th>
+            <th>Air</th>
+            <th>Mind</th>
+            <th>Water</th>
+            <th>Earth</th>
+            <th>Fire</th>
+            <th>Body</th>
+            <th>Sum</th>
+        </tr>
+    </thead>
+</table>
+
+<table id="statsTable" class="table table-striped table-condensed">
+    <thead>
+        <tr>
+            <th></th>
+            <th>Air</th>
+            <th>Mind</th>
+            <th>Water</th>
+            <th>Earth</th>
+            <th>Fire</th>
+            <th>Body</th>
+            <th>Sum</th>
+            <th>MTI</th>
+        </tr>
+    </thead>
+    <tr>
+        <td># games</td>
+        @foreach (var value in Model.Counts.ScoreValues)
+        {
+            <td>@value</td>
+        }
+        <td>@Model.Counts.SumValue</td>
+        <td></td>
+    </tr>
+    <tr>
+        <td>Maxes</td>
+        @foreach (var value in Model.Maxes.ScoreValues)
+        {
+            <td>@value</td>
+        }
+        <td>@Model.Maxes.SumValue</td>
+        <td>@Model.MaxTotalIndex</td>
+    </tr>
+    <tr>
+        <td>Mins</td>
+        @foreach (var value in Model.Mins.ScoreValues)
+        {
+            <td>@value</td>
+        }
+        <td>@Model.Mins.SumValue</td>
+        <td>@Model.MinTotalIndex</td>
+    </tr>
+    <tr>
+        <td>Averages</td>
+        @foreach (var value in Model.Averages.ScoreValues)
+        {
+            <td>@Utilities.FormatValue(value, "F2")</td>
+        }
+        <td>@Utilities.FormatValue(Model.Averages.SumValue, "F2")</td>
+        <td></td>
+    </tr>
+    <tr>
+        <td>Stddevs</td>
+        @foreach (var value in Model.StandardDeviations.ScoreValues)
+        {
+            <td>@Utilities.FormatValue(value, "F2")</td>
+        }
+        <td>@Utilities.FormatValue(Model.StandardDeviations.SumValue, "F2")</td>
+        <td></td>
+    </tr>
+</table>
+
+@section scripts {
+    <script>
+        $(function () {
+            var data = @Json.Serialize(Model);
+
+            $("#hiscoresTable").DataTable({
+                data: data.Rows,
+                deferRender: true,
+                columns: [
+                    { data: "Seed" },
+                    { data: "Scores.0", searchable: false },
+                    { data: "Scores.1", searchable: false },
+                    { data: "Scores.2", searchable: false },
+                    { data: "Scores.3", searchable: false },
+                    { data: "Scores.4", searchable: false },
+                    { data: "Scores.5", searchable: false },
+                    { data: "Sum", searchable: false }
+                ]
+            });
+        });
+    </script>
+}

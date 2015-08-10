@@ -1,0 +1,629 @@
+﻿interface GopUIOptions {
+    game?: {
+        numberOfOrbs?: number,
+        maxReachDistance?: number,
+        ticksPerAltar?: number,
+        seed?: number,
+        altar?: Altar,
+        startLocations?: Point[],
+        presetSpawns?: Point[],
+        suppressRandomSpawns?: boolean
+    };
+
+    client?: {
+        visibilityRadius?: number,
+        latency?: number,
+        tickInterval?: number,
+        useServer?: boolean,
+        enablePlayerSwitching?: boolean,
+        altarAndStartLocationForced?: boolean,
+        gopControls?: {
+            run?: string,
+            repeller?: string,
+            attractor?: string
+        }
+    };
+
+    interface?: {
+        showNavigationButtons?: boolean,
+        plusMinusTicksAdvance?: number,
+        canvasMargin?: number,
+        showScore?: boolean,
+        showGameCode?: boolean,
+        showRestart?: boolean,
+        showSave?: boolean,
+        requireLoginToSave?: boolean,
+    };
+
+    viewModelFunctions?: {
+        minusTicksButtonEnabled?: () => boolean,
+        plusTicksButtonEnabled?: () => boolean
+    };
+}
+
+class GopUI {
+    static keyCodes: any = { "/": 191, "N0": 96, "N1": 97 };
+    defaults: GopUIOptions = {
+        game: {
+            numberOfOrbs: 3,
+            maxReachDistance: 10,
+            ticksPerAltar: 199,
+            seed: 5489,
+            altar: Altar.Air,
+            startLocations: [new Point(2, 0)],
+            presetSpawns: [],
+            suppressRandomSpawns: false
+        },
+
+        client: {
+            visibilityRadius: 15,
+            latency: 0,
+            tickInterval: 600,
+            useServer: false,
+            enablePlayerSwitching: true,
+            altarAndStartLocationForced: false,
+            gopControls: {
+                run: 'R',
+                repeller: 'Q',
+                attractor: 'Z'
+            }
+        },
+
+        interface: {
+            showNavigationButtons: true,
+            plusMinusTicksAdvance: 10,
+            canvasMargin: 20,
+            showScore: true,
+            showGameCode: true,
+            showRestart: true,
+            showSave: true,
+            requireLoginToSave: false,
+        },
+
+        viewModelFunctions: {
+            minusTicksButtonEnabled: () => true,
+            plusTicksButtonEnabled: () => true
+        }
+    };
+
+    options = this.defaults;
+    gameState: GameState;
+    player: Player;
+    $canvas = $('<canvas class="pull-left" moz-opaque>You do not have a HTML5-enabled browser. You should download the latest version of your browser.</canvas>');
+    canvas = <HTMLCanvasElement>this.$canvas[0];
+    $popupMenu = $('<div class="context-menu" style="display: none"></div>');
+    // Interface elements
+    $runCheckBox = $('<label><input type="checkbox" data-bind="checked: run">Run (' + this.options.client.gopControls.run + ')</label>');
+    $repelCheckBox = $('<label><input type="checkbox" data-bind="checked: repel">Repel (' + this.options.client.gopControls.repeller + '/' + this.options.client.gopControls.attractor + ')</label>');
+    $playerControlsDiv = $('<div class="side-container"></div>').append(this.$runCheckBox, "&nbsp;", this.$repelCheckBox);
+
+    $tickSpan = $('<div>Tick: <span data-bind="text: tickText()"></span></div>');
+    $scoreSpan = $('<div>Score: <score data-bind="text: score"></span></div>');
+    $estScoreSpan = $('<div>Estimated score: <span data-bind="text: estimatedScore"></span></div>');
+    $scoreInfoDiv = $('<div class="side-container"/>').append(this.$tickSpan);
+
+    $minusTicksButton = $('<button type="button" class="btn btn-default" data-bind="enable: minusTicksButtonEnabled()">-' + this.options.interface.plusMinusTicksAdvance + ' ticks</button>');
+    $plusTicksButton = $('<button type="button" class="btn btn-default" data-bind="enable: minusTicksButtonEnabled()">+' + this.options.interface.plusMinusTicksAdvance + ' ticks</button>');
+    $minusPlusTicksDiv = $('<div class="side text-center"/>').append(this.$minusTicksButton, "&nbsp;", this.$plusTicksButton);
+
+    $restartButton = $('<button type="button" class="btn btn-warning side">Restart</button>');
+    $saveButton = $('<button type="button" class="btn btn-primary side" data-bind="enable: saveButtonEnabled(), text: saveButtonText()"></button>');
+
+    $scoredTicksSpan = $('<span/>');
+    $scoredTicksDiv = $('<div class="side-container"><header>Scored ticks</header></div>').append(this.$scoredTicksSpan);
+
+    $gameCodeText = $('<div class="monospaced text-left" data-bind="text: gameCodeText"></div>');
+    $gameCodeDiv = $('<div class="side-container break-word"><header>Game code</header></div>').append(this.$gameCodeText);
+
+    $sidebar = $('<div style="display: inline-block"/>');
+    $rootContainer = $('<div/>');
+
+    gopCanvas: GopCanvas = null;
+    viewModel: GameViewModel;
+    lastTimestamp = 0;
+    animationHandle = null;
+    mousePosition = null;
+    canvasFocused = false;
+    canvasContextMenuFocused = false;
+
+    onclick = p => true;
+
+    /**
+     * Returns the mouse click location of an event.
+     */
+    private static getMouseClickLocation(e: JQueryMouseEventObject | MouseEvent) {
+        var offX = (e.offsetX || e.pageX - $(e.target).offset().left);
+        var offY = (e.offsetY || e.pageY - $(e.target).offset().top);
+        return new Point(offX, offY);
+    }
+
+    constructor(element: HTMLElement, options: GopUIOptions) {
+        this.options = $.extend(true, {}, this.defaults, options);
+        this.gameState = new GameState(new GopBoard(53, 53), this.options.game.startLocations, this.options.game.presetSpawns);
+        this.player = this.gameState.players[0];
+
+        if (this.options.interface.showScore)
+            this.$scoreInfoDiv.append(this.$scoreSpan, this.$estScoreSpan);
+
+        this.$sidebar
+            .append(this.$playerControlsDiv)
+            .append(this.$scoreInfoDiv);
+        if (this.options.interface.showNavigationButtons)
+            this.$sidebar.append(this.$minusPlusTicksDiv);
+        if (this.options.interface.showRestart)
+            this.$sidebar.append($("<div/>").append(this.$restartButton));
+        if (this.options.interface.showSave)
+            this.$sidebar.append($("<div/>").append(this.$saveButton));
+        this.$sidebar
+            .append(this.$scoredTicksDiv)
+            .append(this.$gameCodeDiv);
+
+        this.$rootContainer.append(this.$canvas, this.$sidebar);
+        this.viewModel = new GameViewModel(this);
+        $(element).append(this.$rootContainer);
+        $("body").append(this.$popupMenu);
+        this.init();
+    }
+
+    hidePopupMenu() {
+        this.$popupMenu.hide();
+        this.canvasFocused = true;
+    }
+
+    recalculateCanvasSize() {
+        var numCells = 2 * this.options.client.visibilityRadius + 1;
+        var oldSize = this.canvas.width;
+        var newSize = numCells * Math.min(27, Math.max(4, Math.floor(($(window).innerHeight() - this.options.interface.canvasMargin) / numCells)));
+        if (oldSize !== newSize) {
+            this.canvas.width = this.canvas.height = newSize;
+        }
+        return oldSize !== newSize;
+    }
+
+    getKeyCodeFor(str) {
+        if (str in GopUI.keyCodes)
+            return GopUI.keyCodes[str];
+        return str.charCodeAt(0);
+    }
+
+    onMinusTicksClicked() {
+        var tickToLoad = this.gameState.currentTick - this.options.interface.plusMinusTicksAdvance;
+        this.restartGame(true, this.player.index);
+        for (var i = 0; i < tickToLoad; i++)
+            this.tick();
+    }
+
+    onPlusTicksClicked() {
+        for (var i = 0; i < this.options.interface.plusMinusTicksAdvance; i++)
+            this.tick();
+    }
+
+    init() {
+        this.recalculateCanvasSize();
+        this.gopCanvas = new GopCanvas(this.canvas, this.gameState, this.options.client.visibilityRadius, this.player);
+
+        if (this.options.game.suppressRandomSpawns)
+            this.gameState.random = null;
+        this.gameState.board.maxReachDistance = this.options.game.maxReachDistance;
+        this.viewModel.currentAltar(this.options.game.altar);
+        GameState.TICKS_PER_ALTAR = this.options.game.ticksPerAltar;
+        this.gameState.seed = this.viewModel.seed();
+
+        $(window).resize(() => {
+            if (this.recalculateCanvasSize()) {
+                this.gopCanvas.calculateDimensions();
+                this.gopCanvas.paintBackground();
+            }
+        });
+
+        $(document).keydown(e => {
+            if (this.isGameFocused()) {
+                switch (e.which) {
+                    case this.getKeyCodeFor(this.options.client.gopControls.repeller):    // Q
+                        e.preventDefault();
+                        this.viewModel.repel(true);
+                        break;
+                    case this.getKeyCodeFor(this.options.client.gopControls.attractor):   // Z
+                        e.preventDefault();
+                        this.viewModel.repel(false);
+                        break;
+                    case this.getKeyCodeFor(this.options.client.gopControls.run):    // R
+                        if (e.shiftKey) {
+                            // Restart
+                            e.preventDefault();
+                            this.$restartButton.click();
+                        }
+                        else {
+                            // Run
+                            e.preventDefault();
+                            this.viewModel.run(!this.viewModel.run());
+                        }
+                        break;
+                    case 8:     // Backspace
+                    case 37:    // Left arrow
+                        e.preventDefault();
+                        this.$minusTicksButton.click();
+                        break;
+                    case 39:    // Right arrow
+                        e.preventDefault();
+                        this.$plusTicksButton.click();
+                        break;
+                    case 88:    // X
+                        this.gopCanvas.rotationAngle += Math.PI / 2;
+                        this.gopCanvas.rotationAngle %= 2 * Math.PI;
+                        break;
+                    case 70:    // F
+                        if (!e.shiftKey && !e.ctrlKey) {
+                            e.preventDefault();
+                            this.$canvas[0].scrollIntoView(false);
+                        }
+                        break;
+                    case 49: 	// 1-5
+                    case 50:
+                    case 51:
+                    case 52:
+                    case 53:
+                        if (this.options.client.enablePlayerSwitching) {
+                            var player = this.gameState.players[e.which - 49];
+                            if (player !== undefined) {
+                                this.player.action = this.viewModel.currentAction;
+                                this.player = this.gopCanvas.player = this.gameState.players[e.which - 49];
+                                this.viewModel.currentAction = this.player.action;
+                            }
+                        }
+                        break;
+                    default:
+                        break;
+                }
+            }
+        });
+
+        this.$canvas
+            .mousedown(e => {
+                var loc = GopUI.getMouseClickLocation(e);
+                var p = this.gopCanvas.fromScreenCoords(loc.x, loc.y, false);
+                var pTrunc = this.gopCanvas.fromScreenCoords(loc.x, loc.y, true);
+                if (e.button === 0) {
+                    // Left-click.
+                    this.hidePopupMenu();
+                    if (!this.onclick(pTrunc))
+                        return;
+                    var foundOrb = false;
+                    for (var i = 0; i < this.gameState.orbs.length; ++i) {
+                        if (this.isOrbClicked(p, this.gopCanvas.getDrawLocation(this.gameState.orbs[i]))) {
+                            // Attract orb!
+                            this.viewModel.setCurrentAction(GameAction.attract(i, false, false, true), true);
+                            foundOrb = true;
+                            break;
+                        }
+                    }
+                    if (!foundOrb) {
+                        if (pTrunc.equals(this.player.location) || (GopBoard.isInAltar(pTrunc) && GopBoard.isPlayerAdjacentToAltar(this.player.location)))
+                            this.viewModel.setCurrentAction(GameAction.idle(), true);
+                        else if (GopBoard.isInAltar(pTrunc)) {
+                            // Find closest square
+                            this.viewModel.setCurrentAction(GameAction.move(this.gameState.board.nearestAltarPoint(this.player.location, PathMode.Player)), true);
+                        }
+                        else
+                            this.viewModel.setCurrentAction(GameAction.move(pTrunc), true);
+                    }
+                }
+                else if (e.button === 2) {
+                    // Clear all menu items
+                    this.$popupMenu.find("a").remove();
+
+                    for (var i = 0; i < this.gameState.orbs.length; ++i) {
+                        if (this.isOrbClicked(p, this.gopCanvas.getDrawLocation(this.gameState.orbs[i]))) {
+                            // Add attract and repel menu items
+                            var attractMenuItem = $("<a class='context-menu-item'></a>")
+                                .html((this.viewModel.repel() ? "Repel" : "Attract") + " <span style='color: yellow;'>Orb " + String.fromCharCode(i + 65) + "</span>")
+                                .mousedown({ index: i }, e => {
+                                    if (e.button === 0) {
+                                        this.viewModel.setCurrentAction(GameAction.attract(e.data.index, false, false, true), true);
+                                        this.hidePopupMenu();
+                                    }
+                                    e.preventDefault();
+                                }).on("contextmenu", e => e.preventDefault());
+                            var repelMenuItem = document.createElement("a");
+                            this.$popupMenu.append(attractMenuItem);
+                        }
+                    }
+
+                    var walkMenuItem = $("<a class='context-menu-item'>Walk to " + pTrunc + "</a>")
+                        .mousedown(e => {
+                            if (e.button === 0) {
+                                this.hidePopupMenu();
+                                if (!this.onclick(pTrunc))
+                                    return;
+                                this.viewModel.setCurrentAction(GameAction.move(pTrunc), true);
+                            }
+                            e.preventDefault();
+                        }).on("contextmenu", e => e.preventDefault());
+
+                    this.$popupMenu.append(walkMenuItem).css({
+                        "position": "absolute",
+                        "left": e.pageX - 25,
+                        "top": e.pageY + 1
+                    }).show();
+                }
+            })
+            .on("contextmenu", e => e.preventDefault())
+            .mousemove(e => {
+                var loc = GopUI.getMouseClickLocation(e);
+                var p = this.gopCanvas.fromScreenCoords(loc.x, loc.y, false);
+                var pTrunc = this.gopCanvas.fromScreenCoords(loc.x, loc.y, true);
+                var menuMargin = 20;
+                this.canvasFocused = true;
+                var popupMenu = this.$popupMenu[0];
+                if (e.pageX < popupMenu.offsetLeft - menuMargin || e.pageX > popupMenu.offsetLeft + popupMenu.offsetWidth + menuMargin ||
+                    e.pageY < popupMenu.offsetTop - menuMargin || e.pageY > popupMenu.offsetTop + popupMenu.offsetHeight + menuMargin)
+                    this.hidePopupMenu();
+                this.mousePosition = GopUI.getMouseClickLocation(e);
+                this.updatePointer();
+            })
+            .mouseleave(() => { this.canvasFocused = false; });
+
+        this.$minusTicksButton.click(() => this.onMinusTicksClicked());
+        this.$plusTicksButton.click(() => this.onPlusTicksClicked());
+        this.$restartButton.click(() => this.restartGame(false));
+
+        this.$popupMenu
+            .on("contextmenu", e => e.preventDefault())
+            .mouseenter(() => this.canvasContextMenuFocused = true)
+            .mouseleave(() => this.canvasContextMenuFocused = false);
+
+        ko.applyBindings(this.viewModel, this.$rootContainer[0]);
+        this.animationHandle = requestAnimationFrame(this.paint.bind(this));
+        this.restartGame(false);
+    }
+
+    tick() {
+        if (this.viewModel.isGameFinished())
+            return;
+
+        if (!this.options.client.useServer)
+            this.player.action = this.viewModel.currentAction;
+
+        for (var i = 0; i < this.gameState.players.length; i++) {
+            var oldActions = this.viewModel.gameplayData().actions.getForPlayer(i);
+            if (oldActions.length > this.gameState.currentTick) {
+                // Autoplay from game code
+                this.gameState.players[i].action = oldActions[this.gameState.currentTick];
+            } else {
+                // Insert current player's action
+                this.viewModel.gameplayData().actions.pushForPlayer(i, this.gameState.players[i].action.copy());
+            }
+        }
+
+        this.viewModel.gameplayData.valueHasMutated();
+
+        this.gameState.step();
+        this.viewModel.score(this.gameState.score);
+        this.viewModel.currentTick(this.gameState.currentTick);
+        this.viewModel.run(this.player.run);
+        this.viewModel.repel(this.player.repel);
+        this.viewModel.currentAction = this.player.action.copy(true);
+        var scoredTicksText = "[" + this.gameState.scoredTicks.join(" ") + "]";
+        this.$scoredTicksSpan.text(scoredTicksText);
+    }
+
+    loadGameCode(code: string) {
+        var gameplayData = GameplayData.parse(code);
+        if (!GameplayData.parse(code).startInfo.players)
+            throw new Error("loadGameCode failed.");
+        this.viewModel.gameplayData(gameplayData);
+        this.restartGame(true);
+        return true;
+    }
+
+    restartGame(loadCurrentGameplayInfo: boolean, playerIndex = 0) {
+        if (loadCurrentGameplayInfo) {
+            var startInfo = this.viewModel.gameplayData().startInfo;
+            this.viewModel.currentAltar(startInfo.altar);
+            this.viewModel.seed(startInfo.seed);
+            this.gameState.players = startInfo.players.map((value, index) => {
+                var player = new Player(this.gameState, value.location, index);
+                player.run = value.run;
+                player.repel = value.repel;
+                return player;
+            });
+            this.gopCanvas.player = this.gameState.players[playerIndex];
+            this.player = this.gameState.players[playerIndex];
+            this.viewModel.gameRunning(true);
+        } else {
+            if (this.viewModel.seed() !== -1)
+                this.viewModel.seed((this.viewModel.seed() >>> 0) & 0x7fffffff);
+            this.viewModel.gameplayData(new GameplayData(
+                new GameStartInfo(this.viewModel.seed(),
+                    this.viewModel.currentAltar(),
+                    this.gameState.players.map(player => new PlayerStartInfo(player.location, player.run, player.repel))
+                    )));
+            this.viewModel.run(this.player.run);
+            this.viewModel.repel(this.player.repel);
+            this.viewModel.gameRunning(false);
+        }
+
+        if (this.options.client.altarAndStartLocationForced) {
+            this.viewModel.currentAltar(this.options.game.altar);
+            this.gameState.players.forEach((p, i) => {
+                p.location = this.options.game.startLocations[i];
+            });
+        }
+
+        this.viewModel.reset();
+        if (this.options.game.presetSpawns !== undefined)
+            this.gameState.preSpawns = this.options.game.presetSpawns.slice(0);
+
+        this.gameState.players.forEach(player => {
+            player.action = GameAction.idle();
+            player.freeze();
+        });
+
+        this.gameState.reset(this.viewModel.currentAltar(), this.options.game.numberOfOrbs);
+        this.gameState.start();
+        this.gopCanvas.paintBackground();
+        this.gopCanvas.paint();
+    }
+
+    startGameRunning() {
+        if (!this.viewModel.gameRunning() && this.gameState.currentTick < GameState.TICKS_PER_ALTAR) {
+            this.viewModel.gameRunning(true);
+            this.lastTimestamp = performance.now();
+            this.tick();
+        }
+    }
+
+    updatePointer() {
+        if (this.mousePosition)
+            this.viewModel.cursor(this.isMouseOnOrb(this.gopCanvas.fromScreenCoords(this.mousePosition.x, this.mousePosition.y, false)) ? "pointer" : "default");
+    }
+
+    isOrbClicked(clickLoc: Point, orbLoc: Point) {
+        var diff = clickLoc.subtract(orbLoc);
+        return Math.abs(diff.x) < 0.5 * this.gopCanvas.orbSize && Math.abs(diff.y) < 0.5 * this.gopCanvas.orbSize;
+    }
+
+    isMouseOnOrb(mouseLoc: Point) {
+        for (var i = 0; i < this.gameState.orbs.length; ++i)
+            if (this.isOrbClicked(mouseLoc, this.gopCanvas.getDrawLocation(this.gameState.orbs[i])))
+                return true;
+        return false;
+    }
+
+    isGameFocused() {
+        return this.canvasFocused || this.canvasContextMenuFocused;
+    }
+
+    paint(timestamp: number) {
+        if (this.viewModel.gameRunning()) {
+            this.gopCanvas.tickProgress += (timestamp - this.lastTimestamp) / this.options.client.tickInterval;
+            while (this.gopCanvas.tickProgress >= 1) {
+                this.tick();
+                this.gopCanvas.tickProgress -= 1;
+            }
+        } else {
+            this.gopCanvas.tickProgress = 0;
+            //this.lastTick = 0;
+        }
+        this.gopCanvas.paint();
+        if (this.viewModel.isGameFinished()) {
+            this.viewModel.gameRunning(false);
+        }
+        this.animationHandle = requestAnimationFrame(this.paint.bind(this));
+        this.updatePointer();
+        this.lastTimestamp = timestamp;
+    };
+}
+
+class GameViewModel {
+    gameState = this.gopui.gameState;
+
+    constructor(public gopui: GopUI) {
+        this.seed.subscribe(value => gopui.gameState.seed = value);
+
+        this.cursor.subscribe(value => gopui.$canvas.css("cursor", value));
+
+        this.run.subscribe(value => {
+            if (!gopui.options.client.useServer) {
+                var gameplayData = this.gameplayData();
+                if (!this.gameRunning() && gameplayData.startInfo && gameplayData.startInfo.players) {
+                    var startInfo = gameplayData.startInfo;
+                    startInfo.players[gopui.player.index].run = value;
+                    gameplayData.startInfo = startInfo;
+                    gopui.player.run = value;
+                }
+                else
+                    this.setCurrentAction(this.currentAction, false, true);
+            }
+        });
+
+        this.repel.subscribe(value => {
+            if (!gopui.options.client.useServer) {
+                var gameplayData = this.gameplayData();
+                if (!this.gameRunning() && gameplayData.startInfo && gameplayData.startInfo.players) {
+                    var startInfo = gameplayData.startInfo;
+                    startInfo.players[gopui.player.index].repel = value;
+                    gameplayData.startInfo = startInfo;
+                    gopui.player.repel = value;
+                }
+                else
+                    this.setCurrentAction(this.currentAction, false, true);
+            }
+        });
+    }
+
+    altarLabels = ["Empty", "Air altar", "Mind altar", "Water altar", "Earth altar", "Fire altar", "Body altar"];
+    // User-controlled
+    currentAltar = ko.observable(this.gopui.options.game.altar);
+    seed = ko.observable(this.gopui.options.game.seed);
+    run = ko.observable(true);
+    repel = ko.observable(false);
+    cursor = ko.observable("default");
+    currentAction = GameAction.idle();
+    // Game-controlled
+    gameRunning = ko.observable(false);
+    score = ko.observable(0);
+    currentTick = ko.observable(0);
+    saved = ko.observable(false);
+    gameplayData = ko.observable(GameplayData.default());
+
+    estimatedScore = ko.computed(() => {
+        var offset = 2.5;
+        return this.currentTick() === 0 ? 0 : Math.round(this.score() * (GameState.TICKS_PER_ALTAR - offset) / (Math.max(1, this.currentTick() - offset)));
+    });
+
+    gameCodeText = ko.computed(() => {
+        return this.gameplayData().toString();
+    });
+
+    tickText() {
+        return this.currentTick() + " of " + GameState.TICKS_PER_ALTAR;
+    }
+
+    isGameFinished() {
+        return this.currentTick() >= GameState.TICKS_PER_ALTAR;
+    }
+
+    saveButtonEnabled() {
+        return this.gopui.options.interface.requireLoginToSave ? false : this.isGameFinished() && !this.saved();
+    }
+
+    saveButtonText() {
+        return this.gopui.options.interface.requireLoginToSave ? "Please log in to save" : this.saved() ? "Saved" : "Save this game";
+    }
+
+    reset() {
+        this.currentAction = GameAction.idle();
+        this.score(0);
+        this.currentTick(0);
+        this.saved(false);
+    }
+
+    setCurrentAction(action: GameAction, user: boolean, runRepelOnly = false) {
+        var toggleRun = this.run() !== this.gopui.player.run, changeWand = this.repel() !== this.gopui.player.repel;
+
+        var f = () => {
+            var copy = action.copy();
+            if (runRepelOnly)
+                copy = this.currentAction.copy();
+            copy.toggleRun = toggleRun;
+            copy.changeWand = changeWand;
+            this.currentAction = copy;
+            if (user) {
+                // Override loaded game
+                var actions = this.gameplayData().actions;
+                //if (actions.getForPlayer(this.gopui.player.index) === undefined)
+                //    actions.addPlayer(this.gopui.player.index);
+                actions.sliceForPlayer(this.gopui.player.index, this.currentTick());
+            }
+        };
+        if (this.currentTick() > 0 && this.gopui.options.client.latency > 0)
+            setTimeout(f, this.gopui.options.client.latency);// TODO bind?
+        else
+            f();
+        this.gopui.startGameRunning();
+    }
+
+    minusTicksButtonEnabled = this.gopui.options.viewModelFunctions.minusTicksButtonEnabled;
+    plusTicksButtonEnabled = this.gopui.options.viewModelFunctions.plusTicksButtonEnabled;
+}

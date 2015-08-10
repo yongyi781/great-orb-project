@@ -1,0 +1,151 @@
+﻿@inject IOptions<AppSettings> AppSettings
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Hang out, play GOP, chat, and do GOP puzzles (and drink tea)." />
+    <title>@ViewData["Title"] - @AppSettings.Options.SiteTitle</title>
+
+    <environment names="Development">
+        <link rel="stylesheet" href="~/lib/bootswatch/cyborg/bootstrap.css" />
+    </environment>
+    <environment names="Staging,Production">
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootswatch/3.3.5/cyborg/bootstrap.min.css"
+              asp-fallback-href="~/lib/bootswatch/cyborg/bootstrap.min.css"
+              asp-fallback-test-class="hidden" asp-fallback-test-property="visibility" asp-fallback-test-value="hidden" />
+    </environment>
+    <link rel="stylesheet" href="~/lib/font-awesome/css/font-awesome.css" />
+    <link rel="stylesheet" href="~/lib/bootstrap-social/bootstrap-social.css" />
+    <link rel="stylesheet" href="~/css/site.css" />
+    @if (Convert.ToBoolean(ViewData["UseDataTable"]))
+    {
+        <link rel="stylesheet" href="https://cdn.datatables.net/plug-ins/1.10.7/integration/bootstrap/3/dataTables.bootstrap.css" />
+    }
+    @RenderSection("styles", false)
+</head>
+<body>
+    <div class="fill-height">
+        <nav class="navbar navbar-default navbar-static-top" role="navigation">
+            <div class="container">
+                <div class="navbar-header">
+                    <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-ex1-collapse">
+                        <span class="sr-only">Toggle navigation</span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    </button>
+                    <a class="navbar-brand" href="~/">Vief's Trapdoor</a>
+                </div>
+                <div class="collapse navbar-collapse navbar-ex1-collapse">
+                    <ul class="nav navbar-nav">
+                        <li>
+                            <a href="#" class="dropdown-toggle" data-toggle="dropdown">Play <b class="caret"></b></a>
+                            <ul class="dropdown-menu">
+                                <li><a asp-controller="Solo" asp-action="Index">Solo</a></li>
+                                <li><a asp-controller="Multiplayer" asp-action="Index">Multiplayer</a></li>
+                                <li role="separator" class="divider"></li>
+                                <li><a asp-controller="Solo" asp-action="CustomAltars">Custom Altars</a></li>
+                            </ul>
+                        </li>
+                        <li><a asp-controller="Hiscores" asp-action="Index">Hiscores</a></li>
+                       <li>
+                            <a href="#" class="dropdown-toggle" data-toggle="dropdown">Puzzles <b class="caret"></b></a>
+                            <ul class="dropdown-menu">
+                                <li><a asp-controller="Puzzles" asp-action="Index">Play Puzzles</a></li>
+                                <li><a asp-controller="Puzzles" asp-action="Leaderboard">Leaderboard</a></li>
+                            </ul>
+                        </li>
+                        <li>
+                            <a href="#" class="dropdown-toggle" data-toggle="dropdown">Tools <b class="caret"></b></a>
+                            <ul class="dropdown-menu">
+                                <li><a asp-controller="Tools" asp-action="Anglemap">Angle Map and Altar Editor</a></li>
+                                <li><a asp-controller="Tools" asp-action="SpawnLister">Spawn Lister</a></li>
+                                <li><a asp-controller="DeadPractice" asp-action="Index">Dead Practice</a></li>
+                                <li><a asp-controller="Tools" asp-action="Index">All Tools</a></li>
+                                <li role="separator" class="divider"></li>
+                                <li><a asp-controller="Tests" asp-action="GameEngine">Game Engine Tests</a></li>
+                            </ul>
+                        </li>
+                        @if (User.IsInRole("Administrators"))
+                        {
+                            <li class="dropdown">
+                                <a href="#" class="dropdown-toggle" data-toggle="dropdown">Admin <b class="caret"></b></a>
+                                <ul class="dropdown-menu">
+                                    <li><a href="~/Admin/ChatInfo">Chat Info</a></li>
+                                    <li><a href="~/Admin/Puzzles">Puzzle Submissions</a></li>
+                                </ul>
+                            </li>
+                        }
+                    </ul>
+                    @if (User.Identity.IsAuthenticated)
+                    {
+                        <form id="logoutForm" asp-controller="Account" asp-action="LogOut" asp-route-returnurl="@Context.Request.Path" class="navbar-right">
+                            <ul class="nav navbar-nav navbar-right">
+                                <li><p class="navbar-text">Hello <ba>@User.Identity.Name</ba>!</p></li>
+                                <li><a href="#" onclick="$('#logoutForm').submit()">Log out</a></li>
+                            </ul>
+                        </form>
+                    }
+                    else
+                    {
+                        <ul class="nav navbar-nav navbar-right">
+                            <li><a href="#" class="navbar-right" data-toggle="modal" data-target="#loginModal">Log in</a></li>
+                        </ul>
+                    }
+                </div>
+            </div>
+        </nav>
+        <div class="container">
+            @RenderBody()
+        </div>
+        <div class="push"></div>
+    </div>
+    <footer>
+        Copyright © @DateTime.Now.Year Icy001
+        @if (ViewBag.HideSourceFooterLink == null || !ViewBag.HideSourceFooterLink)
+        {
+            @: • <a href="http://github.com/yongyi781/great-orb-project">Source</a>
+        }
+        • <a href="~/Changelog">Changelog</a>
+    </footer>
+    <div id="loginModal" class="modal fade" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-sm">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h3 class="modal-title">Log in</h3>
+                </div>
+                <div class="modal-body">
+                    <form id="facebookForm" asp-controller="Account" asp-action="ExternalLogin" asp-route-provider="Facebook" asp-route-returnurl="@Context.Request.Path">
+                        <button type="submit" class="btn btn-social btn-facebook">
+                            <i class="fa fa-facebook"></i> Log in with Facebook
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <environment names="Development">
+        <script src="~/lib/jquery/dist/jquery.js"></script>
+        <script src="~/lib/bootstrap/dist/js/bootstrap.js"></script>
+    </environment>
+    <environment names="Staging,Production">
+        <script src="https://code.jquery.com/jquery-2.1.4.min.js"
+                asp-fallback-src="~/lib/jquery/dist/jquery.min.js"
+                asp-fallback-test="window.jQuery">
+        </script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"
+                asp-fallback-src="~/lib/bootstrap/dist/js/bootstrap.min.js"
+                asp-fallback-test="window.jQuery">
+        </script>
+    </environment>
+    @if (Convert.ToBoolean(ViewData["UseDataTable"]))
+    {
+        <script src="https://cdn.datatables.net/1.10.7/js/jquery.dataTables.min.js"></script>
+        <script src="https://cdn.datatables.net/plug-ins/1.10.7/integration/bootstrap/3/dataTables.bootstrap.js"></script>
+    }
+    @RenderSection("scripts", required: false)
+</body>
+</html>

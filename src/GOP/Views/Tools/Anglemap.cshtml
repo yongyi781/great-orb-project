@@ -1,0 +1,128 @@
+﻿@model CustomAltar
+@{
+    ViewData["Title"] = "Angle Map and Altar Editor";
+}
+
+<h1>@ViewData["Title"]</h1>
+<h3>Altar</h3>
+<div class="btn-group" data-toggle="buttons">
+    <label class="btn btn-primary"><input type="radio" name="altar" value="0">None</label>
+    <label class="btn btn-primary"><input type="radio" name="altar" value="1">Air</label>
+    <label class="btn btn-primary"><input type="radio" name="altar" value="2">Mind</label>
+    <label class="btn btn-primary"><input type="radio" name="altar" value="3">Water</label>
+    <label class="btn btn-primary"><input type="radio" name="altar" value="4">Earth</label>
+    <label class="btn btn-primary"><input type="radio" name="altar" value="5">Fire</label>
+    <label class="btn btn-primary"><input type="radio" name="altar" value="6">Body</label>
+    @if (Model != null)
+    {
+        <label class="btn btn-primary"><input type="radio" name="altar" value="@Model.Id">@Model.Name</label>
+    }
+</div>
+<div data-toggle="buttons">
+    <h5>Elements</h5>
+    <div class="btn-group">
+        <label class="btn btn-default active"><input type="radio" name="tool" id="pointerTool" value="0" checked> Pointer</label>
+        <label class="btn btn-default"><input type="radio" name="tool" id="spawnTool" value="11"> Spawn</label>
+        <label class="btn btn-default"><input type="radio" name="tool" id="barrierTool" value="1"> Barrier</label>
+        <label class="btn btn-default"><input type="radio" name="tool" id="rockTool" value="2"> Rock</label>
+        <label class="btn btn-default"><input type="radio" name="tool" id="waterTool" value="3"> Water</label>
+        <label class="btn btn-default"><input type="radio" name="tool" id="wallWTool" value="4"> West wall</label>
+        <label class="btn btn-default"><input type="radio" name="tool" id="wallSTool" value="5"> South wall</label>
+        <label class="btn btn-default"><input type="radio" name="tool" id="wallSWTool" value="6"> Southwest wall</label>
+    </div>
+    <h5>Utilities</h5>
+    <div class="btn-group">
+        <label class="btn btn-default"><input type="radio" name="tool" id="lineOfSightTool" value="7"> Draw line of sight</label>
+        <label class="btn btn-default"><input type="radio" name="tool" id="pathToolRunning" value="8"> Draw path (running)</label>
+        <label class="btn btn-default"><input type="radio" name="tool" id="pathToolWalking" value="9"> Draw path (walking)</label>
+        <label class="btn btn-default"><input type="radio" name="tool" id="findClosestTool" value="10"> Find best positions from which to attract an orb</label>
+        <label class="btn btn-default"><input type="radio" name="tool" id="colorDistanceTool" value="12"> Distance color gradient</label>
+    </div>
+</div>
+<p id="coordsParagraph" class="align-center">Mouse coordinates: <span id="coords">(0,&nbsp;0)</span> | Player coordinates: <span id="playerCoords">N/A</span> | Orb coordinates: <span id="orbCoords">N/A</span> | Distance from orb to altar: <span id="orbDistance">Infinity</span></p>
+<div id="canvasContainer" class="center">
+    <canvas id="gameCanvas" width="848" height="848">You do not have a HTML5-enabled browser. You should download the latest version of your browser.</canvas>
+</div>
+<h2>Save as Custom Altar</h2>
+<a asp-controller="Solo" asp-action="CustomAltars">View all custom altars</a>
+<p>Ability to save custom altars has been temporarily suspended.</p>
+@*<form action="~/CustomAltarHandler.ashx" method="post" id="customAltarForm" class="form-inline">
+    <label for="customAltarNameInput">Name (don't include "altar"):</label> <input id="customAltarNameInput" name="name" type="text" class="form-control" maxlength="24" /> <button class="btn btn-primary">Save</button>
+    <p id="customAltarResult"></p>
+</form>*@
+
+@section Scripts {
+    <script src="~/js/gop.min.js"></script>
+    <script src="~/js/anglemap.js"></script>
+    <script>
+        $(function () {
+            var anglemap = new Anglemap($("#gameCanvas")[0]);
+            
+            function selectAltarButton(altar) {
+                $("input[name=altar][value=" + altar + "]:radio").parent().button("toggle");
+            }
+
+            function setAltar(altar) {
+                anglemap.setAltar(altar);
+                selectAltarButton(altar);
+            }
+
+            function updateCoords(element, p) {
+                if (isNaN(p.x) || isNaN(p.y))
+                    element.innerText = "N/A";
+                else
+                    element.innerText = "(" + p.x + ",\u00A0" + p.y + ")";
+            }
+
+            $("#gameCanvas").mousedown(function (e) {
+                updateCoords(playerCoords, new Point(anglemap.playerX, anglemap.playerY));
+                updateCoords(orbCoords, new Point(anglemap.orbX, anglemap.orbY));
+                orbDistance.innerText = anglemap.gopBoard.distanceToAltar(anglemap.orbX, anglemap.orbY, PathMode.ORB);
+            })
+
+            $("#gameCanvas").mousemove(function (e) { updateCoords(coords, anglemap.fromScreenCoords(e.offsetX, e.offsetY)); });
+
+            $("input[name=altar]:radio").change(function () { anglemap.setAltar(parseInt($(this).val(), 10)); });
+            $("input[name=tool]").change(function () {
+                var oldTool = anglemap.currentTool;
+                anglemap.currentTool = parseInt($(this).val());
+                if (anglemap.currentTool != oldTool && anglemap.currentTool >= Tool.LineOfSight)
+                    anglemap.drawGrid();
+            });
+
+            $("#customAltarForm").submit(function (e) {
+                e.preventDefault();
+                var gridN = [];
+                for (var y = centerY; y >= -centerY; --y) {
+                    gridN[centerY - y] = [];
+                    for (var x = -centerX; x <= centerX; ++x) {
+                        gridN[centerY - y][x + centerX] = gopBoard.get(x, y);
+                    }
+                }
+                var spawnsJS = "[";
+                for (var i = 0; i < altarSpawns[currentAltar].length; i++) {
+                    spawnsJS += "new Point(" + altarSpawns[currentAltar][i].x + ", " + altarSpawns[currentAltar][i].y + ")";
+                    if (i < altarSpawns[currentAltar].length - 1)
+                        spawnsJS += ", ";
+                }
+                spawnsJS += "]";
+                $.post("CustomAltarHandler.ashx", { name: customAltarForm.customAltarNameInput.value, gridJS: JSON.stringify(gridN), spawnsJS: spawnsJS }, function (data) {
+                    $("#customAltarResult").text(data);
+                });
+            });
+
+            anglemap.currentTool = Tool.Pointer;
+            @if (Model != null)
+            {
+            <text>
+            AltarData[@Model.Id] = {name: "@Model.Name", grid: @Model.GridJS, spawns: @Model.SpawnsJS };
+            setAltar(@Model.Id);
+            </text>
+            }
+            else
+            {
+                @: setAltar(Altar.Air);
+            }
+        });
+    </script>
+}

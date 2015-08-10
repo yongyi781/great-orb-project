@@ -1,0 +1,10 @@
+{
+  "AppSettings": {
+    "SiteTitle": "Vief's Trapdoor"
+  },
+  "Data": {
+    "DefaultConnection": {
+      "ConnectionString": "Server=(localdb)\\mssqllocaldb;Database=GOP;Trusted_Connection=True;MultipleActiveResultSets=true"
+    }
+  }
+}

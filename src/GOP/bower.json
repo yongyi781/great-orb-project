@@ -1,0 +1,14 @@
+{
+  "name": "ASP.NET",
+  "private": true,
+  "dependencies": {
+    "bootstrap": "*",
+    "bootstrap-social": "*",
+    "bootswatch": "*",
+    "jquery": "*",
+    "jquery-validation": "*",
+    "jquery-validation-unobtrusive": "*",
+    "knockout": "*",
+    "signalr": "*"
+  }
+}

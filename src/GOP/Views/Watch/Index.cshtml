@@ -1,0 +1,96 @@
+﻿@model WatchView
+@{
+    ViewData["Title"] = $"Watching {Model.Type} #{Model.GameId}";
+}
+
+<h2>@ViewData["Title"]</h2>
+<p><strong>@Model.Score</strong> on <strong>@Model.AltarName</strong> altar with <strong>@Model.NumberOfOrbs</strong> orbs</p>
+<div id="gameTopPanel">
+    <div class="row">
+        <div class="col-xs-6 col-md-5">
+            <div class="input-group">
+                <span class="input-group-addon">Seed: </span>
+                <input type="number" class="form-control" id="seedInput" value="0" disabled />
+            </div>
+        </div>
+        <div class="col-xs-6 col-md-7" data-toggle="buttons">
+            <div class="btn-group"S>
+                <label class="btn btn-default"><input type="radio" name="altar" value="0">None</label>
+                <label class="btn btn-default"><input type="radio" name="altar" value="1">Air</label>
+                <label class="btn btn-default"><input type="radio" name="altar" value="2">Mind</label>
+                <label class="btn btn-default"><input type="radio" name="altar" value="3">Water</label>
+                <label class="btn btn-default"><input type="radio" name="altar" value="4">Earth</label>
+                <label class="btn btn-default"><input type="radio" name="altar" value="5">Fire</label>
+                <label class="btn btn-default"><input type="radio" name="altar" value="6">Body</label>
+                @if (Model.CustomAltar != null)
+                {
+                    <label class="btn btn-default"><input type="radio" name="altar" value="@Model.CustomAltar.Id">@Model.CustomAltar.Name</label>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+<div id="game"></div>
+
+@section scripts {
+    <script src="~/js/gop.js"></script>
+    <script src="~/js/gopui.js"></script>
+    <script src="~/js/utils.js"></script>
+    <script>
+        var gopui;
+
+        function selectAltarButton(altar) {
+            $("input[name=altar][value=" + altar + "]:radio").parent().button("toggle");
+        }
+
+        function updateSeedAltarDisplay() {
+            isUpdatingSeedAltarDisplay = true;
+            $("#seedInput").val(gopui.gameState.seed);
+            selectAltarButton(gopui.gameState.altar);
+            isUpdatingSeedAltarDisplay = false;
+        }
+
+        function restartGame(code, seed, altar) {
+            gopui.restartGame(code, seed, altar);
+            updateSeedAltarDisplay();
+        }
+
+        $(function () {
+            var options = {
+                game: {
+                    code: "@Model.Code",
+                    numberOfOrbs: @Model.NumberOfOrbs,
+                    reachDistance: Utils.getQueryAsNumber("reach"),
+                    ticksPerAltar: Utils.getQueryAsNumber("ticks"),
+                    startLocations: Utils.getQueryAsPointArray("start"),
+                    presetSpawns: Utils.getQueryAsPointArray("spawns"),
+                    suppressRandomSpawns: Utils.getQueryAsBoolean("norandom")
+                },
+                client: {
+                    visibilityRadius: Utils.getQueryAsNumber("visibility"),
+                    tickInterval: Utils.getQueryAsNumber("tickinterval") || 450,
+                    allowInput: false
+                },
+                interface: {
+                    showRestart: false,
+                    showSave: false,
+                    showGameCode: false,
+                    plusMinusTicksAdvance: Utils.getQueryAsNumber("advance"),
+                    showScore: Utils.getQueryAsBoolean("showscore")
+                }
+            };
+
+            @if (Model.CustomAltar != null)
+            {
+                <text>
+                AltarData[@Model.CustomAltar.Id] = {name: "@Model.CustomAltar.Name", grid: @Model.CustomAltar.GridJS, spawns: @Model.CustomAltar.SpawnsJS };
+                options.game.altar = Utils.getQueryAsNumber("altar") || @Model.CustomAltar.Id;
+                </text>
+            }
+
+            gopui = new GopUI($("#game")[0], options);
+
+            updateSeedAltarDisplay();
+        })
+    </script>
+}

@@ -1,0 +1,422 @@
+﻿@{
+    ViewData["Title"] = "Home";
+}
+<h1>Welcome to Vief's Trapdoor</h1>
+<img src="~/images/yellow-attractor-96x96.png" class="hidden-xs hidden-sm pull-left" style="padding: 5px 20px" />
+<img src="~/images/trapdoor.png" class="hidden-xs hidden-sm pull-right" style="padding: 5px 20px" />
+<p>
+    The Great Orb Project is the finest minigame in the land of Gielinor.
+    If you do not know what the Great Orb Project is, watch the <a href="http://www.youtube.com/watch?v=6yX-GBq5X0I&list=PLA0906E563D52C503" target="_blank">GOP tutorial</a>!
+    Also, the first 25 puzzles <a href="~/Puzzles" target="_blank">here</a> also serve as good tutorial on how to score orbs.
+</p>
+<p>
+    This site includes a GOP solo emulator, solo hiscores, an angle map, and interactive GOP puzzles. Oh, and other features that you might find out if you explore further...
+</p>
+<p>
+    The angles and gameplay mechanics in the emulator are designed to exactly match those of the real game. Playing in the emulator
+    is a perfect way to learn how to play or practice your angles!
+</p>
+
+<h2>Announcements</h2>
+<div class="alert alert-success text-center" style="font-size: larger">7/14/2015 9:48:43 PM EST - 500k messages!!!!!!</div>
+<ul>
+    <li>8/10/2015 - This website got a renovation!</li>
+    <li>6/22/2015 - <a href="~/DeadPractice" target="_blank">Dead practice</a> is up! Try it out, and let us know how you do.</li>
+    <li>2/8/2015 - 2 player puzzles are now in public beta! Try puzzles 267, 268, and 269 to test them out!</li>
+    <li>1/26/2015 - 400k message milestone! Goal: 400k/500k <s>followers</s> messages!</li>
+    <li>1/26/2015 - Emulator update! Multiplayer games can be saved and watched now!</li>
+    <li>1/23/2015 - 25 new puzzles were added for newcomers!</li>
+    <li>9/30/2014 - 300k message milestone!</li>
+</ul>
+
+<div><span class="h2">Chat</span> [@ViewBag.NumberOfMessages messages]</div>
+<div id="connectionErrors" class="alert alert-danger" style="display: none;">
+</div>
+<div id="chatArea">
+    <div class="form-inline">
+        <input type="search" id="search" class="form-control" placeholder="Search messages" data-bind="value: search" />
+        <select id="showLastMessagesSelect" class="form-control" data-bind="value: numMessagesToShow">
+            <option value="150" selected>Show last 150 messages</option>
+            <option value="500">Show last 500 messages</option>
+            <option value="1000">Show last 1000 messages</option>
+            <option value="2000">Show last 2000 messages</option>
+        </select>
+        <button type="button" class="btn btn-info" data-toggle="modal" data-target="#commandsModal">Chat commands</button>
+        <button id="lastMessageButton" type="button" class="btn btn-default">Go to last message</button>
+    </div>
+</div>
+<div id="chatboxContainer" class="chatbox-container">
+    <div class="chatbox-sidebar pull-right">
+        <p class="text-center">
+            <span id="connectionStatus" class="label label-danger">Disconnected</span>
+        </p>
+        <div><strong>Online Users:</strong></div>
+        <ul class="chat-font" data-bind="foreach: onlineUsers">
+            <li class="username"><span data-bind="css: { 'glyphicon glyphicon-phone': isMobile }"></span><span data-bind="text: username, style: { color: chatColor, 'fontWeight': loggedIn ? 'bold' : 'normal' }"></span></li>
+        </ul>
+    </div>
+    <div id="chatbox" class="chatbox chat-font" data-bind="foreach: messages"><p data-jax="true"><span class="timestamp hidden-xs">[<span data-bind="text: $root.formatTime(timestamp)"></span>]</span> <span class="username" data-bind="text: user.username, style: { color: user.chatColor, 'fontWeight': user.loggedIn ? 'bold' : 'normal' }"></span>: <span data-bind="html: text, style: { textDecoration: $data.deleted ? 'line-through' : 'inherit', color: $data.deleted ? 'red' : 'inherit' }"></span></p></div>
+</div>
+<form id="messageForm" autocomplete="off" asp-controller="Chat" asp-action="Post">
+    <div class="input-group">
+        <input type="text" id="messageText" class="form-control" name="message" placeholder="Type message here" />
+        <span class="input-group-btn">
+            <button type="submit" id="sendButton" class="btn btn-default">Send</button>
+        </span>
+    </div>
+</form>
+<div id="chatAlert" class="alert alert-info" style="display: none;">
+</div>
+
+<h2>Uploading files</h2>
+<p>To upload a file, drag it to the chatbox from your file browser, or go <a href="~/Upload">here</a> if that does not work. Please note that the maximum allowed upload size is 16 MB.</p>
+
+<h2>Links</h2>
+<ul class="links">
+    <li><a target="_blank" href="http://great-orb-project.wikia.com/wiki/">GOP Wiki</a> - All information about GOP in the whole universe, right here.</li>
+    <li><a target="_blank" href="https://docs.google.com/spreadsheet/ccc?key=0AlIbdZwXaAHNdEtPTkUtbDgtSlhBaVFURkc1Z1QyRVE">GOP Hiscores</a> - Everyone's scores when they hax.</li>
+    <li><a target="_blank" href="http://1drv.ms/1BtZUCQ">Icy001's GOP Scores</a> - My scores, mostly when I don't hax.</li>
+    <li><a target="_blank" href="http://sdrv.ms/Zs1grW">Icy001's 1.5 GOP Scores</a> - My self-duo scores.</li>
+    <li><a target="_blank" href="https://docs.google.com/spreadsheet/ccc?key=0Aka9QYwhBPdmdEdRb1V5VFBlQnhmalZhZXdreXdzZ3c">Timo's GOP Scores</a> - Timo's GOP Scores.</li>
+    <li><a target="_blank" href="https://docs.google.com/spreadsheets/d/1tCzV1LuLXih7xt4uGPp6VWQylNXW63rT-5o-ZoBPPyQ">Timopoints</a> - Timopoints.</li>
+    <li><a target="_blank" href="https://docs.google.com/spreadsheets/d/14Z6sCD0j4VPmHSYmNsaYqLe3DRBUQeIs9yv6Kjf0_WU">Icypoints</a> - Icypoints.</li>
+    <li><a target="_blank" href="http://forum.tip.it/topic/241579-great-orb-project-a-night-in-the-game/">A Night in the Game (Tip.It)</a> - An old forum thread with people talking excitedly about GOP. Includes a 50 water screenie!</li>
+    <li><a target="_blank" href="http://runescape.wikia.com/wiki/The_Great_Orb_Project">GOP on Runescape Wikia</a> - An introductory article to GOP, for people who have never seen it before.</li>
+    <li><a target="_blank" href="http://gopacademy.forumotions.net">The GOP Academy Forums</a> - A place to share GOP puzzles, hang out, and drink tea.</li>
+    <li><a target="_blank" href="~/images/fire_quad_strategy/">Fire Quad Strategy</a> - A guide to quadding in fire when playing with 3 other people who are not noobs. Made by iMaster Mike (Noooobs). (Mike save)</li>
+</ul>
+
+<h2>YouTube and Twitch</h2>
+<ul class="links">
+    <li><a target="_blank" href="http://www.youtube.com/user/TheIcy001">Icy001's YouTube</a> • <a target="_blank" href="http://twitch.tv/icy001">Icy001's Twitch</a></li>
+    <li><a target="_blank" href="http://www.youtube.com/user/MikeStar21">iMaster Mike's YouTube</a> • <a target="_blank" href="http://twitch.tv/mikestar21">iMaster Mike's Twitch</a></li>
+    <li><a target="_blank" href="http://www.youtube.com/user/WizardVief">Deobfuscated's YouTube</a> • <a target="_blank" href="http://twitch.tv/411193">Deobfuscated's Twitch</a></li>
+</ul>
+
+<h2>Downloads (Windows 7+)</h2>
+<ul class="links">
+    <li><a target="_blank" href="~/downloads/ServerPingTest.exe">Server Ping Test v3.0</a> - A faster version of the parallel server ping test program. Requires .NET 4.5 or higher.</li>
+    <li><a target="_blank" href="~/downloads/RSClient.exe">Icy001's RS Client</a> - A RuneScape client made by Icy001, optimized for gopping. Requires .NET 4.5 or higher.</li>
+    <li><a target="_blank" href="~/downloads/GopTimer.exe">GOP Timer</a> - A tick timer that is always in sync with a world of your choosing. Requires .NET 4.0 or higher.</li>
+</ul>
+
+<!-- Auxiliary elements -->
+<div id="commandsModal" class="modal fade">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h3 class="modal-title">Chat Commands</h3>
+            </div>
+            <div class="modal-body">
+                <table class="table table-striped table-condensed">
+                    <thead>
+                        <tr>
+                            <th>Command</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>/nick <code>username</code></td>
+                            <td>Changes your username to <code>username</code>.</td>
+                        </tr>
+                        <tr>
+                            <td>/edit <code>new message</code></td>
+                            <td>Edits your last message, if no one typed after you.</td>
+                        </tr>
+                        <tr>
+                            <td>/del</td>
+                            <td>Deletes your last message, if no one typed after you.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Icy 0wn</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal">Todploord n0t 0wn</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section scripts {
+    <environment names="Development">
+        <script src="~/lib/knockout/dist/knockout.debug.js"></script>
+        <script src="~/lib/signalr/jquery.signalR.js"></script>
+    </environment>
+    <environment names="Staging,Production">
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/knockout/3.3.0/knockout-min.js"></script>
+        <script src="https://ajax.aspnetcdn.com/ajax/signalr/jquery.signalr-2.2.0.min.js"></script>
+    </environment>
+    <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({ tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']], processEscapes: true} });
+    </script>
+    <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+    <script src="~/signalr/hubs"></script>
+    <script>
+        $(function () {
+            var baseTitle = document.title,
+                newMessages = 0,
+                hub = $.connection.chatHub,
+                lastMessage,
+                viewModel = new ChatViewModel(),
+                hidden = "hidden";
+
+            function ChatViewModel() {
+                var self = this;
+
+                this.search = ko.observable();
+                this.messages = ko.observableArray();
+                this.onlineUsers = ko.observableArray();
+                this.numMessagesToShow = ko.observable(150);
+
+                this.search.subscribe(function () {
+                    self.getFromServer();
+                });
+
+                this.numMessagesToShow.subscribe(function (value) {
+                    if (self.messages().length < value)
+                        self.getFromServer();
+                });
+
+                this.getFromServer = function () {
+                    $.getJSON("/api/chat", { search: self.search(), numMessages: self.numMessagesToShow() }, function (data) {
+                        self.messages(data);
+                        reScroll(true);
+                        MathJax.Hub.Queue(["Typeset", MathJax.Hub, "chatbox"], ["Typeset", MathJax.Hub, "chatboxOnlineUsers"], [reScroll, true]);
+                    });
+                };
+
+                this.formatTime = function (timeStr) {
+                    return new Date(timeStr).toLocaleString();
+                };
+            }
+
+            function reScroll(forceScroll) {
+                if (forceScroll)
+                    chatbox.scrollTop = chatbox.scrollHeight;
+            }
+
+            function updateTitle() {
+                var newMessagesStr = "";
+                if (newMessages > 0)
+                    newMessagesStr = "(" + newMessages + ") ";
+                setTimeout(function () { document.title = newMessagesStr + baseTitle; }, 100);
+            }
+
+            function handleVisibilityChange() {
+                if (!document[hidden]) {
+                    newMessages = 0;
+                    updateTitle();
+                }
+            }
+
+            var ChatStatus = { CONNECTED: 0, SLOW: 1, DISCONNECTED: 2 };
+
+            function setChatStatus(status) {
+                switch (status) {
+                    case ChatStatus.CONNECTED:
+                        $("#connectionStatus").text("Connected").attr("class", "label label-success");
+                        break;
+                    case ChatStatus.SLOW:
+                        $("#connectionStatus").text("Slow").attr("class", "label label-warning");
+                        break;
+                    case ChatStatus.DISCONNECTED:
+                        $("#connectionStatus").text("Disconnected").attr("class", "label label-danger");
+                        break;
+                }
+            }
+
+            function startConnection() {
+                $.connection.hub.start().done(function () {
+                    setChatStatus(ChatStatus.CONNECTED);
+                    $("#connectionErrors").hide();
+                });
+            }
+
+            $.connection.hub.error(function (error) {
+                $("#connectionErrors").text(error).show();
+                $.connection.hub.stop();
+            });
+
+            $.connection.hub.connectionSlow(function () {
+                setChatStatus(ChatStatus.SLOW);
+            });
+
+            $.connection.hub.disconnected(function () {
+                setChatStatus(ChatStatus.DISCONNECTED);
+                // Reconnect periodically
+                setTimeout(function () {
+                    console.log("Reconnecting");
+                    startConnection();
+                }, 2000);
+            });
+
+            $.connection.hub.reconnected(function () {
+                setChatStatus(ChatStatus.CONNECTED);
+            });
+
+            hub.client.updateMessages = function () {
+                viewModel.getFromServer();
+            };
+
+            hub.client.addMessage = function (message) {
+                var forceScroll = chatbox.scrollHeight - chatbox.scrollTop - chatbox.clientHeight < 200;
+                viewModel.messages.push(message);
+                reScroll(forceScroll);
+                MathJax.Hub.Queue(["Typeset", MathJax.Hub, $("#chatbox [data-jax=true]").last()[0]], [reScroll, forceScroll]);
+
+                if (document[hidden]) {
+                    ++newMessages;
+                    updateTitle();
+                }
+            };
+
+            hub.client.editLastMessage = function (message) {
+                var forceScroll = chatbox.scrollHeight - chatbox.scrollTop - chatbox.clientHeight < 200;
+                var selected = ko.utils.arrayFirst(viewModel.messages(), function (m) {
+                    return m.id === message.id;
+                });
+                message.user = selected.user;
+                var index = viewModel.messages.indexOf(selected);
+                viewModel.messages.splice(index, 1, message);
+                MathJax.Hub.Queue(["Typeset", MathJax.Hub, $("#chatbox [data-jax=true]").last()[0]], [reScroll, forceScroll]);
+            };
+
+            hub.client.deleteLastMessage = function (id) {
+                var index = viewModel.messages.indexOf(ko.utils.arrayFirst(viewModel.messages(), function (m) {
+                    return m.id === id;
+                }));
+
+                @if (User.IsInRole("Administrators"))
+                {
+                    <text>
+                var message = viewModel.messages()[index];
+                message.deleted = true;
+                viewModel.messages.splice(index, 1);
+                viewModel.messages.splice(index, 0, message);
+                </text>
+                }
+                else
+                {
+                    <text>
+                viewModel.messages.splice(index, 1);
+                </text>
+                }
+            };
+
+            hub.client.updateOnlineUsers = function (users) {
+                viewModel.onlineUsers(users);
+                MathJax.Hub.Typeset("chatboxOnlineUsers");
+            };
+
+            hub.client.showMessage = function (message) {
+                console.log(message);
+                $("#chatAlert").html(message).show();
+            };
+
+            $.ajaxSetup({
+                cache: false,
+                error: function (xhr) {
+                    console.dir(xhr);
+                }
+            });
+
+            if (hidden in document)
+                document.addEventListener("visibilitychange", handleVisibilityChange);
+            else if ((hidden = "mozHidden") in document)
+                document.addEventListener("mozvisibilitychange", handleVisibilityChange);
+            else if ((hidden = "webkitHidden") in document)
+                document.addEventListener("webkitvisibilitychange", handleVisibilityChange);
+            else if ((hidden = "msHidden") in document)
+                document.addEventListener("msvisibilitychange", handleVisibilityChange);
+
+            $("#messageText").keydown(function (e) {
+                if (e.which === 38 && lastMessage !== undefined) {
+                    // Up arrow
+                    e.preventDefault();
+                    this.value = "/edit " + lastMessage;
+                }
+            });
+
+            $("#chatbox").on("mousewheel", function (e) {
+                if ((this.scrollTop === this.scrollHeight - this.clientHeight && e.originalEvent.wheelDelta < 0) || (this.scrollTop === 0 && e.originalEvent.wheelDelta > 0)) {
+                    e.preventDefault();
+                }
+            });
+
+            $("#lastMessageButton").click(function () {
+                $("#chatbox").animate({ scrollTop: $("#chatbox")[0].scrollHeight - $("#chatbox")[0].clientHeight });
+            });
+
+            $(document).keypress(function (e) {
+                if (e.keyCode == 27) {
+                    e.preventDefault();
+                }
+            });
+
+            $(document).keydown(function (e) {
+                if (e.keyCode == 27) {
+                    e.preventDefault();
+                }
+            });
+
+            $(window).on("beforeunload", function () {
+                setTimeout(function () { $.connection.hub.stop(); }, 0);
+            });
+
+            $("#messageForm").submit(function (e) {
+                e.preventDefault();
+                var text = $("#messageText").val();
+
+                $.post(this.action, $(this).serializeArray(), function (data) {
+                    if (data != "") {
+                        $("#chatAlert").html(data).show();
+                    } else {
+                        $("#chatAlert").hide();
+                    }
+                }).fail(function (xhr) {
+                    $("#chatAlert").html(xhr.responseText).show();
+                });
+
+                if (text[0] !== "/" || text.substr(0, 6) === "/edit ")
+                    lastMessage = text.replace("/edit ", "");
+                $("#messageText").val("").focus();
+            });
+
+            $("#chatbox")
+                .on("dragenter", function (e) { $(this).addClass("dragging"); })
+                .on("dragleave", function (e) { $(this).removeClass("dragging"); })
+                .on("dragover", function (e) {
+                    e.stopPropagation();
+                    e.preventDefault();
+                })
+                .on("drop", function (e) {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    $(this).removeClass("dragging");
+
+                    var dt = e.dataTransfer;
+                    var files = dt.files;
+
+                    if (files.length > 0) {
+                        var fd = new FormData();
+                        fd.append(files[0].name, files[0]);
+                        uploadToSite(fd, function (link) {
+                            hub.server.sendMessage("I just uploaded " + link);
+                            $("#file").val("");
+                        }, function (xhr) {
+                            if (xhr.status === 404)
+                                alert("File was too big.");
+                        });
+                    }
+                });
+
+            startConnection();
+
+            ko.applyBindings(viewModel);
+        });
+    </script>
+}

@@ -1,0 +1,58 @@
+﻿@model IEnumerable<PuzzleSubmissionAdminView>
+@{
+    ViewData["Title"] = "Puzzle Submissions";
+    ViewData["UseDataTable"] = true;
+}
+
+<h2>@ViewData["Title"]</h2>
+<table id="submissionsTable" class="table table-striped table-hover table-clickable-rows" data-order='[[ 0, "desc" ]]'>
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Timestamp</th>
+            <th>IP Address</th>
+            <th>Username</th>
+            <th>Puzzle #</th>
+            <th>Score</th>
+        </tr>
+    </thead>
+</table>
+
+@section Scripts {
+    @*<script type="text/javascript" language="javascript" src="https://www.datatables.net/release-datatables/extensions/Scroller/js/dataTables.scroller.js"></script>*@
+    <script>
+        var data;
+
+        $(function () {
+            data = @Json.Serialize(Model);
+            data.forEach(function (s) {
+                s.Submission.Timestamp = new Date(s.Submission.Timestamp);
+            });
+
+            var table = $("#submissionsTable").DataTable({
+                data: data,
+                deferRender: true,
+                columns: [
+                    { data: "Submission.Id" },
+                    {
+                        data: "Submission.Timestamp",
+                        render: function (data, type, row) {
+                            if (type === "display")
+                                return data.toLocaleString();
+                            return data;
+                        }
+                    },
+                    { data: "Submission.IpAddress" },
+                    { data: "Username" },
+                    { data: "Submission.PuzzleId" },
+                    { data: "Submission.Score" }
+                ]
+            });
+
+            $("#submissionsTable").on("click", "tbody > tr", function () {
+                var data = table.row(this).data();
+                window.open("/Puzzle/" + data.Submission.PuzzleId + "?code=" + data.Submission.Code);
+            });
+        })
+    </script>
+}
