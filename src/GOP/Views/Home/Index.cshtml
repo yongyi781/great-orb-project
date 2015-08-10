@@ -241,10 +241,6 @@
                 $.connection.hub.stop();
             });
 
-            $.connection.hub.connectionSlow(function () {
-                setChatStatus(ChatStatus.SLOW);
-            });
-
             $.connection.hub.disconnected(function () {
                 setChatStatus(ChatStatus.DISCONNECTED);
                 // Reconnect periodically
