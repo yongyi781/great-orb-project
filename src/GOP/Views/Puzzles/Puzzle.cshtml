@@ -15,8 +15,8 @@
 <br />
 <h1>@ViewData["Title"]</h1>
 <p>
-    <strong>Par</strong>: @Model.PuzzleView.Par<br />
     <strong>Solved by:</strong> @Model.PuzzleView.NumberOfSolvers<br />
+    <strong>Par</strong>: @Model.PuzzleView.Par<br />
     <strong>Your score:</strong> @Model.PuzzleView.Score (+@Model.PuzzleView.PuzzlePoints points)
 </p>
 @if (puzzle.Id <= 25)

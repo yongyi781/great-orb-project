@@ -8,13 +8,13 @@
 }
 
 <h2>@ViewData["Title"]</h2>
-
-<div id="puzzles"></div>
+<div class="checkbox"><label><input id="hideSolvedCheckbox" type="checkbox">Hide solved</label></div>
 
 @foreach (var p in Model)
 {
+    var divClass = p.IsSolved() ? "puzzlebox puzzlebox-solved" : "puzzlebox";
     var canvasClass = p.IsSolved() ? "puzzle puzzle-solved" : "puzzle";
-    <div style="display: inline-block; margin: 2px;">
+    <div class="@divClass" style="display: inline-block; margin: 2px;">
         <div>
             <span class="h6">Puzzle @p.Id</span>
             @if (p.IsSolved())
@@ -49,6 +49,14 @@
                         Utils.toPointArray($(this).data("orbs")),
                         $(this).data("numorbs"), 0, $(this).data("altar")),
                     15, 0, 4, 0, false);
+            });
+
+            $("#hideSolvedCheckbox").change(function (e) {
+                var $solvedBoxes = $(".puzzlebox-solved");
+                if ($(this).prop("checked"))
+                    $solvedBoxes.hide();
+                else
+                    $solvedBoxes.show();
             });
         });
     </script>

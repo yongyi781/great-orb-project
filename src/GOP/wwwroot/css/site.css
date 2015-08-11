@@ -144,10 +144,6 @@ footer, .container {
         opacity: 1;
     }
 
-.puzzle-solved {
-    opacity: 0.4;
-}
-
 .puzzle-solved-text {
     font-size: smaller;
     color: #5c5;
