@@ -2,6 +2,7 @@
 using Microsoft.AspNet.Mvc;
 using Microsoft.Data.Entity;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace GOP.Controllers
@@ -15,7 +16,7 @@ namespace GOP.Controllers
         [FromServices]
         public ApplicationDbContext DbContext { get; set; }
 
-        public IActionResult Index(int? customId, string spawns, int reach = DefaultReach, int numOrbs = 3, int nGames = int.MaxValue)
+        public IActionResult Index(int? customId, string spawns, int reach = DefaultReach, int numOrbs = 3)
         {
             DbContext.CacheViewUsers = true;
             DbContext.LoadUsersIntoCache();
@@ -24,9 +25,7 @@ namespace GOP.Controllers
             if (customId != null)
                 customAltar = DbContext.CustomAltars.FirstOrDefault(a => a.Id == customId);
 
-            numOrbs = Math.Min(MaxOrbs, numOrbs);
-            var soloGames = from game in DbContext.SoloGames.AsNoTracking()
-                            select GetSoloGameView(game);
+            var soloGames = GetSoloGames();
 
             var isCustomGameType = spawns != null || reach != DefaultReach;
 
@@ -34,13 +33,19 @@ namespace GOP.Controllers
             {
                 CustomAltar = customAltar,
                 IsCustomGameType = isCustomGameType,
-                Games = isCustomGameType ? null : soloGames.Take(nGames)
+                Games = isCustomGameType ? null : soloGames
             });
         }
 
         public IActionResult CustomAltars()
         {
             return View(DbContext.CustomAltars);
+        }
+
+        [HttpGet("api/[controller]")]
+        public IEnumerable<SoloGameView> Get()
+        {
+            return GetSoloGames();
         }
 
         [HttpPost("api/[controller]")]
@@ -62,6 +67,10 @@ namespace GOP.Controllers
             DbContext.SaveChanges();
             return GetSoloGameView(soloGame);
         }
+
+        private IQueryable<SoloGameView> GetSoloGames() =>
+            from game in DbContext.SoloGames.AsNoTracking()
+            select GetSoloGameView(game);
 
         private SoloGameView GetSoloGameView(SoloGame game) => new SoloGameView
         {

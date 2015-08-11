@@ -12,7 +12,7 @@ namespace GOP.Controllers
         [FromServices]
         public ApplicationDbContext DbContext { get; set; }
 
-        [Route("[controller]/{type?}")]
+        [HttpGet("[controller]/{type?}")]
         public IActionResult Index(HiscoresGameType type, string user, bool fullOnly, int numOrbs = 3, int minSeed = 0, int maxSeed = int.MaxValue)
         {
             ViewData[type + "Active"] = "active";
@@ -22,7 +22,7 @@ namespace GOP.Controllers
             return View(viewModel);
         }
 
-        [Route("api/[controller]/{type?}")]
+        [HttpGet("api/[controller]/{type?}")]
         public HiscoresViewModel Get(HiscoresGameType type, string user, bool fullOnly, int numOrbs = 3, int minSeed = 0, int maxSeed = int.MaxValue)
         {
             DbContext.CacheViewUsers = true;

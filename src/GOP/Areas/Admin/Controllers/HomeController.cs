@@ -34,34 +34,24 @@ namespace GOP.Areas.Admin.Controllers
                         });
         }
 
-        public IActionResult Puzzles(int n = int.MaxValue, int lastId = int.MaxValue)
+        public IActionResult Puzzles(int lastId = int.MaxValue)
         {
-            DbContext.CacheViewUsers = true;
-            DbContext.LoadUsersIntoCache();
-            var views = from s in DbContext.PuzzleSubmissions.AsNoTracking()
-                        where s.Id <= lastId
-                        select new PuzzleSubmissionAdminView
-                        {
-                            Submission = s,
-                            Username = DbContext.GetUsername(new GopUser(s.UserId, s.IpAddress))
-                        };
-            return View(views.Take(n).ToList());
+            return View(GetPuzzleSubmissions());
         }
 
         [Route("api/[area]/Puzzles")]
-        public IEnumerable<PuzzleSubmissionAdminView> GetPuzzleSubmissions()
+        public IEnumerable<PuzzleSubmissionAdminView> GetPuzzleSubmissions(int lastId = int.MaxValue)
         {
             DbContext.CacheViewUsers = true;
             DbContext.LoadUsersIntoCache();
 
-            var query = from s in DbContext.PuzzleSubmissions
-                        orderby s.Id descending
-                        select new PuzzleSubmissionAdminView
-                        {
-                            Submission = s,
-                            Username = DbContext.GetUsername(new GopUser(s.UserId, s.IpAddress))
-                        };
-            return query;
+            return from s in DbContext.PuzzleSubmissions.AsNoTracking()
+                   where s.Id <= lastId
+                   select new PuzzleSubmissionAdminView
+                   {
+                       Submission = s,
+                       Username = DbContext.GetUsername(new GopUser(s.UserId, s.IpAddress))
+                   };
         }
     }
 }

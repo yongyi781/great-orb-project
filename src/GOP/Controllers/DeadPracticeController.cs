@@ -43,7 +43,7 @@ namespace GOP.Controllers
             });
         }
 
-        [Route("api/[controller]")]
+        [HttpPost("api/[controller]")]
         public string Post(string settings, string data)
         {
             var userId = User.GetUserIdInt32();
