@@ -41,15 +41,6 @@
         </tr>
     </thead>
     <tr>
-        <td># games</td>
-        @foreach (var value in Model.Counts.ScoreValues)
-        {
-            <td>@value</td>
-        }
-        <td>@Model.Counts.SumValue</td>
-        <td></td>
-    </tr>
-    <tr>
         <td>Maxes</td>
         @foreach (var value in Model.Maxes.ScoreValues)
         {
@@ -83,6 +74,15 @@
             <td>@Utilities.FormatValue(value, "F2")</td>
         }
         <td>@Utilities.FormatValue(Model.StandardDeviations.SumValue, "F2")</td>
+        <td></td>
+    </tr>
+    <tr>
+        <td># games</td>
+        @foreach (var value in Model.Counts.ScoreValues)
+        {
+            <td>@value</td>
+        }
+        <td>@Model.Counts.SumValue</td>
         <td></td>
     </tr>
 </table>
