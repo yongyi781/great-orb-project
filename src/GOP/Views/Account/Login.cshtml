@@ -4,10 +4,10 @@
 @inject SignInManager<ApplicationUser> SignInManager
 
 @{
-    ViewBag.Title = "Log in";
+    ViewData["Title"] = "Log in";
 }
 
-<h2>@ViewBag.Title.</h2>
+<h2>@ViewData["Title"].</h2>
 <section id="socialLoginForm">
     @{
         var LoginProviders = SignInManager.GetExternalAuthenticationSchemes().ToList();
@@ -22,7 +22,7 @@
         }
         else
         {
-            <form asp-controller="Account" asp-action="ExternalLogin" asp-route-returnurl="@ViewBag.ReturnUrl" method="post" class="form-horizontal" role="form">
+            <form asp-controller="Account" asp-action="ExternalLogin" asp-route-returnurl="@ViewData["ReturnUrl"]" method="post" class="form-horizontal" role="form">
                 <div id="socialLoginList">
                     <p>
                         @foreach (AuthenticationDescription p in LoginProviders)

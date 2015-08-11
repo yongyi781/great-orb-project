@@ -33,7 +33,7 @@ namespace GOP.Controllers
         [AllowAnonymous]
         public IActionResult Login(string returnUrl = null)
         {
-            ViewBag.ReturnUrl = returnUrl;
+            ViewData["ReturnUrl"] = returnUrl;
             return View();
         }
         
@@ -89,8 +89,8 @@ namespace GOP.Controllers
             else
             {
                 // If the user does not have an account, then ask the user to create an account.
-                ViewBag.ReturnUrl = returnUrl;
-                ViewBag.LoginProvider = info.LoginProvider;
+                ViewData["ReturnUrl"] = returnUrl;
+                ViewData["LoginProvider"] = info.LoginProvider;
                 return View("ExternalLoginConfirmation", new ExternalLoginConfirmationViewModel { ChatColor = RandomColor() });
             }
         }
