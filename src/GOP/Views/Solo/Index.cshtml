@@ -50,6 +50,13 @@
 @if (!Model.IsCustomGameType)
 {
     <h2>Games</h2>
+    <div id="searchDiv" class="form-inline">
+        Username: <input type="text" id="userSearch" class="form-control input-sm" placeholder="Search users">
+        # orbs: <input type="number" id="numOrbsSearch" class="form-control input-sm" min="1" placeholder="Search # orbs" />
+        Seed: <input type="number" id="seedSearch" class="form-control input-sm" min="0" placeholder="Search seed" />
+        Altar: <input type="number" id="altarSearch" class="form-control input-sm" min="0" placeholder="Search altar" />
+    </div>
+    <hr />
     <table id="gamesTable" class="table table-striped table-condensed table-hover table-clickable-rows" data-order='[[ 0, "desc" ]]'>
         <thead>
             <tr>
@@ -297,6 +304,23 @@
                     game.Timestamp = new Date(game.Timestamp);
                 });
 
+                $.fn.dataTable.ext.search.push(
+                    function(settings, data, dataIndex) {
+                        var username = $("#userSearch").val().toLowerCase();
+                        var numOrbs = parseInt($("#numOrbsSearch").val(), 10);
+                        var seed = parseInt($("#seedSearch").val(), 10);
+                        var altar = parseInt($("#altarSearch").val(), 10);
+                        var dataUsername = data[2].toLowerCase();
+                        var dataNumOrbs = parseInt(data[3], 10);
+                        var dataSeed = parseInt(data[4], 10);
+                        var dataAltar = parseInt(data[5], 10);
+                        return dataUsername.indexOf(username) > -1 &&
+                            (isNaN(numOrbs) || dataNumOrbs == numOrbs) &&
+                            (isNaN(seed) || dataSeed === seed) &&
+                            (isNaN(altar) || dataAltar === altar);
+                    }
+                );
+
                 table = $("#gamesTable").DataTable({
                     data: games,
                     deferRender: true,
@@ -331,6 +355,8 @@
                     ],
                     stateSave: true
                 });
+
+                $("#searchDiv > input").on("input", function() { table.draw(); });
             }
         });
     </script>
