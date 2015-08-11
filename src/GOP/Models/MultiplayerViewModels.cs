@@ -20,5 +20,6 @@ namespace GOP.Models
     {
         public CustomAltar CustomAltar { get; set; }
         public IEnumerable<MultiplayerGameView> Games { get; set; }
+        public string GopControls { get; set; }
     }
 }

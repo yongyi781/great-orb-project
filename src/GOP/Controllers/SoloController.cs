@@ -1,9 +1,12 @@
 ﻿using GOP.Models;
+using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Mvc;
 using Microsoft.Data.Entity;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
+using System.Threading.Tasks;
 
 namespace GOP.Controllers
 {
@@ -16,7 +19,10 @@ namespace GOP.Controllers
         [FromServices]
         public ApplicationDbContext DbContext { get; set; }
 
-        public IActionResult Index(int? customId, string spawns, int reach = DefaultReach, int numOrbs = 3)
+        [FromServices]
+        public UserManager<ApplicationUser> UserManager { get; set; }
+
+        public async Task<IActionResult> Index(int? customId, string spawns, int reach = DefaultReach, int numOrbs = 3)
         {
             DbContext.CacheViewUsers = true;
             DbContext.LoadUsersIntoCache();
@@ -28,12 +34,14 @@ namespace GOP.Controllers
             var soloGames = GetSoloGames();
 
             var isCustomGameType = spawns != null || reach != DefaultReach;
-
+            var currentUser = await GetCurrentUserAsync();
+                
             return View(new SoloViewModel
             {
                 CustomAltar = customAltar,
                 IsCustomGameType = isCustomGameType,
-                Games = isCustomGameType ? null : soloGames
+                Games = isCustomGameType ? null : soloGames,
+                GopControls = currentUser?.GopControls
             });
         }
 
@@ -91,5 +99,10 @@ namespace GOP.Controllers
             Altar = game.Altar,
             Score = game.Score
         };
+
+        private async Task<ApplicationUser> GetCurrentUserAsync()
+        {
+            return await UserManager.FindByIdAsync(User.GetUserId());
+        }
     }
 }

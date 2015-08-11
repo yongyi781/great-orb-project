@@ -93,6 +93,11 @@
                 }
             };
 
+            @if (Model.GopControls != null)
+            {
+                @: options.client.gopControls = JSON.parse('@Html.Raw(Model.GopControls)');
+            }
+
             gopui = new GopUI($("#game")[0], options);
 
             gopui.$saveButton.click(function () {

@@ -1,10 +1,12 @@
 ﻿using GOP.Models;
+using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Mvc;
 using Microsoft.Data.Entity;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.RegularExpressions;
+using System.Security.Claims;
+using System.Threading.Tasks;
 
 namespace GOP.Controllers
 {
@@ -14,6 +16,9 @@ namespace GOP.Controllers
 
         [FromServices]
         public ApplicationDbContext DbContext { get; set; }
+
+        [FromServices]
+        public UserManager<ApplicationUser> UserManager { get; set; }
 
         [HttpGet]
         public IActionResult Index(string u)
@@ -32,7 +37,7 @@ namespace GOP.Controllers
         }
 
         [HttpGet("Puzzle/{id}")]
-        public IActionResult Puzzle(int id)
+        public async Task<IActionResult> Puzzle(int id)
         {
             var puzzle = DbContext.Puzzles.AsNoTracking().Include(p => p.PuzzleSubmissions).SingleOrDefault(p => p.Id == id);
             if (puzzle == null)
@@ -46,6 +51,7 @@ namespace GOP.Controllers
             var submissionViews = from s in submissions
                                   select GetPuzzleSubmissionView(s);
 
+            var currentUser = await GetCurrentUserAsync();
             var requireLogin = !User.Identity.IsAuthenticated &&
                 (from s in DbContext.PuzzleSubmissions.AsNoTracking()
                  where s.IpAddress == Context.Connection.RemoteIpAddress.ToString() && s.UserId != null
@@ -55,7 +61,8 @@ namespace GOP.Controllers
             {
                 PuzzleView = puzzleView,
                 Submissions = submissionViews,
-                RequireLogin = requireLogin
+                RequireLogin = requireLogin,
+                GopControls = currentUser?.GopControls
             });
         }
 
@@ -158,5 +165,10 @@ namespace GOP.Controllers
 
         private int GetPuzzlePoints(int par, int score) =>
             score == par ? MaxScorePerPuzzle : Math.Max(0, MaxScorePerPuzzle / 2 - score + par + 1);
+
+        private async Task<ApplicationUser> GetCurrentUserAsync()
+        {
+            return await UserManager.FindByIdAsync(User.GetUserId());
+        }
     }
 }

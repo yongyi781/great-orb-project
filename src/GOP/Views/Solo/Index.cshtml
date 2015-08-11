@@ -244,6 +244,11 @@
                 options.game.numberOfOrbs = Math.min(@GOP.Controllers.SoloController.MaxOrbs, options.game.numberOfOrbs);
             }
 
+            @if (Model.GopControls != null)
+            {
+                @: options.client.gopControls = JSON.parse('@Html.Raw(Model.GopControls)');
+            }
+
             @if (Model.CustomAltar != null)
             {
             <text>
