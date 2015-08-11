@@ -213,7 +213,9 @@ ModelManifest.xml
 
 artifacts/
 src/GOP/wwwroot/lib/
+src/GOP/wwwroot/js/
 src/GOP/wwwroot/downloads/
 src/GOP/wwwroot/images/**/
 src/GOP/wwwroot/uploads/
+src/GOP/scripts/**/*.js
 src/GOP/typings/
