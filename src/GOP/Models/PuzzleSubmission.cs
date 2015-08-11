@@ -15,7 +15,7 @@ namespace GOP.Models
         [Required]
         public string Code { get; set; }
 
-        public virtual Puzzle Puzzle { get; set; }
+        protected virtual Puzzle Puzzle { get; set; }
         protected virtual ApplicationUser User { get; set; }
     }
 }

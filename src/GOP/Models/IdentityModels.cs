@@ -21,7 +21,7 @@ namespace GOP.Models
         [Required]
         public string Text { get; set; }
 
-        public virtual ApplicationUser User { get; set; }
+        protected virtual ApplicationUser User { get; set; }
     }
 
     public class Nickname

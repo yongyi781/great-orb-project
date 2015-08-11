@@ -15,6 +15,6 @@ namespace GOP.Models
         [Required]
         public string Data { get; set; }
 
-        public virtual ApplicationUser User { get; set; }
+        protected virtual ApplicationUser User { get; set; }
     }
 }
