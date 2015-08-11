@@ -606,9 +606,10 @@ class GopUI {
     paint(timestamp: number) {
         if (this.isGameRunning) {
             this.gopCanvas.tickProgress += (timestamp - this.lastTimestamp) / this.options.client.tickInterval;
-            while (this.gopCanvas.tickProgress >= 1) {
+            if (this.gopCanvas.tickProgress >= 1) {
+                // Don't skip ticks
                 this.tick();
-                this.gopCanvas.tickProgress -= 1;
+                this.gopCanvas.tickProgress -= Math.floor(this.gopCanvas.tickProgress);
             }
         } else {
             this.gopCanvas.tickProgress = 0;
