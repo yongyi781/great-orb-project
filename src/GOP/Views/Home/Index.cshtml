@@ -177,7 +177,7 @@
                 });
 
                 this.numMessagesToShow.subscribe(function (value) {
-                    if (self.messages().length < value)
+                    if (self.messages().length < value && $.connection.hub.state === $.signalR.connectionState.connected)
                         self.getFromServer();
                 });
 
@@ -232,6 +232,7 @@
             function startConnection() {
                 $.connection.hub.start().done(function () {
                     setChatStatus(ChatStatus.CONNECTED);
+                    viewModel.getFromServer();
                     $("#connectionErrors").hide();
                 });
             }
@@ -252,6 +253,7 @@
 
             $.connection.hub.reconnected(function () {
                 setChatStatus(ChatStatus.CONNECTED);
+                viewModel.getFromServer();
             });
 
             hub.client.updateMessages = function () {
@@ -312,6 +314,10 @@
                 console.log(message);
                 $("#chatAlert").html(message).show();
             };
+
+            hub.client.refresh = function () {
+                window.location.reload(true);
+            }
 
             $.ajaxSetup({
                 cache: false,
