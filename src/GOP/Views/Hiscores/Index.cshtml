@@ -15,13 +15,13 @@
     <thead>
         <tr>
             <th>Seed</th>
-            <th>Air</th>
-            <th>Mind</th>
-            <th>Water</th>
-            <th>Earth</th>
-            <th>Fire</th>
-            <th>Body</th>
-            <th>Sum</th>
+            <th><input type="checkbox" /> Air</th>
+            <th><input type="checkbox" /> Mind</th>
+            <th><input type="checkbox" /> Water</th>
+            <th><input type="checkbox" /> Earth</th>
+            <th><input type="checkbox" /> Fire</th>
+            <th><input type="checkbox" /> Body</th>
+            <th><input type="checkbox" /> Sum</th>
         </tr>
     </thead>
 </table>
@@ -89,22 +89,39 @@
 
 @section scripts {
     <script>
-        $(function () {
-            var data = @Json.Serialize(Model);
+        var data, table;
 
-            $("#hiscoresTable").DataTable({
+        $(function () {
+            data = @Json.Serialize(Model);
+            var $checkboxes = $("#hiscoresTable input:checkbox");
+            
+            $.fn.dataTable.ext.search.push(
+                function(settings, data, dataIndex) {
+                    for (var i = 0; i < $checkboxes.length; i++)
+                        if ($checkboxes[i].checked && data[i+1] === "")
+                            return false;
+                    return true;
+                }
+            );
+
+            table = $("#hiscoresTable").DataTable({
                 data: data.Rows,
                 deferRender: true,
                 columns: [
                     { data: "Seed" },
-                    { data: "Scores.0", searchable: false },
-                    { data: "Scores.1", searchable: false },
-                    { data: "Scores.2", searchable: false },
-                    { data: "Scores.3", searchable: false },
-                    { data: "Scores.4", searchable: false },
-                    { data: "Scores.5", searchable: false },
-                    { data: "Sum", searchable: false }
+                    { data: "Scores.0" },
+                    { data: "Scores.1" },
+                    { data: "Scores.2" },
+                    { data: "Scores.3" },
+                    { data: "Scores.4" },
+                    { data: "Scores.5" },
+                    { data: "Sum" }
                 ]
+            });
+
+            $checkboxes.click(function (e) {
+                e.stopPropagation();
+                table.draw();
             });
         });
     </script>
