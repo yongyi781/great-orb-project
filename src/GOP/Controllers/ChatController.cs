@@ -96,6 +96,14 @@ namespace GOP.Controllers
                             case "delf":
                                 DeleteLastMessage(User.GetUserIdInt32() == 1);
                                 break;
+                            case "rand":
+                                return new ObjectResult(new Random().Next());
+                            case "refresh":
+                                if (User.IsInRole("Administrators"))
+                                {
+                                    ChatHub.Clients.All.Refresh();
+                                }
+                                break;
                             case "su":
                                 if (User.IsInRole("Administrators"))
                                 {
