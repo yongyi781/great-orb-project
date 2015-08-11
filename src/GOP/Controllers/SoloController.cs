@@ -48,6 +48,15 @@ namespace GOP.Controllers
             return GetSoloGames();
         }
 
+        [HttpGet("api/[controller]/{id}")]
+        public IActionResult Get(int id)
+        {
+            var result = DbContext.SoloGames.Where(g => g.Id == id).FirstOrDefault();
+            if (result == null)
+                return HttpNotFound();
+            return new ObjectResult(GetSoloGameView(result));
+        }
+
         [HttpPost("api/[controller]")]
         public SoloGameView Post(int numberOfOrbs, int seed, int altar, int score, string code)
         {

@@ -55,6 +55,15 @@ namespace GOP.Controllers
             return result;
         }
 
+        [HttpGet("{id}")]
+        public IActionResult Get(int id)
+        {
+            var result = DbContext.ChatMessages.Where(m => m.Id == id).FirstOrDefault();
+            if (result == null)
+                return HttpNotFound();
+            return new ObjectResult(DbContext.GetChatMessageView(result));
+        }
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public IActionResult Post(string message)

@@ -1,9 +1,7 @@
 ﻿using GOP.Models;
 using Microsoft.AspNet.Mvc;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text.RegularExpressions;
 
 namespace GOP.Controllers
 {
@@ -25,6 +23,15 @@ namespace GOP.Controllers
             return GetMultiplayerGames();
         }
 
+        [HttpGet("api/[controller]/{id}")]
+        public IActionResult Get(int id)
+        {
+            var result = DbContext.MultiplayerGames.Where(g => g.Id == id).FirstOrDefault();
+            if (result == null)
+                return HttpNotFound();
+            return new ObjectResult(GetMultiplayerGameView(result));
+        }
+
         [HttpPost("api/[controller]")]
         public MultiplayerGameView Post(int numberOfOrbs, int seed, int altar, int score, string code)
         {
@@ -34,7 +41,10 @@ namespace GOP.Controllers
         private IQueryable<MultiplayerGameView> GetMultiplayerGames() =>
             from game in DbContext.MultiplayerGames
             orderby game.Id descending
-            select new MultiplayerGameView
+            select GetMultiplayerGameView(game);
+
+        private MultiplayerGameView GetMultiplayerGameView(MultiplayerGame game) =>
+            new MultiplayerGameView
             {
                 Id = game.Id,
                 Timestamp = game.Timestamp,
