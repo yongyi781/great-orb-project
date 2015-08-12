@@ -6,5 +6,4 @@
 /// <reference path="js/utils.js" />
 /// <reference path="lib/jquery/dist/jquery.js" />
 /// <reference path="lib/bootstrap/dist/js/bootstrap.js" />
-/// <reference path="lib/knockout/dist/knockout.debug.js" />
-/// <reference path="lib/datatables-plugins/integration/bootstrap/3/datatables.bootstrap.js" />
+/// <reference path="lib/knockout/dist/knockout.js" />
