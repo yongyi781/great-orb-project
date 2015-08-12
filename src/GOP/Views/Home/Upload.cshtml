@@ -1,0 +1,38 @@
+﻿@{
+    ViewData["Title"] = "Upload a File";
+}
+
+<h1>@ViewData["Title"]</h1>
+<form id="myForm" asp-controller="Home" asp-action="Upload" enctype="multipart/form-data">
+    <input type="file" name="file" id="file" />
+    <button class="btn btn-primary" type="submit">Upload</button>
+</form>
+<div id="uploadSuccessContainer" style="display: none;">
+    Upload successful! Copy this link:
+    <div class="text-center monospaced larger">
+        <span id="uploadedLink"></span>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/utils.js"></script>
+    <script>
+        $("#myForm").submit(function (e) {
+            e.preventDefault();
+
+            var files = $("#file").prop("files");
+
+            if (files.length > 0) {
+                var fd = new FormData();
+                fd.append("file", files[0]);
+                Utils.uploadToSite(fd, function (link) {
+                    $("#uploadedLink").text(link);
+                    $("#uploadSuccessContainer").show();
+                    $("#myForm").hide();
+                }, function (xhr) {
+                    alert("Upload was not successful.");
+                });
+            }
+        });
+    </script>
+}

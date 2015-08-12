@@ -82,4 +82,18 @@
                 button.click();
         });
     }
+
+    export function uploadToSite(formData: FormData, success: any, error: any) {
+        var a: JQueryAjaxSettings;
+        $.ajax({
+            url: "/Home/Upload",
+            type: "POST",
+            data: formData,
+            cache: false,
+            contentType: false,
+            processData: false,
+            success: success,
+            error: error
+        });
+    }
 }

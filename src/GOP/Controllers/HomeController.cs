@@ -1,10 +1,14 @@
 ﻿using GOP.Models;
+using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Mvc;
 using Microsoft.Data.Entity;
+using Microsoft.Dnx.Runtime;
+using Microsoft.Net.Http.Headers;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -12,6 +16,9 @@ namespace GOP.Controllers
 {
     public class HomeController : Controller
     {
+        [FromServices]
+        public IApplicationEnvironment ApplicationEnvironment { get; set; }
+
         [FromServices]
         public ApplicationDbContext DbContext { get; set; }
 
@@ -27,6 +34,43 @@ namespace GOP.Controllers
         public object Test()
         {
             return "Hello world!!@!";
+        }
+
+        [HttpGet]
+        public IActionResult Upload()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        public string Upload(IFormFile file)
+        {
+            var header = ContentDispositionHeaderValue.Parse(file.ContentDisposition);
+            var fileNameWithExt = header.FileName.Trim('"');
+            var fileName = Path.GetFileNameWithoutExtension(fileNameWithExt);
+            var ext = Path.GetExtension(fileNameWithExt);
+            var targetDir = Path.Combine(ApplicationEnvironment.ApplicationBasePath, "wwwroot\\uploads");
+
+            bool alreadyExists = false;
+            int i = 1;
+            while (System.IO.File.Exists(Path.Combine(targetDir, fileNameWithExt)))
+            {
+                // Compare the files
+                using (var fileStream = System.IO.File.OpenRead(Path.Combine(targetDir, fileNameWithExt)))
+                {
+                    // If the files are the same, then there is no need to save the file.
+                    if (Utilities.StreamCompare(fileStream, file.OpenReadStream()))
+                    {
+                        alreadyExists = true;
+                        break;
+                    }
+                }
+                fileNameWithExt = fileName + (++i) + ext;
+            }
+            if (!alreadyExists)
+                file.SaveAs(Path.Combine(targetDir, fileNameWithExt));
+
+            return "http://" + Request.Host + "/uploads/" + Uri.EscapeDataString(fileNameWithExt);
         }
 
         public IEnumerable<string> FindSoloCodeMismatches()

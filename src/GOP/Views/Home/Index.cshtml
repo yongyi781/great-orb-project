@@ -69,7 +69,7 @@
 </div>
 
 <h2>Uploading files</h2>
-<p>To upload a file, drag it to the chatbox from your file browser, or go <a href="~/Upload">here</a> if that does not work. Please note that the maximum allowed upload size is 16 MB.</p>
+<p>To upload a file, drag it to the chatbox from your file browser, or go <a asp-controller="Home" asp-action="Upload">here</a> if that does not work. Please note that the maximum allowed upload size is 16 MB.</p>
 
 <h2>Links</h2>
 <ul class="links">
@@ -153,7 +153,7 @@
         MathJax.Hub.Config({ tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']], processEscapes: true} });
     </script>
     <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-
+    <script src="~/js/utils.js"></script>
     <script src="~/signalr/hubs"></script>
     <script>
         $(function () {
@@ -311,7 +311,6 @@
             };
 
             hub.client.showMessage = function (message) {
-                console.log(message);
                 $("#chatAlert").html(message).show();
             };
 
@@ -400,18 +399,17 @@
                     e.preventDefault();
                     $(this).removeClass("dragging");
 
-                    var dt = e.dataTransfer;
+                    var dt = e.originalEvent.dataTransfer;
                     var files = dt.files;
 
                     if (files.length > 0) {
                         var fd = new FormData();
-                        fd.append(files[0].name, files[0]);
-                        uploadToSite(fd, function (link) {
-                            hub.server.sendMessage("I just uploaded " + link);
-                            $("#file").val("");
+                        fd.append("file", files[0]);
+                        Utils.uploadToSite(fd, function (link) {
+                            $.post("/api/chat", { message: "I just uploaded " + link, __RequestVerificationToken: $("#messageForm input[name=__RequestVerificationToken").val() });
                         }, function (xhr) {
                             if (xhr.status === 404)
-                                alert("File was too big.");
+                                alert("File was too big, or some other problem occurred.");
                         });
                     }
                 });
