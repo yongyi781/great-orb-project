@@ -42,12 +42,8 @@ namespace GOP.Controllers
             return View(new WatchView
             {
                 Type = type,
-                GameId = id,
-                NumberOfOrbs = game.NumberOfOrbs,
-                Seed = game.Seed,
+                Game = game,
                 AltarName = altarName,
-                Score = game.Score,
-                Code = game.Code,
                 CustomAltar = customAltar
             });
         }

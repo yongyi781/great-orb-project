@@ -1,10 +1,11 @@
 ﻿@model WatchView
 @{
-    ViewData["Title"] = $"Watching {Model.Type} #{Model.GameId}";
+    ViewData["Title"] = $"Watching {Model.Type} #{Model.Game.Id}";
 }
 
 <h2>@ViewData["Title"]</h2>
-<p><strong>@Model.Score</strong> on <strong>@Model.AltarName</strong> altar with <strong>@Model.NumberOfOrbs</strong> orbs</p>
+<p><strong>@Model.Game.Score</strong> on <strong>@Model.AltarName</strong> altar with <strong>@Model.Game.NumberOfOrbs</strong> orbs</p>
+<p><a asp-controller="Solo" asp-action="Index" asp-route-seed="@Model.Game.Seed" asp-route-altar="@Model.Game.Altar">Play on this seed and altar</a></p>
 <div id="gameTopPanel">
     <div class="row">
         <div class="col-xs-6 col-md-5">
@@ -58,8 +59,8 @@
         $(function () {
             var options = {
                 game: {
-                    code: "@Model.Code",
-                    numberOfOrbs: @Model.NumberOfOrbs,
+                    code: "@Model.Game.Code",
+                    numberOfOrbs: @Model.Game.NumberOfOrbs,
                     reachDistance: Utils.getQueryAsNumber("reach"),
                     ticksPerAltar: Utils.getQueryAsNumber("ticks"),
                     startLocations: Utils.getQueryAsPointArray("start"),
