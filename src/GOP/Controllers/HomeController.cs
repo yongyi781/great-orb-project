@@ -43,8 +43,10 @@ namespace GOP.Controllers
         }
 
         [HttpPost]
-        public string Upload(IFormFile file)
+        public IActionResult Upload(IFormFile file)
         {
+            if (file == null)
+                return HttpBadRequest("There is no file.");
             var header = ContentDispositionHeaderValue.Parse(file.ContentDisposition);
             var fileNameWithExt = header.FileName.Trim('"');
             var fileName = Path.GetFileNameWithoutExtension(fileNameWithExt);
@@ -70,7 +72,7 @@ namespace GOP.Controllers
             if (!alreadyExists)
                 file.SaveAs(Path.Combine(targetDir, fileNameWithExt));
 
-            return "http://" + Request.Host + "/uploads/" + Uri.EscapeDataString(fileNameWithExt);
+            return Content("http://" + Request.Host + "/uploads/" + Uri.EscapeDataString(fileNameWithExt));
         }
 
         public IEnumerable<string> FindSoloCodeMismatches()
