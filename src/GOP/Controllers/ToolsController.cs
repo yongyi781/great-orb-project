@@ -24,11 +24,6 @@ namespace GOP.Controllers
             return View();
         }
 
-        public IActionResult DeadPractice()
-        {
-            return View();
-        }
-
         public IActionResult Test()
         {
             return View();

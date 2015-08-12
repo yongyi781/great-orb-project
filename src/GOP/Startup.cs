@@ -8,6 +8,7 @@ using Microsoft.Dnx.Runtime;
 using Microsoft.Framework.Configuration;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Logging;
+using System;
 
 namespace GOP
 {
@@ -62,6 +63,8 @@ namespace GOP
             
             // Add MVC services to the services container.
             services.AddMvc();
+            services.AddSingleton<Random>();
+            services.AddSingleton<KickCounter>();
         }
 
         // Configure is called after ConfigureServices is called.

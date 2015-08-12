@@ -22,6 +22,12 @@ namespace GOP.Controllers
         [FromServices]
         public IHubContext<ChatHub> ChatHub { get; set; }
 
+        [FromServices]
+        public Random Random { get; set; }
+
+        [FromServices]
+        public KickCounter KickCounter { get; set; }
+
         [HttpGet]
         public IEnumerable<ChatMessageView> Get(string search = null, int numMessages = 150)
         {
@@ -106,7 +112,12 @@ namespace GOP.Controllers
                                 DeleteLastMessage(User.GetUserIdInt32() == 1);
                                 break;
                             case "rand":
-                                return new ObjectResult(new Random().Next());
+                                lock (Random)
+                                {
+                                    return new ObjectResult(Random.Next());
+                                }
+                            case "kick":
+                                return Content($"The yellow orb was kicked {KickCounter.Kick()} times!");
                             case "refresh":
                                 if (User.IsInRole("Administrators"))
                                 {
