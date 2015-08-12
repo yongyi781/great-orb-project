@@ -32,6 +32,7 @@ footer, .container {
 }
 
 .break-word {
+    -epub-word-break: break-all;
     -ms-word-break: break-all;
     word-break: break-all;
 }
@@ -168,4 +169,20 @@ footer, .container {
     height: 16px;
     margin-bottom: -2px;
     display: inline-block;
+}
+
+table.dataTable tbody th.dt-body-left, table.dataTable tbody td.dt-body-left {
+    text-align: left;
+}
+
+table.dataTable tbody th.dt-body-center, table.dataTable tbody td.dt-body-center {
+    text-align: center;
+}
+
+table.dataTable tbody th.dt-body-right, table.dataTable tbody td.dt-body-right {
+    text-align: right;
+}
+
+table.dataTable tbody th.dt-body-justify, table.dataTable tbody td.dt-body-justify {
+    text-align: justify;
 }
