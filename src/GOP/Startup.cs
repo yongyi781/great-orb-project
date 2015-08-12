@@ -92,9 +92,6 @@ namespace GOP
             app.UseFacebookAuthentication();
             app.UseSignalR();
 
-            // Don't use static files on IIS -- throws error.
-            //app.UseStaticFiles();
-
             // Add MVC to the request pipeline.
             app.UseMvc(routes =>
             {
@@ -108,6 +105,8 @@ namespace GOP
                     template: "{controller}/{action}/{id?}",
                     defaults: new { controller = "Home", action = "Index" });
             });
+
+            app.RunIISPipeline();
         }
     }
 }
