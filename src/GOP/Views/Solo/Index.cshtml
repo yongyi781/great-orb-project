@@ -228,8 +228,7 @@
                 callbacks: {
                     tick: function () {
                         gopui.$saveButton.text("Save").prop("disabled",
-                            gopui.gameState.currentTick < GameState.ticksPerAltar ||
-                            gopui.gameState.players.length > 1);
+                            gopui.gameState.currentTick < GameState.ticksPerAltar);
                     }
                 }
             };
@@ -282,19 +281,31 @@
 
             gopui.$saveButton.click(function () {
                 gopui.$saveButton.text("Saving...").prop("disabled", true);
-                $.post("/api/solo", {
-                    numberOfOrbs: gopui.options.game.numberOfOrbs,
-                    seed: gopui.gameState.seed,
-                    altar: gopui.gameState.altar,
-                    score: gopui.gameState.score,
-                    code: gopui.gameplayData.toString() },
-                    function (data) {
-                        gopui.$saveButton.text("Saved");
-                        data.Timestamp = new Date(data.Timestamp);
-                        table.row.add(data);
-                        table.draw();
-                    });
-                gopui.$saveButton.button("saved");
+                if (gopui.gameState.players.length == 1) {
+                    $.post("/api/solo", {
+                        numberOfOrbs: gopui.options.game.numberOfOrbs,
+                        seed: gopui.gameState.seed,
+                        altar: gopui.gameState.altar,
+                        score: gopui.gameState.score,
+                        code: gopui.gameplayData.toString() },
+                        function (data) {
+                            gopui.$saveButton.text("Saved");
+                            data.Timestamp = new Date(data.Timestamp);
+                            table.row.add(data);
+                            table.draw();
+                        });
+                } else {
+                    $.post("/api/multiplayer/solo", {
+                        numberOfPlayers: gopui.gameState.players.length,
+                        numberOfOrbs: gopui.options.game.numberOfOrbs,
+                        seed: gopui.gameState.seed,
+                        altar: gopui.gameState.altar,
+                        score: gopui.gameState.score,
+                        code: gopui.gameplayData.toString() },
+                        function () {
+                            gopui.$saveButton.text("Saved to Multiplayer");
+                        });
+                }
             });
 
             Utils.bindEnterKeyToButton($("#seedInput"), $("#restartButton"));

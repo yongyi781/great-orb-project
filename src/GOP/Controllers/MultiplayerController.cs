@@ -32,10 +32,26 @@ namespace GOP.Controllers
             return new ObjectResult(GetMultiplayerGameView(result));
         }
 
-        [HttpPost("api/[controller]")]
-        public MultiplayerGameView Post(int numberOfOrbs, int seed, int altar, int score, string code)
+        [HttpPost("api/[controller]/solo")]
+        public void PostSolo(int numberOfPlayers, int numberOfOrbs, int seed, int altar, int score, string code)
         {
-            throw new NotImplementedException();
+            var username = DbContext.GetUsername(GopUser.GetCurrentUser(Context));
+            var usernames = string.Join("; ", Enumerable.Repeat(username, numberOfPlayers));
+
+            var game = new MultiplayerGame
+            {
+                Timestamp = DateTimeOffset.Now,
+                NumberOfPlayers = numberOfPlayers,
+                Usernames = usernames,
+                NumberOfOrbs = numberOfOrbs,
+                Seed = seed,
+                Altar = altar,
+                Score = score,
+                Code = code
+            };
+
+            DbContext.MultiplayerGames.Add(game);
+            DbContext.SaveChanges();
         }
 
         private IQueryable<MultiplayerGameView> GetMultiplayerGames() =>
