@@ -37,6 +37,8 @@
         var games, table;
 
         $(function () {
+            var GameModes = ["Nobody", "Solo", "Duo", "Trio", "Quad"];
+
             $("#gamesTable").on("click", "tbody > tr", function () {
                 window.open("/Watch/Multiplayer/" + $(this).children("td:first").text());
             });
@@ -76,7 +78,14 @@
                             return data;
                         }
                     },
-                    { data: "NumberOfPlayers" },
+                    {
+                         data: "NumberOfPlayers",
+                         render: function (data, type, row) {
+                            if (type === "display" && data in GameModes)
+                                return GameModes[data];
+                            return data;
+                         }
+                    },
                     { data: "Usernames" },
                     { data: "NumberOfOrbs" },
                     { data: "Seed" },
@@ -95,8 +104,7 @@
                         }
                     },
                     { data: "Score" }
-                ],
-                stateSave: true
+                ]
             });
 
             $("#searchDiv > input").on("input", function() { table.draw(); });
