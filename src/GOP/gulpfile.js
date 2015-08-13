@@ -9,6 +9,7 @@ var gulp = require("gulp"),
 var paths = {
     webroot: "./" + project.webroot + "/",
     emulatorScripts: [
+        "./Scripts/polyfills.js",
         "./Scripts/Engine/Enums.js",
         "./Scripts/Engine/Point.js",
         "./Scripts/Engine/MersenneTwister.js",
