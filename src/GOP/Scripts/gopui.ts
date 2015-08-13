@@ -289,6 +289,8 @@ class GopUI {
                             var player = this.gameState.players[e.which - 49];
                             if (player !== undefined) {
                                 this.player = player;
+                                // Repaint
+                                this.gopCanvas.paint();
                             }
                         }
                         break;
