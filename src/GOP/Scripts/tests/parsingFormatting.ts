@@ -1,6 +1,6 @@
 ﻿// GOP parsing and formatting tests
 
-test("Action parsing single player", function () {
+test("Action parsing single player", () => {
     var actions = GameActionList.parse("*AAA*B(3,0)").rawActions;
     equal(actions.length, 1);
     equal(actions[0].length, 5);
@@ -11,7 +11,7 @@ test("Action parsing single player", function () {
     equal(actions[0][4].type, ActionType.Move);
 });
 
-test("Action parsing multiplayer", function () {
+test("Action parsing multiplayer", () => {
     var actions = GameActionList.parse("[*AAA*B(3,0);(-2,-4)[3]*AA]").rawActions;
     equal(actions.length, 2);
     equal(actions[0].length, 5);
@@ -29,19 +29,19 @@ test("Action parsing multiplayer", function () {
     equal(actions[1][4].type, ActionType.Attract);
 });
 
-test("Action formatting single player", function () {
+test("Action formatting single player", () => {
     var actions = GameActionList.parse("*AAA*B(3,0)");
     var str = actions.toString();
     equal(str, "*AAA*B(3,0)");
 });
 
-test("Action formatting multiplayer", function () {
+test("Action formatting multiplayer", () => {
     var actions = GameActionList.parse("[*AAA*B(3,0);(-2,-4)[3]*AA]");
     var str = actions.toString();
     equal(str, "[*AAA*B(3,0);(-2,-4)[3]*AA]");
 });
 
-test("Action formatting multiplayer with uneven length", function () {
+test("Action formatting multiplayer with uneven length", () => {
     var actions = GameActionList.parse("[*AAA*B(3,0)*CCC;(-2,-4)[3]*AA]");
     var str = actions.toString();
     equal(str, "[*AAA*B(3,0)*CCC;(-2,-4)[3]*AA]");

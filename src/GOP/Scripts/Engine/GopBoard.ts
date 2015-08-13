@@ -344,7 +344,7 @@
             return GopBoard.getLineOfSight(p2, p1).reverse();
         else if (p1.y > p2.y)
             return GopBoard.getLineOfSight(new Point(p1.x, -p1.y), new Point(p2.x, -p2.y)).map(
-                function (p) { return new Point(p.x, -p.y); });
+                p => new Point(p.x, -p.y));
         else if (distX === 0)
             for (var y = p1.y; y <= p2.y; y++)
                 result.push(new Point(p1.x, y));
@@ -357,9 +357,9 @@
         else if (Math.abs(distY) > Math.abs(distX)) {
             if (distX * distY > 0)
                 return GopBoard.getLineOfSight(new Point(p1.y, p1.x), new Point(p2.y, p2.x)).map(
-                    function (p) { return new Point(p.y, p.x); });
+                    p => new Point(p.y, p.x));
             return GopBoard.getLineOfSight(new Point(-p1.y, -p1.x), new Point(-p2.y, -p2.x)).map(
-                function (p) { return new Point(-p.y, -p.x); });
+                p => new Point(-p.y, -p.x));
         }
         else    // Now we can handle the first octant
         {

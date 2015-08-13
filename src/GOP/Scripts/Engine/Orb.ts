@@ -36,7 +36,7 @@
             this.target = Point.NaN;
             if (++this.deadTime >= 1) {
                 // There will be no zero-deading for you!
-                this.gs.players.forEach(function (player) {
+                this.gs.players.forEach(player => {
                     if (player.action &&
                         player.action.type === ActionType.Attract &&
                         player.action.orbIndex === this.index) {

@@ -5,7 +5,7 @@
 
 // MIT license
 
-(function () {
+(() => {
     var lastTime = 0;
     var vendors = ['ms', 'moz', 'webkit', 'o'];
     for (var x = 0; x < vendors.length && !window.requestAnimationFrame; ++x) {
@@ -15,20 +15,20 @@
     }
 
     if (!window.requestAnimationFrame)
-        window.requestAnimationFrame = function (callback: FrameRequestCallback) {
+        window.requestAnimationFrame = (callback) => {
             var currTime = new Date().getTime();
             var timeToCall = Math.max(0, 16 - (currTime - lastTime));
-            var id = window.setTimeout(function () { callback(currTime + timeToCall); },
+            var id = window.setTimeout(() => { callback(currTime + timeToCall); },
                 timeToCall);
             lastTime = currTime + timeToCall;
             return id;
         };
 
     if (!window.cancelAnimationFrame)
-        window.cancelAnimationFrame = function (id) {
+        window.cancelAnimationFrame = id => {
             clearTimeout(id);
         };
-} ());
+})();
 
 // @license http://opensource.org/licenses/MIT
 // copyright Paul Irish 2015
@@ -41,12 +41,12 @@
 // if you want values similar to what you'd get with real perf.now, place this towards the head of the page
 // but in reality, you're just getting the delta between now() calls, so it's not terribly important where it's placed
 
-(function () {
+(() => {
     if (!("performance" in window)) {
         window.performance = <Performance>{};
     }
 
-    Date.now = (Date.now || function () {  // thanks IE8
+    Date.now = Date.now || (() => {  // thanks IE8
         return new Date().getTime();
     });
 

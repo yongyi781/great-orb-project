@@ -9,13 +9,13 @@ function gopTestSinglePlayer(
     expectedPlayerLocations: Point[],
     expectedOrbFinalLocations: Point[],
     expectedScore: number) {
-    test(description, function () {
+    test(description, () => {
         var gs = new GameState(new GopBoard(53, 53), [playerLocation], orbs, orbs.length);
         var player = gs.players[0];
         gs.reset(altar);
 
         var actions = GameActionList.parse(actionsStr).getForPlayer(0);
-        actions.forEach(function (action, i) {
+        actions.forEach((action, i) => {
             player.action = action;
             gs.step();
             if (expectedPlayerLocations !== undefined)
@@ -23,7 +23,7 @@ function gopTestSinglePlayer(
         });
 
         if (expectedOrbFinalLocations !== undefined) {
-            gs.orbs.forEach(function (orb, i) {
+            gs.orbs.forEach((orb, i) => {
                 if (expectedOrbFinalLocations[i] !== undefined)
                     equal(orb.location.toString(), expectedOrbFinalLocations[i].toString(), "Orb " + (i + 1) + " final location should match");
             });
@@ -42,7 +42,7 @@ gopTestSinglePlayer("Simple scoring: 1-away", new Point(2, 0), [new Point(2, -4)
     [], 1
 );
 
-test("Glitchrepel scoring: pillar #3", function () {
+test("Glitchrepel scoring: pillar #3", () => {
     var gs = new GameState(new GopBoard(53, 53), [new Point(-2, 0)], [new Point(1, -7)], 1, 0, Altar.Air);
     var player = gs.players[0];
     var orb = gs.orbs[0];
@@ -80,7 +80,7 @@ test("Glitchrepel scoring: pillar #3", function () {
     equal(gs.score, 1);
 });
 
-test("Glitchrepel scoring: 5-away", function () {
+test("Glitchrepel scoring: 5-away", () => {
     var gs = new GameState(new GopBoard(53, 53), [new Point(0, -2)], [new Point(2, 8)], 1, 0, Altar.Air);
     var player = gs.players[0];
     var orb = gs.orbs[0];
@@ -108,7 +108,7 @@ test("Glitchrepel scoring: 5-away", function () {
     equal(gs.score, 1);
 });
 
-test("Orbdrag: portal", function () {
+test("Orbdrag: portal", () => {
     var gs = new GameState(new GopBoard(53, 53), [new Point(1, 2)], [new Point(-5, -8)], 1, 0, Altar.Air);
     var player = gs.players[0];
     var orb = gs.orbs[0];
@@ -120,7 +120,7 @@ test("Orbdrag: portal", function () {
     equal(player.location.toString(), "(2,1)");
 });
 
-test("Mind scoring trick at (-13,-5)", function () {
+test("Mind scoring trick at (-13,-5)", () => {
     var gs = new GameState(new GopBoard(53, 53), [new Point(-13, -5)], [new Point(-6, 1)], 1, 0, Altar.Mind);
     var player = gs.players[0];
     player.repel = true;
@@ -134,7 +134,7 @@ test("Mind scoring trick at (-13,-5)", function () {
     equal(gs.score, 1);
 });
 
-test("Repel while orb is moving to an out-of-reach position should not attract", function () {
+test("Repel while orb is moving to an out-of-reach position should not attract", () => {
     var gs = new GameState(new GopBoard(53, 53), [new Point(-11, -5)], [new Point(-6, 0)], 1, 0, Altar.Mind);
     var player = gs.players[0];
     player.repel = true;
@@ -156,7 +156,7 @@ test("Repel while orb is moving to an out-of-reach position should not attract",
     equal(player.location.toString(), "(-11,-4)");
 });
 
-test("Prototick for orb should not extend to second orb", function () {
+test("Prototick for orb should not extend to second orb", () => {
     var gs = new GameState(new GopBoard(53, 53), [new Point(0, 2)], [new Point(-5, -1), new Point(-8, 2)], 2, 0, Altar.Air);
     var player = gs.players[0];
     var orbA = gs.orbs[0];
@@ -171,7 +171,7 @@ test("Prototick for orb should not extend to second orb", function () {
     equal(orbB.location.toString(), "(-8,2)");
 });
 
-test("Non-glitch repel should not move player", function () {
+test("Non-glitch repel should not move player", () => {
     var gs = new GameState(new GopBoard(53, 53), [new Point(3, -1)], [new Point(-1, 5)], 1, 0, Altar.Air);
     var player = gs.players[0];
     var orb = gs.orbs[0];
@@ -183,7 +183,7 @@ test("Non-glitch repel should not move player", function () {
     equal(player.location.toString(), "(3,1)");
 });
 
-test("Weird portal angle on air using prototick-force-attract", function () {
+test("Weird portal angle on air using prototick-force-attract", () => {
     var gs = new GameState(new GopBoard(53, 53), [new Point(2, -2)], [new Point(-3, -7)], 1, 0, Altar.Air);
     var player = gs.players[0];
     var orb = gs.orbs[0];
@@ -212,7 +212,7 @@ test("Weird portal angle on air using prototick-force-attract", function () {
     equal(gs.score, 1);
 });
 
-test("Glitchrepel should attract from old position", function () {
+test("Glitchrepel should attract from old position", () => {
     var gs = new GameState(new GopBoard(53, 53), [new Point(1, -2)], [new Point(6, 9)], 1, 0, Altar.Fire);
     var player = gs.players[0];
     var orb = gs.orbs[0];
@@ -228,7 +228,7 @@ test("Glitchrepel should attract from old position", function () {
     equal(orb.location.toString(), "(6,8)");
 });
 
-test("Swapping wands during pillar #5", function () {
+test("Swapping wands during pillar #5", () => {
     var gs = new GameState(new GopBoard(53, 53), [new Point(2, 2)], [new Point(-1, -9)], 1, 0, Altar.Air);
     var player = gs.players[0];
     player.run = false;
@@ -247,7 +247,7 @@ test("Swapping wands during pillar #5", function () {
     equal(gs.score, 1);
 });
 
-test("Prototick from another orb does not activate glitchrepel", function () {
+test("Prototick from another orb does not activate glitchrepel", () => {
     var gs = new GameState(new GopBoard(53, 53), [new Point(-2, 2)], [new Point(4, -4), new Point(1, -7)], 2, 0, Altar.Air);
     var player = gs.players[0];
     var orbB = gs.orbs[1];
@@ -264,7 +264,7 @@ test("Prototick from another orb does not activate glitchrepel", function () {
     equal(orbB.location.toString(), "(1,-7)", "Orb B should not have moved");
 });
 
-test("Glitchrepel repelling: 4-away", function () {
+test("Glitchrepel repelling: 4-away", () => {
     var gs = new GameState(new GopBoard(53, 53), [new Point(0, -2)], [new Point(2, 7)], 1, 0, Altar.Air);
     var player = gs.players[0];
     var orb = gs.orbs[0];
@@ -285,7 +285,7 @@ test("Glitchrepel repelling: 4-away", function () {
     equal(player.location.toString(), "(2,0)");
 });
 
-test("Prototick when orb moves within reach", function () {
+test("Prototick when orb moves within reach", () => {
     var gs = new GameState(new GopBoard(53, 53), [new Point(2, -2)], [new Point(-2, -6)], 1, 0, Altar.Air);
     var player = gs.players[0];
     var orb = gs.orbs[0];

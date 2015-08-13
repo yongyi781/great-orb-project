@@ -24,7 +24,7 @@ class GameStartInfo {
 
     toString() {
         var arr: any[] = [this.seed, this.altar];
-        this.players.forEach(function (player) {
+        this.players.forEach(player => {
             arr.push(player.toString());
         });
         return "{" + arr.join(" ") + "}";
@@ -117,7 +117,7 @@ class GameActionList {
         }
 
         if (this.rawActions.length > 1) {
-            return "[" + this.rawActions.map(function (acts) { return formatActionsSinglePlayer(acts); }).join(";") + "]";
+            return "[" + this.rawActions.map(acts => formatActionsSinglePlayer(acts)).join(";") + "]";
         }
 
         if (this.rawActions.length > 0)
@@ -154,7 +154,7 @@ class GameActionList {
         if (str[0] === "[") {
             // Multiple players.
             var strs = str.substring(1, str.length - 1).split(";");
-            var playerActions = strs.map(function (str) { return parseSinglePlayer(str) });
+            var playerActions = strs.map(parseSinglePlayer);
             return new GameActionList(playerActions);
         }
         return new GameActionList([parseSinglePlayer(str)]);
