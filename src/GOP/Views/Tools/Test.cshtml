@@ -2,13 +2,20 @@
     ViewData["Title"] = "Test Page";
 }
 
-<span class="glyphicon glyphicon-chevron-left"></span>
+<span id="result"></span>
 
 @section Scripts {
     <script>
-        localStorage.clear();
-        localStorage.setItem("Hello", "Icy001 0wns");
-        console.log(localStorage);
-        console.log(indexedDB);
+        $(function () {
+            var n = 100000000;
+            var t = performance.now();
+            var arr = [1, 2, 3, 4, 5];
+            var counter = 0;
+            for (var i = 0; i < n; i++)
+                if ($.isArray(arr))
+                    ++counter;
+            var diff = performance.now() - t;
+            $("#result").text("isArray takes " + 1000000 * diff / n + " ns");
+        });
     </script>
 }

@@ -83,10 +83,16 @@
 
             @if (Model.CustomAltar != null)
             {
-                <text>
-                AltarData[@Model.CustomAltar.Id] = {name: "@Model.CustomAltar.Name", grid: @Model.CustomAltar.GridJS, spawns: @Model.CustomAltar.SpawnsJS };
-                options.game.altar = Utils.getQueryAsNumber("altar") || @Model.CustomAltar.Id;
-                </text>
+            <text>
+            AltarData[@Model.CustomAltar.Id] = {
+                name: "@Model.CustomAltar.Name",
+                grid: @Model.CustomAltar.Grid,
+                spawns: @Model.CustomAltar.Spawns,
+                groundColor: @Html.Raw(Model.CustomAltar.GroundColor ?? "undefined"),
+                waterColor: @Html.Raw(Model.CustomAltar.WaterColor ?? "undefined"),
+                groundPattern: @Html.Raw(Model.CustomAltar.GroundPattern ?? "undefined") };
+            options.game.altar = Utils.getQueryAsNumber("altar") || @Model.CustomAltar.Id;
+            </text>
             }
 
             gopui = new GopUI($("#game")[0], options);

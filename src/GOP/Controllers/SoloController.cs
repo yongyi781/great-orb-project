@@ -22,14 +22,14 @@ namespace GOP.Controllers
         [FromServices]
         public UserManager<ApplicationUser> UserManager { get; set; }
 
-        public async Task<IActionResult> Index(int? customId, string spawns, int reach = DefaultReach, int numOrbs = 3)
+        public async Task<IActionResult> Index(int? altar, string spawns, int reach = DefaultReach, int numOrbs = 3)
         {
             DbContext.CacheViewUsers = true;
             DbContext.LoadUsersIntoCache();
 
             CustomAltar customAltar = null;
-            if (customId != null)
-                customAltar = DbContext.CustomAltars.FirstOrDefault(a => a.Id == customId);
+            if (altar != null && altar > Utilities.NumberOfAltars)
+                customAltar = DbContext.CustomAltars.FirstOrDefault(a => a.Id == altar);
 
             var soloGames = GetSoloGames();
 
@@ -44,12 +44,7 @@ namespace GOP.Controllers
                 GopControls = currentUser?.GopControls
             });
         }
-
-        public IActionResult CustomAltars()
-        {
-            return View(DbContext.CustomAltars);
-        }
-
+        
         [HttpGet("api/[controller]")]
         public IEnumerable<SoloGameView> Get()
         {

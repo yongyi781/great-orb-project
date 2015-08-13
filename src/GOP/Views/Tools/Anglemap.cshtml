@@ -44,7 +44,7 @@
     <canvas id="gameCanvas" width="848" height="848">You do not have a HTML5-enabled browser. You should download the latest version of your browser.</canvas>
 </div>
 <h2>Save as Custom Altar</h2>
-<a asp-controller="Solo" asp-action="CustomAltars">View all custom altars</a>
+<a asp-controller="Altars" asp-action="Index">View all custom altars</a>
 <p>Ability to save custom altars has been temporarily suspended.</p>
 @*<form action="~/CustomAltarHandler.ashx" method="post" id="customAltarForm" class="form-inline">
     <label for="customAltarNameInput">Name (don't include "altar"):</label> <input id="customAltarNameInput" name="name" type="text" class="form-control" maxlength="24" /> <button class="btn btn-primary">Save</button>
@@ -91,31 +91,31 @@
             });
 
             $("#customAltarForm").submit(function (e) {
-                e.preventDefault();
-                var gridN = [];
-                for (var y = centerY; y >= -centerY; --y) {
-                    gridN[centerY - y] = [];
-                    for (var x = -centerX; x <= centerX; ++x) {
-                        gridN[centerY - y][x + centerX] = gopBoard.get(x, y);
-                    }
-                }
-                var spawnsJS = "[";
-                for (var i = 0; i < altarSpawns[currentAltar].length; i++) {
-                    spawnsJS += "new Point(" + altarSpawns[currentAltar][i].x + ", " + altarSpawns[currentAltar][i].y + ")";
-                    if (i < altarSpawns[currentAltar].length - 1)
-                        spawnsJS += ", ";
-                }
-                spawnsJS += "]";
-                $.post("CustomAltarHandler.ashx", { name: customAltarForm.customAltarNameInput.value, gridJS: JSON.stringify(gridN), spawnsJS: spawnsJS }, function (data) {
-                    $("#customAltarResult").text(data);
-                });
+                //e.preventDefault();
+                //var gridN = [];
+                //for (var y = centerY; y >= -centerY; --y) {
+                //    gridN[centerY - y] = [];
+                //    for (var x = -centerX; x <= centerX; ++x) {
+                //        gridN[centerY - y][x + centerX] = gopBoard.get(x, y);
+                //    }
+                //}
+                //var spawnsJS = "[";
+                //for (var i = 0; i < altarSpawns[currentAltar].length; i++) {
+                //    spawnsJS += "new Point(" + altarSpawns[currentAltar][i].x + ", " + altarSpawns[currentAltar][i].y + ")";
+                //    if (i < altarSpawns[currentAltar].length - 1)
+                //        spawnsJS += ", ";
+                //}
+                //spawnsJS += "]";
+                //$.post("CustomAltarHandler.ashx", { name: customAltarForm.customAltarNameInput.value, gridJS: JSON.stringify(gridN), spawnsJS: spawnsJS }, function (data) {
+                //    $("#customAltarResult").text(data);
+                //});
             });
 
             anglemap.currentTool = Tool.Pointer;
             @if (Model != null)
             {
             <text>
-            AltarData[@Model.Id] = {name: "@Model.Name", grid: @Model.GridJS, spawns: @Model.SpawnsJS };
+            AltarData[@Model.Id] = {name: "@Model.Name", grid: @Model.Grid, spawns: @Model.Spawns };
             setAltar(@Model.Id);
             </text>
             }

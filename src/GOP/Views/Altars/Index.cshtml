@@ -12,14 +12,14 @@
             <th></th>
         </tr>
     </thead>
-    @foreach (var customAltar in Model)
+    @foreach (var altar in Model)
     {
         <tr>
-            <td>@customAltar.Id</td>
-            <td>@customAltar.Name</td>
+            <td>@altar.Id</td>
+            <td>@altar.Name</td>
             <td>
-            <a asp-controller="Solo" asp-action="Index" asp-route-customid="@customAltar.Id">Play</a> |
-            <a asp-controller="Tools" asp-action="Anglemap" asp-route-customid="@customAltar.Id">Edit</a></td>
+            <a asp-controller="Solo" asp-action="Index" asp-route-altar="@altar.Id">Play</a> |
+            <a asp-controller="Tools" asp-action="Anglemap" asp-route-altar="@altar.Id">Edit</a></td>
         </tr>
     }
 </table>

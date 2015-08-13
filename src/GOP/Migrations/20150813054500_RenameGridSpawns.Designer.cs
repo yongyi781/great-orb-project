@@ -8,9 +8,19 @@ using Microsoft.Data.Entity.SqlServer.Metadata;
 namespace GOP.Migrations
 {
     [ContextType(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    partial class RenameGridSpawns
     {
-        public override void BuildModel(ModelBuilder builder)
+        public override string Id
+        {
+            get { return "20150813054500_RenameGridSpawns"; }
+        }
+
+        public override string ProductVersion
+        {
+            get { return "7.0.0-beta7-13944"; }
+        }
+
+        public override void BuildTargetModel(ModelBuilder builder)
         {
             builder
                 .Annotation("ProductVersion", "7.0.0-beta7-13944")
@@ -96,17 +106,11 @@ namespace GOP.Migrations
                     b.Property<string>("Grid")
                         .Required();
 
-                    b.Property<string>("GroundColor");
-
-                    b.Property<string>("GroundPattern");
-
                     b.Property<string>("Name")
                         .Required();
 
                     b.Property<string>("Spawns")
                         .Required();
-
-                    b.Property<string>("WaterColor");
 
                     b.Key("Id");
                 });

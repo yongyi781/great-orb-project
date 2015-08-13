@@ -14,9 +14,12 @@ namespace GOP.Controllers
             return View();
         }
 
-        public IActionResult Anglemap(int? customId)
+        public IActionResult Anglemap(int? altar)
         {
-            return View(DbContext.CustomAltars.Where(c => c.Id == customId).SingleOrDefault());
+            CustomAltar customAltar = null;
+            if (altar > Utilities.NumberOfAltars)
+                customAltar = DbContext.CustomAltars.Where(c => c.Id == altar).SingleOrDefault();
+            return View(customAltar);
         }
 
         public IActionResult SpawnLister()

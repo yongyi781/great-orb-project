@@ -8,9 +8,19 @@ using Microsoft.Data.Entity.SqlServer.Metadata;
 namespace GOP.Migrations
 {
     [ContextType(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    partial class AddGroundPattern
     {
-        public override void BuildModel(ModelBuilder builder)
+        public override string Id
+        {
+            get { return "20150813061103_AddGroundPattern"; }
+        }
+
+        public override string ProductVersion
+        {
+            get { return "7.0.0-beta7-13944"; }
+        }
+
+        public override void BuildTargetModel(ModelBuilder builder)
         {
             builder
                 .Annotation("ProductVersion", "7.0.0-beta7-13944")

@@ -10,8 +10,11 @@ namespace GOP.Models
         [Required]
         public string Name { get; set; }
         [Required]
-        public string GridJS { get; set; }
+        public string Grid { get; set; }
         [Required]
-        public string SpawnsJS { get; set; }
+        public string Spawns { get; set; }
+        public string GroundColor { get; set; }
+        public string WaterColor { get; set; }
+        public string GroundPattern { get; set; }
     }
 }

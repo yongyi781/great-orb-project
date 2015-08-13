@@ -7,6 +7,7 @@ namespace GOP
 {
     public class Utilities
     {
+        public const int NumberOfAltars = 6;
         public static readonly string[] AltarNames = { "None", "Air", "Mind", "Water", "Earth", "Fire", "Body" };
 
         public static string FormatChatMessage(string message)

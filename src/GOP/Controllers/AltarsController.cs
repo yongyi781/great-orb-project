@@ -14,6 +14,11 @@ namespace GOP.Controllers
         [FromServices]
         public ApplicationDbContext DbContext { get; set; }
 
+        public IActionResult Index()
+        {
+            return View(DbContext.CustomAltars);
+        }
+
         [HttpGet("api/[controller]")]
         public IEnumerable<CustomAltar> Get()
         {

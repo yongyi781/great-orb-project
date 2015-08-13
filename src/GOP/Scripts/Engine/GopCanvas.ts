@@ -12,27 +12,12 @@
     rotationAngle = 0;
     player: Player;
 
-    // Element 7 takes care of all indices >= 7
-    numAltars = 6;
-    altarGroundColors = ["#555555", "#404833", "#665D5D", "#454f36", "#281400", "#272010", "#514745", "#848899"];
-    waterColors = { 1: "#363025", 3: "#002244", 5: "#666622", 7: "#002244" };
-    highlightColor = "rgba(0, 255, 0, 0.05)";
-    playerIdleColors = ["#109090", "#871450", "#148718", "#630D0D"];
-    playerAttractingColors = ["#20c0c0", "#a74470", "#4BD650", "#CC3B3B"];
-    gridlineColor = "rgba(0, 0, 0, 0.25)";
     numImagesLoaded = 0;
     numImagesTotal = 7; // Orb image + altar images
     orbImageSrc = "/Images/yellow-orb-32x32.png";
     orbImage: HTMLImageElement;
     alterOverlayImagePath = "/Images/altar-overlays/";
     altarImages: HTMLImageElement[] = [];
-
-    // Mind altar floor color map
-    mindAltarColors = {
-        0: this.altarGroundColors[Altar.Mind],
-        1: "#4C4C46",
-        2: "#3F3A3A"
-    };
 
     constructor(public fgCanvas: HTMLCanvasElement,
         public gameState: GameState,
@@ -46,8 +31,13 @@
         this.loadImages();
     }
 
-    floorColor() {
-        return this.altarGroundColors[Math.min(this.numAltars + 1, this.gameState.altar)];
+    groundColor() {
+        var c = AltarData[this.gameState.altar].groundColor;
+        if (c === void 0)
+            return GopCanvas.defaultGroundColor;
+        if (c instanceof Array)
+            return c[0];
+        return <string>c;
     }
 
     tileColor(x, y) {
@@ -59,16 +49,16 @@
             case Tile.WallSW:
             case Tile.Minipillar1:
             case Tile.Minipillar2:
-                if (this.gameState.altar === Altar.Mind || this.gameState.altar === 64) {
-                    return this.mindAltarColors[MindFloorTiles[this.board.ymax - y][x + this.board.xmax]];
-                }
-                return this.floorColor();
+                var pattern = AltarData[this.gameState.altar].groundPattern;
+                if (pattern !== void 0)
+                    return AltarData[this.gameState.altar].groundColor[pattern[this.board.ymax - y][x + this.board.xmax]];
+                return this.groundColor();
             case Tile.Barrier:
                 return "black";
             case Tile.Rock:
                 return "#333";
             case Tile.Water:
-                return this.waterColors[Math.min(this.numAltars + 1, this.gameState.altar)];
+                return AltarData[this.gameState.altar].waterColor || GopCanvas.defaultWaterColor;
             default:
                 return "#ff0000";
         }
@@ -175,15 +165,15 @@
      * Paints the barriers, walls, rocks, and water.
      */
     paintBackground() {
-        this.bgContext.fillStyle = this.floorColor();
+        this.bgContext.fillStyle = this.groundColor();
         this.bgContext.fillRect(0, 0, this.bgCanvas.width, this.bgCanvas.height);
         for (var y = -this.board.ymax; y <= this.board.ymax; y++)
             for (var x = -this.board.xmax; x <= this.board.xmax; x++)
-                if (this.tileColor(x, y) !== this.floorColor())
+                if (this.tileColor(x, y) !== this.groundColor())
                     this.bgFillSquare(this.bgContext, this.tileColor(x, y), x, y, 0);
         // Draw gridlines
         this.bgContext.lineWidth = 1;
-        this.bgContext.strokeStyle = this.gridlineColor;
+        this.bgContext.strokeStyle = GopCanvas.gridlineColor;
         this.bgContext.beginPath();
         for (var x = 1; x <= this.board.numColumns; ++x) {
             this.bgContext.moveTo(x * this.cellWidth - 0.5, 0);
@@ -247,7 +237,7 @@
         this.fgContext.drawImage(this.bgCanvas, 0, 0);
         this.fgContext.restore();
 
-        this.gameState.players.forEach(function (player, index) {
+        this.gameState.players.forEach((player, index) => {
             var drawLocation = this.getDrawLocation(player);
             if (player.isAttracting && player.currentOrb !== null) {
                 // Draw attracting pulses
@@ -259,7 +249,7 @@
                 this.fgContext.fillStyle = "rgba(255, 255, 0, 0.5)";
                 this.fgContext.fill();
             }
-            this.fillSquare(this.fgContext, player.isAttracting ? this.playerAttractingColors[index] : this.playerIdleColors[index], drawLocation.x - center.x, drawLocation.y - center.y, -1);
+            this.fillSquare(this.fgContext, player.isAttracting ? GopCanvas.playerAttractingColors[index] : GopCanvas.playerIdleColors[index], drawLocation.x - center.x, drawLocation.y - center.y, -1);
         }, this);
 
         for (var i = 0; i < this.gameState.orbs.length; ++i) {
@@ -283,7 +273,7 @@
 
     private loadImages() {
         this.orbImage = this.loadImage(this.orbImageSrc);
-        for (var i = 0; i < this.numAltars; ++i)
+        for (var i = 0; i < GopCanvas.numAltars; ++i)
             this.altarImages[i] = this.loadImage(this.alterOverlayImagePath + AltarData[i + 1].name + ".png");
     }
 
@@ -302,4 +292,12 @@
         this.paintBackground();
         this.paint();
     }
+
+    static numAltars = 6;
+    static defaultGroundColor = "#848899";
+    static defaultWaterColor = "#002244";
+    static highlightColor = "rgba(0, 255, 0, 0.05)";
+    static playerIdleColors = ["#109090", "#871450", "#148718", "#630D0D"];
+    static playerAttractingColors = ["#20c0c0", "#a74470", "#4BD650", "#CC3B3B"];
+    static gridlineColor = "rgba(0, 0, 0, 0.25)";
 }
