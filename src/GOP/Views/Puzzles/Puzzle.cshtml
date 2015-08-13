@@ -57,7 +57,7 @@
                 game: {
                     altar: @puzzle.Altar,
                     code: Utils.getQueryAsString("code"),
-                    numberOfOrbs:@puzzle.NumberOfOrbs,
+                    numberOfOrbs: Math.min(3, @puzzle.NumberOfOrbs),
                     startLocations: Utils.toPointArray(@puzzle.StartLocations),
                     presetSpawns: Utils.toPointArray(@puzzle.Orbs),
                     suppressRandomSpawns: true
@@ -77,7 +77,7 @@
                 },
                 callbacks: {
                     isGameFinished: function () {
-                        return gopui.gameState.score >= gopui.options.game.numberOfOrbs;
+                        return gopui.gameState.score >= @puzzle.NumberOfOrbs;
                     },
                     tick: function () {
                         @if (Model.RequireLogin)
