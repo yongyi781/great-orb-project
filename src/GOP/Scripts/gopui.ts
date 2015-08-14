@@ -81,7 +81,7 @@ class GopUI {
 
         interface: {
             showNavigationButtons: true,
-            plusMinusTicksAdvance: 10,
+            plusMinusTicksAdvance: 7,
             margin: 12,
             showScore: true,
             showGameCode: true,
