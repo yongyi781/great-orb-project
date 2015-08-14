@@ -1,21 +1,20 @@
+@inject Microsoft.Dnx.Runtime.IRuntimeEnvironment RuntimeEnv
 @{
     ViewData["Title"] = "Test Page";
 }
 
-<span id="result"></span>
+<h2>@ViewData["Title"]</h2>
+<p>Operating system version: @RuntimeEnv.OperatingSystemVersion</p>
+<p>DNX runtime version: @RuntimeEnv.RuntimeVersion</p>
+<p>DNX runtime architecture: @RuntimeEnv.RuntimeArchitecture</p>
+<p>DNX runtime type: @RuntimeEnv.RuntimeType</p>
+@Html.DropDownList("Hello", Html.GetEnumSelectList<DayOfWeek>())
+
 
 @section Scripts {
     <script>
         $(function () {
-            var n = 100000000;
-            var t = performance.now();
-            var arr = [1, 2, 3, 4, 5];
-            var counter = 0;
-            for (var i = 0; i < n; i++)
-                if ($.isArray(arr))
-                    ++counter;
-            var diff = performance.now() - t;
-            $("#result").text("isArray takes " + 1000000 * diff / n + " ns");
+
         });
     </script>
 }
