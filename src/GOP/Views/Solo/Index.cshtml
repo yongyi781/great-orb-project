@@ -280,7 +280,7 @@
             });
 
             $("#gamesTable").on("click", "tbody > tr", function () {
-                window.open("/Watch/Solo/" + $(this).children("td:first").text());
+                window.open("/Watch/Solo/" + $(this).children("td:first").text(), "watch");
             });
 
             gopui = new GopUI($("#game")[0], options);
