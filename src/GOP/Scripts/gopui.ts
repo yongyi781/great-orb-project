@@ -117,7 +117,7 @@ class GopUI {
     $restartButton = $('<button type="button" class="btn btn-warning side">Restart</button>');
     $saveButton = $('<button type="button" class="btn btn-primary side" disabled="disabled">Save</button>');
 
-    $scoredTicksSpan = $('<span/>');
+    $scoredTicksSpan = $('<div class="monospaced scored-ticks"/>');
     $scoredTicksDiv = $('<div class="side-container"><header>Scored ticks</header></div>').append(this.$scoredTicksSpan);
 
     $gameCodeText = $('<div class="monospaced text-left"></div>');
@@ -531,7 +531,7 @@ class GopUI {
         this.$estScoreSpan.text(this.getEstimatedScore());
         this.$runCheckBox.prop("checked", this.player.run);
         this.$repelCheckBox.prop("checked", this.player.repel);
-        this.$scoredTicksSpan.text("[" + this.gameState.scoredTicks.join(" ") + "]");
+        this.$scoredTicksSpan.html('<span>' + this.gameState.scoredTicks.join('</span>&nbsp;<span>') + '</span>');
         this.$gameCodeText.text(this.gameplayData.toString());
     }
 

@@ -122,6 +122,12 @@ footer, .container {
         font-weight: bold;
     }
 
+.scored-ticks span:nth-child(6n+1):before {
+    content: ' ';
+    clear: right;
+    display: block;
+}
+
 .side {
     margin: 0 16px 15px 16px;
     width: 248px;
