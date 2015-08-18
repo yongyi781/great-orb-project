@@ -219,3 +219,4 @@ src/GOP/wwwroot/images/**/
 src/GOP/wwwroot/uploads/
 src/GOP/scripts/**/*.js
 src/GOP/typings/
+src/GOP/Views/Tools/Test.cshtml
