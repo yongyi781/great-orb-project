@@ -1,16 +1,17 @@
 using System;
 using Microsoft.Data.Entity;
 using Microsoft.Data.Entity.Metadata;
-using Microsoft.Data.Entity.Migrations.Infrastructure;
 using GOP.Models;
 using Microsoft.Data.Entity.SqlServer.Metadata;
+using Microsoft.Data.Entity.Infrastructure;
+using Microsoft.Data.Entity.Migrations;
 
 namespace GOP.Migrations
 {
-    [ContextType(typeof(ApplicationDbContext))]
+    [DbContext(typeof(ApplicationDbContext))]
     partial class ApplicationDbContextModelSnapshot : ModelSnapshot
     {
-        public override void BuildModel(ModelBuilder builder)
+        protected override void BuildModel(ModelBuilder builder)
         {
             builder
                 .Annotation("ProductVersion", "7.0.0-beta7-13944")

@@ -1,25 +1,24 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.Data.Entity.Migrations;
-using Microsoft.Data.Entity.Migrations.Builders;
 using Microsoft.Data.Entity.Migrations.Operations;
 
 namespace GOP.Migrations
 {
     public partial class AddPuzzle : Migration
     {
-        public override void Up(MigrationBuilder migration)
+        protected override void Up(MigrationBuilder migration)
         {
             migration.CreateTable(
                 name: "Puzzle",
                 columns: table => new
                 {
-                    Id = table.Column<int>(nullable: false),
-                    Altar = table.Column<int>(nullable: false),
-                    NumberOfOrbs = table.Column<int>(nullable: false),
-                    NumberOfPlayers = table.Column<int>(nullable: false),
-                    Orbs = table.Column<string>(nullable: false),
-                    StartLocations = table.Column<string>(nullable: false)
+                    Id = table.Column<int>(isNullable: false),
+                    Altar = table.Column<int>(isNullable: false),
+                    NumberOfOrbs = table.Column<int>(isNullable: false),
+                    NumberOfPlayers = table.Column<int>(isNullable: false),
+                    Orbs = table.Column<string>(isNullable: false),
+                    StartLocations = table.Column<string>(isNullable: false)
                 },
                 constraints: table =>
                 {
@@ -27,7 +26,7 @@ namespace GOP.Migrations
                 });
         }
 
-        public override void Down(MigrationBuilder migration)
+        protected override void Down(MigrationBuilder migration)
         {
             migration.DropTable("Puzzle");
         }

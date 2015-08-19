@@ -1,26 +1,21 @@
 using System;
 using Microsoft.Data.Entity;
 using Microsoft.Data.Entity.Metadata;
-using Microsoft.Data.Entity.Migrations.Infrastructure;
 using GOP.Models;
 using Microsoft.Data.Entity.SqlServer.Metadata;
+using Microsoft.Data.Entity.Infrastructure;
 
 namespace GOP.Migrations
 {
-    [ContextType(typeof(ApplicationDbContext))]
+    [DbContext(typeof(ApplicationDbContext))]
     partial class Initial
     {
         public override string Id
         {
             get { return "20150804221806_Initial"; }
         }
-
-        public override string ProductVersion
-        {
-            get { return "7.0.0-beta7-13877"; }
-        }
-
-        public override void BuildTargetModel(ModelBuilder builder)
+        
+        protected override void BuildTargetModel(ModelBuilder builder)
         {
             builder
                 .Annotation("ProductVersion", "7.0.0-beta7-13877")

@@ -1,13 +1,13 @@
 using System;
 using Microsoft.Data.Entity;
 using Microsoft.Data.Entity.Metadata;
-using Microsoft.Data.Entity.Migrations.Infrastructure;
 using GOP.Models;
 using Microsoft.Data.Entity.SqlServer.Metadata;
+using Microsoft.Data.Entity.Infrastructure;
 
 namespace GOP.Migrations
 {
-    [ContextType(typeof(ApplicationDbContext))]
+    [DbContext(typeof(ApplicationDbContext))]
     partial class PuzzleSubmissionUserIdForeignKey
     {
         public override string Id
@@ -15,12 +15,7 @@ namespace GOP.Migrations
             get { return "20150808224813_PuzzleSubmissionUserIdForeignKey"; }
         }
 
-        public override string ProductVersion
-        {
-            get { return "7.0.0-beta7-13920"; }
-        }
-
-        public override void BuildTargetModel(ModelBuilder builder)
+        protected override void BuildTargetModel(ModelBuilder builder)
         {
             builder
                 .Annotation("ProductVersion", "7.0.0-beta7-13920")
