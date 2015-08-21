@@ -87,6 +87,8 @@ namespace GOP
                 app.UseStatusCodePages();
             }
 
+            app.UseStaticFiles();
+
             // Add cookie-based authentication to the request pipeline.
             app.UseIdentity();
             app.UseFacebookAuthentication();
@@ -106,7 +108,7 @@ namespace GOP
                     defaults: new { controller = "Home", action = "Index" });
             });
 
-            app.RunIISPipeline();
+            app.UseFileServer(true);
         }
     }
 }
