@@ -3,6 +3,7 @@ using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Diagnostics.Entity;
 using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.Identity.EntityFramework;
+using Microsoft.AspNet.StaticFiles;
 using Microsoft.Data.Entity;
 using Microsoft.Dnx.Runtime;
 using Microsoft.Framework.Configuration;
@@ -87,7 +88,7 @@ namespace GOP
                 app.UseStatusCodePages();
             }
 
-            app.UseStaticFiles();
+            app.UseStaticFiles(new StaticFileOptions { ServeUnknownFileTypes = true });
 
             // Add cookie-based authentication to the request pipeline.
             app.UseIdentity();
