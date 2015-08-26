@@ -10,11 +10,6 @@ namespace GOP.Migrations
     [DbContext(typeof(ApplicationDbContext))]
     partial class RenameGridSpawns
     {
-        public override string Id
-        {
-            get { return "20150813054500_RenameGridSpawns"; }
-        }
-
         protected override void BuildTargetModel(ModelBuilder builder)
         {
             builder

@@ -10,11 +10,6 @@ namespace GOP.Migrations
     [DbContext(typeof(ApplicationDbContext))]
     partial class Initial
     {
-        public override string Id
-        {
-            get { return "20150804221806_Initial"; }
-        }
-        
         protected override void BuildTargetModel(ModelBuilder builder)
         {
             builder

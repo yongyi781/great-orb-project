@@ -10,11 +10,6 @@ namespace GOP.Migrations
     [DbContext(typeof(ApplicationDbContext))]
     partial class AddAltarColors
     {
-        public override string Id
-        {
-            get { return "20150813055526_AddAltarColors"; }
-        }
-
         protected override void BuildTargetModel(ModelBuilder builder)
         {
             builder

@@ -10,11 +10,6 @@ namespace GOP.Migrations
     [DbContext(typeof(ApplicationDbContext))]
     partial class AddSoloGame
     {
-        public override string Id
-        {
-            get { return "20150806033308_AddSoloGame"; }
-        }
-        
         protected override void BuildTargetModel(ModelBuilder builder)
         {
             builder

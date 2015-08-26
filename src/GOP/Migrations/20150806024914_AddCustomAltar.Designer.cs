@@ -10,11 +10,6 @@ namespace GOP.Migrations
     [DbContext(typeof(ApplicationDbContext))]
     partial class AddCustomAltar
     {
-        public override string Id
-        {
-            get { return "20150806024914_AddCustomAltar"; }
-        }
-        
         protected override void BuildTargetModel(ModelBuilder builder)
         {
             builder

@@ -10,11 +10,6 @@ namespace GOP.Migrations
     [DbContext(typeof(ApplicationDbContext))]
     partial class AddGroundPattern
     {
-        public override string Id
-        {
-            get { return "20150813061103_AddGroundPattern"; }
-        }
-
         protected override void BuildTargetModel(ModelBuilder builder)
         {
             builder

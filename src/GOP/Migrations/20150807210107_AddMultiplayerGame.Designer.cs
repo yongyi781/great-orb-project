@@ -10,11 +10,6 @@ namespace GOP.Migrations
     [DbContext(typeof(ApplicationDbContext))]
     partial class AddMultiplayerGame
     {
-        public override string Id
-        {
-            get { return "20150807210107_AddMultiplayerGame"; }
-        }
-
         protected override void BuildTargetModel(ModelBuilder builder)
         {
             builder

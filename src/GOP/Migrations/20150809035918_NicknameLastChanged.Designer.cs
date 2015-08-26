@@ -10,11 +10,6 @@ namespace GOP.Migrations
     [DbContext(typeof(ApplicationDbContext))]
     partial class NicknameLastChanged
     {
-        public override string Id
-        {
-            get { return "20150809035918_NicknameLastChanged"; }
-        }
-
         protected override void BuildTargetModel(ModelBuilder builder)
         {
             builder

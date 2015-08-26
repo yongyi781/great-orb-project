@@ -10,11 +10,6 @@ namespace GOP.Migrations
     [DbContext(typeof(ApplicationDbContext))]
     partial class PuzzleSubmissionUserIdForeignKey
     {
-        public override string Id
-        {
-            get { return "20150808224813_PuzzleSubmissionUserIdForeignKey"; }
-        }
-
         protected override void BuildTargetModel(ModelBuilder builder)
         {
             builder

@@ -10,11 +10,6 @@ namespace GOP.Migrations
     [DbContext(typeof(ApplicationDbContext))]
     partial class AddPuzzle
     {
-        public override string Id
-        {
-            get { return "20150807214047_AddPuzzle"; }
-        }
-        
         protected override void BuildTargetModel(ModelBuilder builder)
         {
             builder

@@ -10,11 +10,6 @@ namespace GOP.Migrations
     [DbContext(typeof(ApplicationDbContext))]
     partial class AddDeadPracticeResult
     {
-        public override string Id
-        {
-            get { return "20150810163434_AddDeadPracticeResult"; }
-        }
-
         protected override void BuildTargetModel(ModelBuilder builder)
         {
             builder
