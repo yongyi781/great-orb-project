@@ -97,7 +97,7 @@
 <h2>Downloads (Windows 7+)</h2>
 <ul class="links">
     <li><a target="_blank" href="~/downloads/ServerPingTest.exe">Server Ping Test v3.0</a> - A faster version of the parallel server ping test program. Requires .NET 4.5 or higher.</li>
-    <li><a target="_blank" href="~/downloads/RSClient.exe">Icy001's RS Client</a> - A RuneScape client made by Icy001, optimized for gopping. Requires .NET 4.5 or higher.</li>
+    <li><a target="_blank" href="~/downloads/RSClient.zip">Icy001's RS Client</a> - A RuneScape client made by Icy001, optimized for gopping. Requires .NET 4.5 or higher.</li>
     <li><a target="_blank" href="~/downloads/GopTimer.exe">GOP Timer</a> - A tick timer that is always in sync with a world of your choosing. Requires .NET 4.0 or higher.</li>
 </ul>
 
@@ -142,6 +142,9 @@
 </div>
 
 @section scripts {
+    <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({ tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']], processEscapes: true} });
+    </script>
     <environment names="Development">
         <script src="~/lib/knockout/dist/knockout.debug.js"></script>
         <script src="~/lib/signalr/jquery.signalR.js"></script>
@@ -150,9 +153,6 @@
         <script src="https://cdnjs.cloudflare.com/ajax/libs/knockout/3.3.0/knockout-min.js"></script>
         <script src="https://ajax.aspnetcdn.com/ajax/signalr/jquery.signalr-2.2.0.min.js"></script>
     </environment>
-    <script type="text/x-mathjax-config">
-        MathJax.Hub.Config({ tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']], processEscapes: true} });
-    </script>
     <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <script src="~/js/utils.js"></script>
     <script src="~/signalr/hubs"></script>
