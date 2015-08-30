@@ -61,7 +61,7 @@ namespace GOP
             {
                 options.Hubs.EnableDetailedErrors = true;
             });
-            
+
             // Add MVC services to the services container.
             services.AddMvc();
             services.AddSingleton<Random>();
@@ -88,7 +88,11 @@ namespace GOP
                 app.UseStatusCodePages();
             }
 
-            app.UseStaticFiles(new StaticFileOptions { ServeUnknownFileTypes = true });
+            app.UseStaticFiles(new StaticFileOptions
+            {
+                ServeUnknownFileTypes = true,
+                DefaultContentType = "application/octet-stream"
+            });
 
             // Add cookie-based authentication to the request pipeline.
             app.UseIdentity();
