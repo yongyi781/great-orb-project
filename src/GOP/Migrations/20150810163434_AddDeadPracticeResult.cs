@@ -14,13 +14,13 @@ namespace GOP.Migrations
                 name: "DeadPracticeResult",
                 columns: table => new
                 {
-                    Id = table.Column<int>(isNullable: false)
+                    Id = table.Column<int>(nullable: false)
                         .Annotation("SqlServer:ValueGenerationStrategy", SqlServerIdentityStrategy.IdentityColumn),
-                    Data = table.Column<string>(isNullable: false),
-                    IpAddress = table.Column<string>(isNullable: false),
-                    Settings = table.Column<string>(isNullable: false),
-                    Timestamp = table.Column<DateTimeOffset>(isNullable: false),
-                    UserId = table.Column<int>(isNullable: true)
+                    Data = table.Column<string>(nullable: false),
+                    IpAddress = table.Column<string>(nullable: false),
+                    Settings = table.Column<string>(nullable: false),
+                    Timestamp = table.Column<DateTimeOffset>(nullable: false),
+                    UserId = table.Column<int>(nullable: true)
                 },
                 constraints: table =>
                 {

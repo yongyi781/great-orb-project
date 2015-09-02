@@ -14,14 +14,14 @@ namespace GOP.Migrations
                 name: "PuzzleSubmission",
                 columns: table => new
                 {
-                    Id = table.Column<int>(isNullable: false)
+                    Id = table.Column<int>(nullable: false)
                         .Annotation("SqlServer:ValueGenerationStrategy", SqlServerIdentityStrategy.IdentityColumn),
-                    Code = table.Column<string>(isNullable: false),
-                    IpAddress = table.Column<string>(isNullable: false),
-                    PuzzleId = table.Column<int>(isNullable: false),
-                    Score = table.Column<int>(isNullable: false),
-                    Timestamp = table.Column<DateTimeOffset>(isNullable: false),
-                    UserId = table.Column<int>(isNullable: true)
+                    Code = table.Column<string>(nullable: false),
+                    IpAddress = table.Column<string>(nullable: false),
+                    PuzzleId = table.Column<int>(nullable: false),
+                    Score = table.Column<int>(nullable: false),
+                    Timestamp = table.Column<DateTimeOffset>(nullable: false),
+                    UserId = table.Column<int>(nullable: true)
                 },
                 constraints: table =>
                 {

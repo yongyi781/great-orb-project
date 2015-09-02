@@ -14,24 +14,24 @@ namespace GOP.Migrations
                 name: "AspNetUsers",
                 columns: table => new
                 {
-                    Id = table.Column<int>(isNullable: false)
+                    Id = table.Column<int>(nullable: false)
                         .Annotation("SqlServer:ValueGenerationStrategy", SqlServerIdentityStrategy.IdentityColumn),
-                    AccessFailedCount = table.Column<int>(isNullable: false),
-                    ChatColor = table.Column<string>(isNullable: true),
-                    ConcurrencyStamp = table.Column<string>(isNullable: true),
-                    Email = table.Column<string>(isNullable: true),
-                    EmailConfirmed = table.Column<bool>(isNullable: false),
-                    GopControls = table.Column<string>(isNullable: true),
-                    LockoutEnabled = table.Column<bool>(isNullable: false),
-                    LockoutEnd = table.Column<DateTimeOffset>(isNullable: true),
-                    NormalizedEmail = table.Column<string>(isNullable: true),
-                    NormalizedUserName = table.Column<string>(isNullable: true),
-                    PasswordHash = table.Column<string>(isNullable: true),
-                    PhoneNumber = table.Column<string>(isNullable: true),
-                    PhoneNumberConfirmed = table.Column<bool>(isNullable: false),
-                    SecurityStamp = table.Column<string>(isNullable: true),
-                    TwoFactorEnabled = table.Column<bool>(isNullable: false),
-                    UserName = table.Column<string>(isNullable: true)
+                    AccessFailedCount = table.Column<int>(nullable: false),
+                    ChatColor = table.Column<string>(nullable: true),
+                    ConcurrencyStamp = table.Column<string>(nullable: true),
+                    Email = table.Column<string>(nullable: true),
+                    EmailConfirmed = table.Column<bool>(nullable: false),
+                    GopControls = table.Column<string>(nullable: true),
+                    LockoutEnabled = table.Column<bool>(nullable: false),
+                    LockoutEnd = table.Column<DateTimeOffset>(nullable: true),
+                    NormalizedEmail = table.Column<string>(nullable: true),
+                    NormalizedUserName = table.Column<string>(nullable: true),
+                    PasswordHash = table.Column<string>(nullable: true),
+                    PhoneNumber = table.Column<string>(nullable: true),
+                    PhoneNumberConfirmed = table.Column<bool>(nullable: false),
+                    SecurityStamp = table.Column<string>(nullable: true),
+                    TwoFactorEnabled = table.Column<bool>(nullable: false),
+                    UserName = table.Column<string>(nullable: true)
                 },
                 constraints: table =>
                 {
@@ -41,8 +41,8 @@ namespace GOP.Migrations
                 name: "Nickname",
                 columns: table => new
                 {
-                    IpAddress = table.Column<string>(type: "varchar(50)", isNullable: false),
-                    Name = table.Column<string>(isNullable: false)
+                    IpAddress = table.Column<string>(type: "varchar(50)", nullable: false),
+                    Name = table.Column<string>(nullable: false)
                 },
                 constraints: table =>
                 {
@@ -52,11 +52,11 @@ namespace GOP.Migrations
                 name: "AspNetRoles",
                 columns: table => new
                 {
-                    Id = table.Column<int>(isNullable: false)
+                    Id = table.Column<int>(nullable: false)
                         .Annotation("SqlServer:ValueGenerationStrategy", SqlServerIdentityStrategy.IdentityColumn),
-                    ConcurrencyStamp = table.Column<string>(isNullable: true),
-                    Name = table.Column<string>(isNullable: true),
-                    NormalizedName = table.Column<string>(isNullable: true)
+                    ConcurrencyStamp = table.Column<string>(nullable: true),
+                    Name = table.Column<string>(nullable: true),
+                    NormalizedName = table.Column<string>(nullable: true)
                 },
                 constraints: table =>
                 {
@@ -66,12 +66,12 @@ namespace GOP.Migrations
                 name: "ChatMessage",
                 columns: table => new
                 {
-                    Id = table.Column<int>(isNullable: false)
+                    Id = table.Column<int>(nullable: false)
                         .Annotation("SqlServer:ValueGenerationStrategy", SqlServerIdentityStrategy.IdentityColumn),
-                    IpAddress = table.Column<string>(type: "varchar(50)", isNullable: false),
-                    Text = table.Column<string>(isNullable: false),
-                    Timestamp = table.Column<DateTimeOffset>(isNullable: false),
-                    UserId = table.Column<int>(isNullable: true)
+                    IpAddress = table.Column<string>(type: "varchar(50)", nullable: false),
+                    Text = table.Column<string>(nullable: false),
+                    Timestamp = table.Column<DateTimeOffset>(nullable: false),
+                    UserId = table.Column<int>(nullable: true)
                 },
                 constraints: table =>
                 {
@@ -86,11 +86,11 @@ namespace GOP.Migrations
                 name: "AspNetUserClaims",
                 columns: table => new
                 {
-                    Id = table.Column<int>(isNullable: false)
+                    Id = table.Column<int>(nullable: false)
                         .Annotation("SqlServer:ValueGenerationStrategy", SqlServerIdentityStrategy.IdentityColumn),
-                    ClaimType = table.Column<string>(isNullable: true),
-                    ClaimValue = table.Column<string>(isNullable: true),
-                    UserId = table.Column<int>(isNullable: false)
+                    ClaimType = table.Column<string>(nullable: true),
+                    ClaimValue = table.Column<string>(nullable: true),
+                    UserId = table.Column<int>(nullable: false)
                 },
                 constraints: table =>
                 {
@@ -105,10 +105,10 @@ namespace GOP.Migrations
                 name: "AspNetUserLogins",
                 columns: table => new
                 {
-                    LoginProvider = table.Column<string>(isNullable: false),
-                    ProviderKey = table.Column<string>(isNullable: false),
-                    ProviderDisplayName = table.Column<string>(isNullable: true),
-                    UserId = table.Column<int>(isNullable: false)
+                    LoginProvider = table.Column<string>(nullable: false),
+                    ProviderKey = table.Column<string>(nullable: false),
+                    ProviderDisplayName = table.Column<string>(nullable: true),
+                    UserId = table.Column<int>(nullable: false)
                 },
                 constraints: table =>
                 {
@@ -123,11 +123,11 @@ namespace GOP.Migrations
                 name: "AspNetRoleClaims",
                 columns: table => new
                 {
-                    Id = table.Column<int>(isNullable: false)
+                    Id = table.Column<int>(nullable: false)
                         .Annotation("SqlServer:ValueGenerationStrategy", SqlServerIdentityStrategy.IdentityColumn),
-                    ClaimType = table.Column<string>(isNullable: true),
-                    ClaimValue = table.Column<string>(isNullable: true),
-                    RoleId = table.Column<int>(isNullable: false)
+                    ClaimType = table.Column<string>(nullable: true),
+                    ClaimValue = table.Column<string>(nullable: true),
+                    RoleId = table.Column<int>(nullable: false)
                 },
                 constraints: table =>
                 {
@@ -142,8 +142,8 @@ namespace GOP.Migrations
                 name: "AspNetUserRoles",
                 columns: table => new
                 {
-                    UserId = table.Column<int>(isNullable: false),
-                    RoleId = table.Column<int>(isNullable: false)
+                    UserId = table.Column<int>(nullable: false),
+                    RoleId = table.Column<int>(nullable: false)
                 },
                 constraints: table =>
                 {

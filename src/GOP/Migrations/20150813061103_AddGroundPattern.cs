@@ -12,7 +12,7 @@ namespace GOP.Migrations
             migration.AddColumn<string>(
                 name: "GroundPattern",
                 table: "CustomAltar",
-                isNullable: true);
+                nullable: true);
         }
 
         protected override void Down(MigrationBuilder migration)

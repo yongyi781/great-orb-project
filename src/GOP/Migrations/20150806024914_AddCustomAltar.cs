@@ -13,10 +13,10 @@ namespace GOP.Migrations
                 name: "CustomAltar",
                 columns: table => new
                 {
-                    Id = table.Column<int>(isNullable: false),
-                    GridJS = table.Column<string>(isNullable: false),
-                    Name = table.Column<string>(isNullable: false),
-                    SpawnsJS = table.Column<string>(isNullable: false)
+                    Id = table.Column<int>(nullable: false),
+                    GridJS = table.Column<string>(nullable: false),
+                    Name = table.Column<string>(nullable: false),
+                    SpawnsJS = table.Column<string>(nullable: false)
                 },
                 constraints: table =>
                 {

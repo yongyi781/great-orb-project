@@ -12,11 +12,11 @@ namespace GOP.Migrations
             migration.AddColumn<string>(
                 name: "GroundColor",
                 table: "CustomAltar",
-                isNullable: true);
+                nullable: true);
             migration.AddColumn<string>(
                 name: "WaterColor",
                 table: "CustomAltar",
-                isNullable: true);
+                nullable: true);
         }
 
         protected override void Down(MigrationBuilder migration)

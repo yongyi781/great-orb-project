@@ -13,12 +13,12 @@ namespace GOP.Migrations
                 name: "Puzzle",
                 columns: table => new
                 {
-                    Id = table.Column<int>(isNullable: false),
-                    Altar = table.Column<int>(isNullable: false),
-                    NumberOfOrbs = table.Column<int>(isNullable: false),
-                    NumberOfPlayers = table.Column<int>(isNullable: false),
-                    Orbs = table.Column<string>(isNullable: false),
-                    StartLocations = table.Column<string>(isNullable: false)
+                    Id = table.Column<int>(nullable: false),
+                    Altar = table.Column<int>(nullable: false),
+                    NumberOfOrbs = table.Column<int>(nullable: false),
+                    NumberOfPlayers = table.Column<int>(nullable: false),
+                    Orbs = table.Column<string>(nullable: false),
+                    StartLocations = table.Column<string>(nullable: false)
                 },
                 constraints: table =>
                 {
