@@ -71,8 +71,11 @@ namespace GOP.Controllers
             DbContext.CacheViewUsers = true;
             DbContext.LoadUsersIntoCache();
             var hiscores = new Dictionary<string, int>();
-            foreach (var puzzle in DbContext.Puzzles.AsNoTracking().Include(p => p.PuzzleSubmissions).Where(p => p.PuzzleSubmissions.Count > 0))
+            var filteredPuzzles = DbContext.Puzzles.AsNoTracking().Include(p => p.PuzzleSubmissions);
+            foreach (var puzzle in filteredPuzzles)
             {
+                if (puzzle.PuzzleSubmissions.Count == 0)
+                    continue;
                 var par = puzzle.PuzzleSubmissions.Min(s => s.Score);
                 foreach (var pg in puzzle.PuzzleSubmissions.GroupBy(s => DbContext.GetUsername(new GopUser(s.UserId, s.IpAddress))))
                 {
