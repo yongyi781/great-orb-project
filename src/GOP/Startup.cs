@@ -78,7 +78,7 @@ namespace GOP
             // Add the following to the request pipeline only in development environment.
             if (env.IsEnvironment("Development"))
             {
-                app.UseErrorPage();
+                app.UseDeveloperExceptionPage();
                 app.UseDatabaseErrorPage(DatabaseErrorPageOptions.ShowAll);
             }
             else
@@ -90,8 +90,7 @@ namespace GOP
 
             app.UseStaticFiles(new StaticFileOptions
             {
-                ServeUnknownFileTypes = true,
-                DefaultContentType = "application/octet-stream"
+                ServeUnknownFileTypes = true
             });
 
             // Add cookie-based authentication to the request pipeline.
