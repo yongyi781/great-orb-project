@@ -46,7 +46,7 @@
         </tr>
     </thead>
     <tr>
-        <td>Maxes</td>
+        <td>Max</td>
         @foreach (var value in Model.Maxes.ScoreValues)
         {
             <td>@value</td>
@@ -55,7 +55,7 @@
         <td>@Model.MaxTotalIndex</td>
     </tr>
     <tr>
-        <td>Mins</td>
+        <td>Min</td>
         @foreach (var value in Model.Mins.ScoreValues)
         {
             <td>@value</td>
@@ -64,7 +64,7 @@
         <td>@Model.MinTotalIndex</td>
     </tr>
     <tr>
-        <td>Averages</td>
+        <td>Average</td>
         @foreach (var value in Model.Averages.ScoreValues)
         {
             <td>@Utilities.FormatValue(value, "F2")</td>
@@ -73,7 +73,7 @@
         <td></td>
     </tr>
     <tr>
-        <td>Stddevs</td>
+        <td>Std. dev.</td>
         @foreach (var value in Model.StandardDeviations.ScoreValues)
         {
             <td>@Utilities.FormatValue(value, "F2")</td>
