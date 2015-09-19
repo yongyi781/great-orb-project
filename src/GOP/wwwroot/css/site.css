@@ -53,10 +53,16 @@ footer, .container {
 }
 
 .chatbox-container {
-    border: 1px solid #999;
     background-color: black;
-    margin: 4px auto;
-    padding: 0 4px;
+}
+
+.chatbox-container .panel-body {
+    padding: 0;
+}
+
+.chat-top-panel {
+    padding: 10px;
+    border-bottom: 1px solid #2a9fd6;
 }
 
 .chatbox-sidebar {
@@ -69,7 +75,7 @@ footer, .container {
     height: 400px;
     min-width: 300px;
     overflow-y: auto;
-    padding: 0 3px;
+    padding: 0 4px;
     white-space: pre-wrap;
     -ms-word-wrap: break-word;
     word-wrap: break-word;

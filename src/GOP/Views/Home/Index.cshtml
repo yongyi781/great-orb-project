@@ -30,42 +30,44 @@
     <li>9/30/2014 - 300k message milestone!</li>
 </ul>
 
-<div><span class="h2">Chat</span> [@ViewBag.NumberOfMessages messages]</div>
 <div id="connectionErrors" class="alert alert-danger" style="display: none;">
 </div>
-<div id="chatArea">
-    <div class="form-inline">
-        <input type="search" id="search" class="form-control" placeholder="Search messages" data-bind="value: search" />
-        <select id="showLastMessagesSelect" class="form-control" data-bind="value: numMessagesToShow">
-            <option value="150" selected>Show last 150 messages</option>
-            <option value="500">Show last 500 messages</option>
-            <option value="1000">Show last 1000 messages</option>
-            <option value="2000">Show last 2000 messages</option>
-        </select>
-        <button type="button" class="btn btn-info" data-toggle="modal" data-target="#commandsModal">Chat commands</button>
-        <button id="lastMessageButton" type="button" class="btn btn-default">Go to last message</button>
+<div id="chatboxContainer" class="chatbox-container panel panel-primary">
+    <div class="panel-heading"><span class="h3 panel-title">Chat</span><div class="pull-right">(@ViewBag.NumberOfMessages messages)</div></div>
+    <div class="panel-body">
+        <div class="chat-top-panel">
+            <div class="form-inline">
+                <input type="search" id="search" class="form-control" placeholder="Search messages" data-bind="value: search" />
+                <select id="showLastMessagesSelect" class="form-control" data-bind="value: numMessagesToShow">
+                    <option value="150" selected>Show last 150 messages</option>
+                    <option value="500">Show last 500 messages</option>
+                    <option value="1000">Show last 1000 messages</option>
+                    <option value="2000">Show last 2000 messages</option>
+                </select>
+                <button type="button" class="btn btn-info" data-toggle="modal" data-target="#commandsModal">Chat commands</button>
+                <button id="lastMessageButton" type="button" class="btn btn-default">Go to last message</button>
+            </div>
+        </div>
+        <div class="chatbox-sidebar pull-right">
+            <p class="text-center">
+                <span id="connectionStatus" class="label label-danger">Disconnected</span>
+            </p>
+            <div><strong>Online Users:</strong></div>
+            <ul class="chat-font" data-bind="foreach: onlineUsers">
+                <li class="username"><span data-bind="css: { 'glyphicon glyphicon-phone': isMobile }"></span><span data-bind="text: username, style: { color: chatColor, 'fontWeight': loggedIn ? 'bold' : 'normal' }"></span></li>
+            </ul>
+        </div>
+        <div id="chatbox" class="chatbox chat-font" data-bind="foreach: messages"><p data-jax="true"><span class="timestamp hidden-xs">[<span data-bind="text: $root.formatTime(timestamp)"></span>]</span> <span class="username" data-bind="text: user.username, style: { color: user.chatColor, 'fontWeight': user.loggedIn ? 'bold' : 'normal' }"></span>: <span data-bind="html: text, style: { textDecoration: $data.deleted ? 'line-through' : 'inherit', color: $data.deleted ? 'red' : 'inherit' }"></span></p></div>
     </div>
+    <form id="messageForm" autocomplete="off" asp-controller="Chat" asp-action="Post">
+        <div class="input-group">
+            <input type="text" id="messageText" class="form-control" name="message" placeholder="Type message here" />
+            <span class="input-group-btn">
+                <button type="submit" id="sendButton" class="btn btn-default">Send</button>
+            </span>
+        </div>
+    </form>
 </div>
-<div id="chatboxContainer" class="chatbox-container">
-    <div class="chatbox-sidebar pull-right">
-        <p class="text-center">
-            <span id="connectionStatus" class="label label-danger">Disconnected</span>
-        </p>
-        <div><strong>Online Users:</strong></div>
-        <ul class="chat-font" data-bind="foreach: onlineUsers">
-            <li class="username"><span data-bind="css: { 'glyphicon glyphicon-phone': isMobile }"></span><span data-bind="text: username, style: { color: chatColor, 'fontWeight': loggedIn ? 'bold' : 'normal' }"></span></li>
-        </ul>
-    </div>
-    <div id="chatbox" class="chatbox chat-font" data-bind="foreach: messages"><p data-jax="true"><span class="timestamp hidden-xs">[<span data-bind="text: $root.formatTime(timestamp)"></span>]</span> <span class="username" data-bind="text: user.username, style: { color: user.chatColor, 'fontWeight': user.loggedIn ? 'bold' : 'normal' }"></span>: <span data-bind="html: text, style: { textDecoration: $data.deleted ? 'line-through' : 'inherit', color: $data.deleted ? 'red' : 'inherit' }"></span></p></div>
-</div>
-<form id="messageForm" autocomplete="off" asp-controller="Chat" asp-action="Post">
-    <div class="input-group">
-        <input type="text" id="messageText" class="form-control" name="message" placeholder="Type message here" />
-        <span class="input-group-btn">
-            <button type="submit" id="sendButton" class="btn btn-default">Send</button>
-        </span>
-    </div>
-</form>
 <div id="chatAlert" class="alert alert-info" style="display: none;">
 </div>
 
