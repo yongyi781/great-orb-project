@@ -2,7 +2,7 @@
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Mvc;
-using Microsoft.Extensions.PlatformAbstractions;
+using Microsoft.Dnx.Runtime;
 using Microsoft.Net.Http.Headers;
 using System;
 using System.Collections.Generic;

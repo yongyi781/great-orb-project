@@ -1,23 +1,26 @@
 ﻿using GOP.Models;
 using Microsoft.AspNet.Builder;
+using Microsoft.AspNet.Diagnostics.Entity;
 using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.Identity.EntityFramework;
 using Microsoft.Data.Entity;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
+using Microsoft.Dnx.Runtime;
+using Microsoft.Framework.Configuration;
+using Microsoft.Framework.DependencyInjection;
+using Microsoft.Framework.Logging;
 using System;
 
 namespace GOP
 {
     public class Startup
     {
-        public Startup(IHostingEnvironment env, Microsoft.Extensions.PlatformAbstractions.IApplicationEnvironment appEnv)
+        public Startup(IHostingEnvironment env, IApplicationEnvironment appEnv)
         {
             // Setup configuration sources.
             var builder = new ConfigurationBuilder()
-                .AddJsonFile("config.json")
-                .AddJsonFile($"config.{env.EnvironmentName}.json", optional: true)
+                .SetBasePath(appEnv.ApplicationBasePath)
+                .AddJsonFile("appsettings.json")
+                .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true)
                 .AddUserSecrets();
             builder.AddEnvironmentVariables();
             Configuration = builder.Build();
@@ -28,9 +31,6 @@ namespace GOP
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            // Add Application settings to the services container.
-            services.Configure<AppSettings>(Configuration);
-
             // Add EF services to the services container.
             services.AddEntityFramework()
                 .AddSqlServer()
@@ -70,7 +70,7 @@ namespace GOP
             if (env.IsEnvironment("Development"))
             {
                 app.UseDeveloperExceptionPage();
-                app.UseDatabaseErrorPage(options => options.EnableAll());
+                app.UseDatabaseErrorPage(DatabaseErrorPageOptions.ShowAll);
             }
             else
             {
@@ -106,6 +106,8 @@ namespace GOP
                     template: "{controller}/{action}/{id?}",
                     defaults: new { controller = "Home", action = "Index" });
             });
+
+            app.UseFileServer(true);
         }
     }
 }

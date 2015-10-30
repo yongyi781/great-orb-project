@@ -20,7 +20,7 @@ namespace GOP.Models
 
         public static GopUser GetCurrentUser(HttpContext context)
         {
-            return new GopUser(context.User.GetUserIdInt32(), context.Connection.RemoteIpAddress.ToString());
+            return context == null ? null : new GopUser(context.User.GetUserIdInt32(), context.Connection.RemoteIpAddress.ToString());
         }
 
         public static bool IsCurrentUser(int? userId, string ipAddress, HttpContext context)

@@ -12,8 +12,8 @@ namespace GOP.Migrations
         protected override void BuildTargetModel(ModelBuilder builder)
         {
             builder
-                .HasAnnotation("ProductVersion", "7.0.0-beta7-13922")
-                .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                .Annotation("ProductVersion", "7.0.0-beta7-13922")
+                .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
             builder.Entity("GOP.Models.ApplicationUser", b =>
                 {
@@ -28,7 +28,7 @@ namespace GOP.Migrations
                         .IsConcurrencyToken();
 
                     b.Property<string>("Email")
-                        .HasAnnotation("MaxLength", 256);
+                        .Annotation("MaxLength", 256);
 
                     b.Property<bool>("EmailConfirmed");
 
@@ -39,10 +39,10 @@ namespace GOP.Migrations
                     b.Property<DateTimeOffset?>("LockoutEnd");
 
                     b.Property<string>("NormalizedEmail")
-                        .HasAnnotation("MaxLength", 256);
+                        .Annotation("MaxLength", 256);
 
                     b.Property<string>("NormalizedUserName")
-                        .HasAnnotation("MaxLength", 256);
+                        .Annotation("MaxLength", 256);
 
                     b.Property<string>("PasswordHash");
 
@@ -55,17 +55,17 @@ namespace GOP.Migrations
                     b.Property<bool>("TwoFactorEnabled");
 
                     b.Property<string>("UserName")
-                        .HasAnnotation("MaxLength", 256);
+                        .Annotation("MaxLength", 256);
 
                     b.HasKey("Id");
 
-                    b.HasIndex("NormalizedEmail")
-                        .HasAnnotation("Relational:Name", "EmailIndex");
+                    b.Index("NormalizedEmail")
+                        .Annotation("Relational:Name", "EmailIndex");
 
-                    b.HasIndex("NormalizedUserName")
-                        .HasAnnotation("Relational:Name", "UserNameIndex");
+                    b.Index("NormalizedUserName")
+                        .Annotation("Relational:Name", "UserNameIndex");
 
-                    b.HasAnnotation("Relational:TableName", "AspNetUsers");
+                    b.Annotation("Relational:TableName", "AspNetUsers");
                 });
 
             builder.Entity("GOP.Models.ChatMessage", b =>
@@ -75,8 +75,8 @@ namespace GOP.Migrations
 
                     b.Property<string>("IpAddress")
                         .IsRequired()
-                        .HasAnnotation("MaxLength", 50)
-                        .HasAnnotation("Relational:ColumnType", "varchar(50)");
+                        .Annotation("MaxLength", 50)
+                        .Annotation("Relational:ColumnType", "varchar(50)");
 
                     b.Property<string>("Text")
                         .IsRequired();
@@ -154,14 +154,14 @@ namespace GOP.Migrations
             builder.Entity("GOP.Models.Nickname", b =>
                 {
                     b.Property<string>("IpAddress")
-                        .HasAnnotation("MaxLength", 50)
-                        .HasAnnotation("Relational:ColumnType", "varchar(50)");
+                        .Annotation("MaxLength", 50)
+                        .Annotation("Relational:ColumnType", "varchar(50)");
 
                     b.Property<DateTimeOffset>("LastChanged");
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasAnnotation("MaxLength", 50);
+                        .Annotation("MaxLength", 50);
 
                     b.HasKey("IpAddress");
                 });
@@ -242,17 +242,17 @@ namespace GOP.Migrations
                         .IsConcurrencyToken();
 
                     b.Property<string>("Name")
-                        .HasAnnotation("MaxLength", 256);
+                        .Annotation("MaxLength", 256);
 
                     b.Property<string>("NormalizedName")
-                        .HasAnnotation("MaxLength", 256);
+                        .Annotation("MaxLength", 256);
 
                     b.HasKey("Id");
 
-                    b.HasIndex("NormalizedName")
-                        .HasAnnotation("Relational:Name", "RoleNameIndex");
+                    b.Index("NormalizedName")
+                        .Annotation("Relational:Name", "RoleNameIndex");
 
-                    b.HasAnnotation("Relational:TableName", "AspNetRoles");
+                    b.Annotation("Relational:TableName", "AspNetRoles");
                 });
 
             builder.Entity("Microsoft.AspNet.Identity.EntityFramework.IdentityRoleClaim<int>", b =>
@@ -268,7 +268,7 @@ namespace GOP.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasAnnotation("Relational:TableName", "AspNetRoleClaims");
+                    b.Annotation("Relational:TableName", "AspNetRoleClaims");
                 });
 
             builder.Entity("Microsoft.AspNet.Identity.EntityFramework.IdentityUserClaim<int>", b =>
@@ -284,7 +284,7 @@ namespace GOP.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasAnnotation("Relational:TableName", "AspNetUserClaims");
+                    b.Annotation("Relational:TableName", "AspNetUserClaims");
                 });
 
             builder.Entity("Microsoft.AspNet.Identity.EntityFramework.IdentityUserLogin<int>", b =>
@@ -299,7 +299,7 @@ namespace GOP.Migrations
 
                     b.HasKey("LoginProvider", "ProviderKey");
 
-                    b.HasAnnotation("Relational:TableName", "AspNetUserLogins");
+                    b.Annotation("Relational:TableName", "AspNetUserLogins");
                 });
 
             builder.Entity("Microsoft.AspNet.Identity.EntityFramework.IdentityUserRole<int>", b =>
@@ -310,71 +310,71 @@ namespace GOP.Migrations
 
                     b.HasKey("UserId", "RoleId");
 
-                    b.HasAnnotation("Relational:TableName", "AspNetUserRoles");
+                    b.Annotation("Relational:TableName", "AspNetUserRoles");
                 });
 
             builder.Entity("GOP.Models.ChatMessage", b =>
                 {
                     b.HasOne("GOP.Models.ApplicationUser")
                         .WithMany()
-                        .HasForeignKey("UserId");
+                        .ForeignKey("UserId");
                 });
 
             builder.Entity("GOP.Models.DeadPracticeResult", b =>
                 {
                     b.HasOne("GOP.Models.ApplicationUser")
                         .WithMany()
-                        .HasForeignKey("UserId");
+                        .ForeignKey("UserId");
                 });
 
             builder.Entity("GOP.Models.PuzzleSubmission", b =>
                 {
                     b.HasOne("GOP.Models.Puzzle")
                         .WithMany()
-                        .HasForeignKey("PuzzleId");
+                        .ForeignKey("PuzzleId");
 
                     b.HasOne("GOP.Models.ApplicationUser")
                         .WithMany()
-                        .HasForeignKey("UserId");
+                        .ForeignKey("UserId");
                 });
 
             builder.Entity("GOP.Models.SoloGame", b =>
                 {
                     b.HasOne("GOP.Models.ApplicationUser")
                         .WithMany()
-                        .HasForeignKey("UserId");
+                        .ForeignKey("UserId");
                 });
 
             builder.Entity("Microsoft.AspNet.Identity.EntityFramework.IdentityRoleClaim<int>", b =>
                 {
                     b.HasOne("Microsoft.AspNet.Identity.EntityFramework.IdentityRole<int>")
                         .WithMany()
-                        .HasForeignKey("RoleId");
+                        .ForeignKey("RoleId");
                 });
 
             builder.Entity("Microsoft.AspNet.Identity.EntityFramework.IdentityUserClaim<int>", b =>
                 {
                     b.HasOne("GOP.Models.ApplicationUser")
                         .WithMany()
-                        .HasForeignKey("UserId");
+                        .ForeignKey("UserId");
                 });
 
             builder.Entity("Microsoft.AspNet.Identity.EntityFramework.IdentityUserLogin<int>", b =>
                 {
                     b.HasOne("GOP.Models.ApplicationUser")
                         .WithMany()
-                        .HasForeignKey("UserId");
+                        .ForeignKey("UserId");
                 });
 
             builder.Entity("Microsoft.AspNet.Identity.EntityFramework.IdentityUserRole<int>", b =>
                 {
                     b.HasOne("Microsoft.AspNet.Identity.EntityFramework.IdentityRole<int>")
                         .WithMany()
-                        .HasForeignKey("RoleId");
+                        .ForeignKey("RoleId");
 
                     b.HasOne("GOP.Models.ApplicationUser")
                         .WithMany()
-                        .HasForeignKey("UserId");
+                        .ForeignKey("UserId");
                 });
         }
     }
