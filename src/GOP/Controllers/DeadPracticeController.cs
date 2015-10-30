@@ -56,7 +56,7 @@ namespace GOP.Controllers
                 {
                     Timestamp = DateTimeOffset.Now,
                     UserId = userId == -1 ? null : userId,
-                    IpAddress = Context.Connection.RemoteIpAddress.ToString(),
+                    IpAddress = HttpContext.Connection.RemoteIpAddress.ToString(),
                     Settings = settings,
                     Data = data
                 };
@@ -64,7 +64,7 @@ namespace GOP.Controllers
                 DbContext.SaveChanges();
             }
 
-            return "http://" + Context.Request.Host + "/DeadPractice/View/" + result.Id;
+            return "http://" + HttpContext.Request.Host + "/DeadPractice/View/" + result.Id;
         }
     }
 }

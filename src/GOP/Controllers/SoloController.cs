@@ -1,7 +1,6 @@
 ﻿using GOP.Models;
 using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Mvc;
-using Microsoft.AspNet.Mvc.ActionResults;
 using Microsoft.Data.Entity;
 using System;
 using System.Collections.Generic;
@@ -68,7 +67,7 @@ namespace GOP.Controllers
             {
                 Timestamp = DateTimeOffset.Now,
                 UserId = User.GetUserIdInt32(),
-                IpAddress = Context.Connection.RemoteIpAddress.ToString(),
+                IpAddress = HttpContext.Connection.RemoteIpAddress.ToString(),
                 NumberOfOrbs = numberOfOrbs,
                 Seed = seed,
                 Altar = altar,

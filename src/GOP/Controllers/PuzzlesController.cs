@@ -23,7 +23,7 @@ namespace GOP.Controllers
         [HttpGet]
         public IActionResult Index(string u)
         {
-            GopUser gopUser = GopUser.GetCurrentUser(Context);
+            GopUser gopUser = GopUser.GetCurrentUser(HttpContext);
             if (u != null)
             {
                 // Try to find user
@@ -43,10 +43,10 @@ namespace GOP.Controllers
             if (puzzle == null)
                 return HttpNotFound();
 
-            var puzzleView = GetPuzzleView(puzzle, GopUser.GetCurrentUser(Context));
+            var puzzleView = GetPuzzleView(puzzle, GopUser.GetCurrentUser(HttpContext));
             var submissions = puzzleView.IsSolved() ?
                 puzzle.PuzzleSubmissions :
-                puzzle.PuzzleSubmissions.Where(s => new GopUser(s.UserId, s.IpAddress).Equals(GopUser.GetCurrentUser(Context)));
+                puzzle.PuzzleSubmissions.Where(s => new GopUser(s.UserId, s.IpAddress).Equals(GopUser.GetCurrentUser(HttpContext)));
 
             var submissionViews = from s in submissions
                                   select GetPuzzleSubmissionView(s);
@@ -54,7 +54,7 @@ namespace GOP.Controllers
             var currentUser = await GetCurrentUserAsync();
             var requireLogin = !User.Identity.IsAuthenticated &&
                 (from s in DbContext.PuzzleSubmissions.AsNoTracking()
-                 where s.IpAddress == Context.Connection.RemoteIpAddress.ToString() && s.UserId != null
+                 where s.IpAddress == HttpContext.Connection.RemoteIpAddress.ToString() && s.UserId != null
                  select 0).Count() > 0;
 
             return View("Puzzle", new PuzzleViewModel
@@ -116,7 +116,7 @@ namespace GOP.Controllers
             {
                 PuzzleId = id,
                 Timestamp = DateTimeOffset.Now,
-                IpAddress = Context.Connection.RemoteIpAddress.ToString(),
+                IpAddress = HttpContext.Connection.RemoteIpAddress.ToString(),
                 UserId = User.GetUserIdInt32(),
                 Score = score,
                 Code = code

@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.Data.Entity.Migrations;
 using Microsoft.Data.Entity.Migrations.Operations;
-using Microsoft.Data.Entity.SqlServer.Metadata;
+using Microsoft.Data.Entity.Metadata;
 
 namespace GOP.Migrations
 {
@@ -15,7 +15,7 @@ namespace GOP.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(nullable: false)
-                        .Annotation("SqlServer:ValueGenerationStrategy", SqlServerIdentityStrategy.IdentityColumn),
+                        .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
                     Code = table.Column<string>(nullable: false),
                     IpAddress = table.Column<string>(nullable: false),
                     PuzzleId = table.Column<int>(nullable: false),

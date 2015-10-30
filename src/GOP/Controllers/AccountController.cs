@@ -11,7 +11,6 @@ using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Mvc.Rendering;
 using GOP;
 using GOP.Models;
-using Microsoft.AspNet.Mvc.ActionResults;
 
 namespace GOP.Controllers
 {

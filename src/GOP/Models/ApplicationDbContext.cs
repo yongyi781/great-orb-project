@@ -120,7 +120,7 @@ namespace GOP.Models
             });
             builder.Entity<Nickname>(b =>
             {
-                b.Key(e => e.IpAddress);
+                b.HasKey(e => e.IpAddress);
                 b.Property(e => e.IpAddress).HasColumnType("varchar(50)");
             });
         }

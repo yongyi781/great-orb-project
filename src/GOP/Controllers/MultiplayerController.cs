@@ -1,6 +1,5 @@
 ﻿using GOP.Models;
 using Microsoft.AspNet.Mvc;
-using Microsoft.AspNet.Mvc.ActionResults;
 using System;
 using System.Linq;
 
@@ -36,7 +35,7 @@ namespace GOP.Controllers
         [HttpPost("api/[controller]/solo")]
         public void PostSolo(int numberOfPlayers, int numberOfOrbs, int seed, int altar, int score, string code)
         {
-            var username = DbContext.GetUsername(GopUser.GetCurrentUser(Context));
+            var username = DbContext.GetUsername(GopUser.GetCurrentUser(HttpContext));
             var usernames = string.Join("; ", Enumerable.Repeat(username, numberOfPlayers));
 
             var game = new MultiplayerGame

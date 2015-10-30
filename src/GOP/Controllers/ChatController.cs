@@ -10,7 +10,6 @@ using GOP.Hubs;
 using Microsoft.Data.Entity.Query;
 using System.Text.RegularExpressions;
 using Microsoft.Data.Entity;
-using Microsoft.AspNet.Mvc.ActionResults;
 
 namespace GOP.Controllers
 {
@@ -147,7 +146,7 @@ namespace GOP.Controllers
             {
                 var chatMessage = new ChatMessage
                 {
-                    IpAddress = Context.Connection.RemoteIpAddress.ToString(),
+                    IpAddress = HttpContext.Connection.RemoteIpAddress.ToString(),
                     Timestamp = DateTimeOffset.Now,
                     UserId = User.GetUserIdInt32(),
                     Text = message
@@ -168,7 +167,7 @@ namespace GOP.Controllers
             if (desiredName.Length > 50)
                 throw new InvalidOperationException("Nickname cannot be more than 50 characters long.");
 
-            var ipAddress = Context.Connection.RemoteIpAddress.ToString();
+            var ipAddress = HttpContext.Connection.RemoteIpAddress.ToString();
             var nick = DbContext.Nicknames.SingleOrDefault(e => e.IpAddress == ipAddress);
             if (nick != null)
             {
@@ -194,7 +193,7 @@ namespace GOP.Controllers
 
         private void ClearNickname()
         {
-            var ipAddress = Context.Connection.RemoteIpAddress.ToString();
+            var ipAddress = HttpContext.Connection.RemoteIpAddress.ToString();
             var nick = DbContext.Nicknames.SingleOrDefault(e => e.IpAddress == ipAddress);
             if (nick != null)
             {
@@ -210,7 +209,7 @@ namespace GOP.Controllers
         private void EditLastMessage(string newMessage, bool force = false)
         {
             var last = DbContext.ChatMessages.OrderByDescending(m => m.Id).FirstOrDefault();
-            if (!force && !GopUser.GetCurrentUser(Context).Equals(new GopUser(last.UserId, last.IpAddress)))
+            if (!force && !GopUser.GetCurrentUser(HttpContext).Equals(new GopUser(last.UserId, last.IpAddress)))
                 throw new InvalidOperationException("The last message was written by someone else. You cannot edit someone else's message.");
             last.Text = newMessage;
             last.Timestamp = DateTimeOffset.Now;
@@ -224,7 +223,7 @@ namespace GOP.Controllers
             if (last == null)
                 throw new InvalidOperationException("There are no chat messages.");
             int lastId = last.Id;
-            if (!force && !GopUser.GetCurrentUser(Context).Equals(new GopUser(last.UserId, last.IpAddress)))
+            if (!force && !GopUser.GetCurrentUser(HttpContext).Equals(new GopUser(last.UserId, last.IpAddress)))
                 throw new InvalidOperationException("The last message was written by someone else. You cannot delete someone else's message.");
             DbContext.ChatMessages.Remove(last);
             DbContext.SaveChanges();

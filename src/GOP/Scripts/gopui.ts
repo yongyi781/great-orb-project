@@ -332,7 +332,7 @@ class GopUI {
         this.$plusTicksButton.click(() => this.onPlusTicksClicked());
         this.$restartButton.click(() => {
             if (this.options.client.allowInput)
-                this.restartGame()
+                this.restartGame(undefined, undefined, undefined, this.player.index);
         });
 
         this.$popupMenu
