@@ -75,7 +75,7 @@ namespace GOP.Controllers
                 return HttpBadRequest("You entered an empty message.");
             message = message.TrimEnd();
 
-            if (message[0] == '/')
+            if (message[0] == '/' && message.Length > 1)
             {
                 var command = message.Substring(1).Split(new char[] { ' ' }, 2, StringSplitOptions.RemoveEmptyEntries);
                 if (command.Length >= 1)
