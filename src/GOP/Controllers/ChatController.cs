@@ -1,15 +1,12 @@
-﻿using System;
+﻿using GOP.Hubs;
+using GOP.Models;
+using Microsoft.AspNet.Mvc;
+using Microsoft.AspNet.SignalR;
+using Microsoft.Data.Entity;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNet.Mvc;
-using System.Security.Claims;
-using GOP.Models;
-using Microsoft.AspNet.SignalR;
-using GOP.Hubs;
-using Microsoft.Data.Entity.Query;
 using System.Text.RegularExpressions;
-using Microsoft.Data.Entity;
 
 namespace GOP.Controllers
 {
@@ -162,7 +159,7 @@ namespace GOP.Controllers
 
         private void SetNickname(string desiredName)
         {
-            if (Regex.IsMatch(desiredName, @"\$\$|[^a-zA-Z0-9 $\\{}^_-]") || desiredName.Count(c => c == '$') % 2 != 0)
+            if (Regex.IsMatch(desiredName, @"\$\$|[^A-zÀ-ÿ0-9 $\\{}^_-]") || desiredName.Count(c => c == '$') % 2 != 0)
                 throw new InvalidOperationException("Invalid nickname.");
             if (desiredName.Length > 50)
                 throw new InvalidOperationException("Nickname cannot be more than 50 characters long.");

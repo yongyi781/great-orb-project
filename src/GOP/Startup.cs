@@ -1,13 +1,13 @@
 ﻿using GOP.Models;
 using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.Diagnostics.Entity;
 using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.Identity.EntityFramework;
+using Microsoft.AspNet.StaticFiles;
 using Microsoft.Data.Entity;
-using Microsoft.Dnx.Runtime;
-using Microsoft.Framework.Configuration;
-using Microsoft.Framework.DependencyInjection;
-using Microsoft.Framework.Logging;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.PlatformAbstractions;
 using System;
 
 namespace GOP
@@ -60,17 +60,17 @@ namespace GOP
         }
 
         // Configure is called after ConfigureServices is called.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerfactory)
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
         {
             // Add the console logger.
-            loggerfactory.AddConsole(LogLevel.Information);
+            loggerFactory.AddConsole(LogLevel.Warning);
 
             //app.UseStatusCodePages();
             // Add the following to the request pipeline only in development environment.
             if (env.IsEnvironment("Development"))
             {
                 app.UseDeveloperExceptionPage();
-                app.UseDatabaseErrorPage(DatabaseErrorPageOptions.ShowAll);
+                app.UseDatabaseErrorPage(options => options.EnableAll());
             }
             else
             {
@@ -80,9 +80,9 @@ namespace GOP
             }
 
             // Add the platform handler to the request pipeline.
-            app.UseIISPlatformHandler();
+            //app.UseIISPlatformHandler();
 
-            app.UseStaticFiles();
+            app.UseStaticFiles(new StaticFileOptions { ServeUnknownFileTypes = true });
 
             // Add cookie-based authentication to the request pipeline.
             app.UseIdentity();

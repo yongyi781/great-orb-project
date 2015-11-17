@@ -1,16 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Claims;
-using System.Security.Principal;
-using System.Threading.Tasks;
-using Microsoft.AspNet.Authentication;
+﻿using GOP.Models;
 using Microsoft.AspNet.Authorization;
 using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Mvc;
-using Microsoft.AspNet.Mvc.Rendering;
-using GOP;
-using GOP.Models;
+using System;
+using System.Security.Claims;
+using System.Threading.Tasks;
 
 namespace GOP.Controllers
 {

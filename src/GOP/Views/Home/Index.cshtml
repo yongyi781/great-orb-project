@@ -240,6 +240,7 @@
                 });
             }
 
+            $.connection.hub.logging = true;
             $.connection.hub.error(function (error) {
                 $("#connectionErrors").text(error).show();
                 $.connection.hub.stop();

@@ -29,7 +29,7 @@ namespace GOP.Controllers
 
         public IActionResult Test()
         {
-            return View();
+            return View(DbContext.PuzzleSubmissions.ToList());
         }
 
         public IActionResult Test3D()
