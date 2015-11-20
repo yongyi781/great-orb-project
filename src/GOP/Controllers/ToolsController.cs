@@ -27,6 +27,11 @@ namespace GOP.Controllers
             return View();
         }
 
+        public IActionResult Cookies()
+        {
+            return View(Request.Cookies);
+        }
+
         public IActionResult Test()
         {
             return View(DbContext.PuzzleSubmissions.ToList());

@@ -14,11 +14,10 @@ namespace GOP
 {
     public class Startup
     {
-        public Startup(IHostingEnvironment env, IApplicationEnvironment appEnv)
+        public Startup(IHostingEnvironment env)
         {
             // Setup configuration sources.
             var builder = new ConfigurationBuilder()
-                .SetBasePath(appEnv.ApplicationBasePath)
                 .AddJsonFile("appsettings.json")
                 .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true)
                 .AddUserSecrets();
@@ -26,7 +25,7 @@ namespace GOP
             Configuration = builder.Build();
         }
 
-        public IConfiguration Configuration { get; set; }
+        public IConfigurationRoot Configuration { get; set; }
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
@@ -68,7 +67,7 @@ namespace GOP
 
             //app.UseStatusCodePages();
             // Add the following to the request pipeline only in development environment.
-            if (env.IsEnvironment("Development"))
+            if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
                 app.UseDatabaseErrorPage(options => options.EnableAll());
@@ -81,7 +80,7 @@ namespace GOP
             }
 
             // Add the platform handler to the request pipeline.
-            app.UseIISPlatformHandler();
+            //app.UseIISPlatformHandler();
 
             app.UseStaticFiles(new StaticFileOptions { ServeUnknownFileTypes = true });
 
@@ -99,13 +98,12 @@ namespace GOP
             {
                 routes.MapRoute(
                     name: "areaRoute",
-                    template: "{area:exists}/{action}",
-                    defaults: new { controller = "Home", action = "Index" });
+                    template: "{area:exists}/{action=Index}",
+                    defaults: new { controller = "Home" });
 
                 routes.MapRoute(
                     name: "default",
-                    template: "{controller}/{action}/{id?}",
-                    defaults: new { controller = "Home", action = "Index" });
+                    template: "{controller=Home}/{action=Index}/{id?}");
             });
 
             app.UseFileServer(true);
