@@ -63,7 +63,8 @@ namespace GOP
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
         {
             // Add the console logger.
-            loggerFactory.AddConsole(LogLevel.Warning);
+            loggerFactory.AddConsole(Configuration.GetSection("Logging"));
+            loggerFactory.AddDebug();
 
             //app.UseStatusCodePages();
             // Add the following to the request pipeline only in development environment.
@@ -80,7 +81,7 @@ namespace GOP
             }
 
             // Add the platform handler to the request pipeline.
-            //app.UseIISPlatformHandler();
+            app.UseIISPlatformHandler();
 
             app.UseStaticFiles(new StaticFileOptions { ServeUnknownFileTypes = true });
 
@@ -109,5 +110,8 @@ namespace GOP
 
             app.UseFileServer(true);
         }
+
+        // Entry point for the application.
+        public static void Main(string[] args) => WebApplication.Run<Startup>(args);
     }
 }
