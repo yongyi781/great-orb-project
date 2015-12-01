@@ -1,11 +1,14 @@
 using System.Threading;
 
-public class KickCounter
+namespace GOP
 {
-	private int count;
+    public class KickCounter
+    {
+        private int count;
 
-	public int Kick()
-	{
-		return Interlocked.Increment(ref count);
-	}
+        public int Kick()
+        {
+            return Interlocked.Increment(ref count);
+        }
+    }
 }

@@ -1,15 +1,11 @@
-﻿using System;
+﻿using GOP.Areas.Admin.Models;
+using GOP.Hubs;
+using GOP.Models;
+using Microsoft.AspNet.Authorization;
+using Microsoft.AspNet.Mvc;
+using Microsoft.Data.Entity;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNet.Mvc;
-using GOP.Models;
-using GOP.Hubs;
-using GOP.Areas.Admin.Models;
-using Microsoft.Data.Entity;
-using Microsoft.AspNet.Authorization;
-
-// For more information on enabling MVC for empty projects, visit http://go.microsoft.com/fwlink/?LinkID=397860
 
 namespace GOP.Areas.Admin.Controllers
 {
