@@ -165,7 +165,8 @@
                 hub = $.connection.chatHub,
                 lastMessage,
                 viewModel = new ChatViewModel(),
-                hidden = "hidden";
+                hidden = "hidden",
+                forceScrollThreshold = 100;
 
             function ChatViewModel() {
                 var self = this;
@@ -265,7 +266,7 @@
             };
 
             hub.client.addMessage = function (message) {
-                var forceScroll = chatbox.scrollHeight - chatbox.scrollTop - chatbox.clientHeight < 200;
+                var forceScroll = chatbox.scrollHeight - chatbox.scrollTop - chatbox.clientHeight < forceScrollThreshold;
                 viewModel.messages.push(message);
                 reScroll(forceScroll);
                 MathJax.Hub.Queue(["Typeset", MathJax.Hub, $("#chatbox [data-jax=true]").last()[0]], [reScroll, forceScroll]);
@@ -277,7 +278,7 @@
             };
 
             hub.client.editLastMessage = function (message) {
-                var forceScroll = chatbox.scrollHeight - chatbox.scrollTop - chatbox.clientHeight < 200;
+                var forceScroll = chatbox.scrollHeight - chatbox.scrollTop - chatbox.clientHeight < forceScrollThreshold;
                 var selected = ko.utils.arrayFirst(viewModel.messages(), function (m) {
                     return m.id === message.id;
                 });
