@@ -3,11 +3,10 @@ var gulp = require("gulp"),
     concat = require("gulp-concat"),
     cssmin = require("gulp-cssmin"),
     rename = require("gulp-rename"),
-    uglify = require("gulp-uglify"),
-    project = require("./project.json");
+    uglify = require("gulp-uglify");
 
 var paths = {
-    webroot: "./" + project.webroot + "/",
+    webroot: "./wwwroot/",
     emulatorScripts: [
         "./Scripts/polyfills.js",
         "./Scripts/Engine/Enums.js",

@@ -31,7 +31,7 @@ namespace GOP.Models
             Id = message.Id,
             Timestamp = message.Timestamp,
             User = GetChatMessageViewUser(new GopUser(message.UserId, message.IpAddress)),
-            Text = Utilities.FormatChatMessage(message.Text)
+            Text = message.Text
         };
 
         public ChatMessageViewUser GetChatMessageViewUser(GopUser user)
@@ -58,8 +58,17 @@ namespace GOP.Models
             }
             else
             {
-                if (CacheViewUsers && ipAddressToViewUserCache.TryGetValue(user.IpAddress, out viewUser))
-                    return viewUser;
+                if (CacheViewUsers)
+                {
+                    if (ipAddressToViewUserCache.TryGetValue(user.IpAddress, out viewUser))
+                        return viewUser;
+                    return new ChatMessageViewUser
+                    {
+                        Username = user.IpAddress,
+                        ChatColor = DefaultChatColor,
+                        LoggedIn = false
+                    };
+                }
 
                 viewUser = new ChatMessageViewUser
                 {
