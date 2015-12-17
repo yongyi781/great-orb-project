@@ -564,7 +564,7 @@ class GopUI {
     }
 
     getEstimatedScore() {
-        var offset = 2.5;
+        var offset = 3;
         return this.gameState.currentTick === 0 ? 0 : Math.round(this.gameState.score * (GameState.ticksPerAltar - offset) / (Math.max(1, this.gameState.currentTick - offset)));
     }
 
