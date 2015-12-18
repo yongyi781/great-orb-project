@@ -31,7 +31,7 @@ namespace GOP.Models
             Id = message.Id,
             Timestamp = message.Timestamp,
             User = GetChatMessageViewUser(new GopUser(message.UserId, message.IpAddress)),
-            Text = message.Text
+            Text = Utilities.FormatChatMessage(message.Text)
         };
 
         public ChatMessageViewUser GetChatMessageViewUser(GopUser user)
