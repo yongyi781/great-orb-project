@@ -9,6 +9,7 @@ using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Mvc;
 using GOP;
 using GOP.Models;
+using GOP.ViewModels;
 
 namespace GOP.Controllers
 {

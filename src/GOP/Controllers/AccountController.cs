@@ -1,4 +1,5 @@
 ﻿using GOP.Models;
+using GOP.ViewModels;
 using Microsoft.AspNet.Authorization;
 using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Mvc;

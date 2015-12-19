@@ -1,9 +1,10 @@
-﻿using Microsoft.AspNet.Http;
+﻿using GOP.Models;
+using Microsoft.AspNet.Http;
 using Newtonsoft.Json;
 using System;
 using System.Text.RegularExpressions;
 
-namespace GOP.Models
+namespace GOP.ViewModels
 {
     public class ChatUserOnlineView
     {

@@ -1,8 +1,4 @@
-﻿using GOP.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using GOP.ViewModels;
 using Xunit;
 
 namespace GOP.Tests

@@ -1,7 +1,7 @@
 ﻿using Newtonsoft.Json.Linq;
 using System;
 
-namespace GOP.Models
+namespace GOP.ViewModels
 {
     public class DeadPracticeResultViewModel
     {

@@ -1,4 +1,4 @@
-﻿namespace GOP.Models
+﻿namespace GOP.ViewModels
 {
     public class IndexViewModel
     {

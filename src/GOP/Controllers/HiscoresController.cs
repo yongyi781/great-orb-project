@@ -1,4 +1,5 @@
 ﻿using GOP.Models;
+using GOP.ViewModels;
 using Microsoft.AspNet.Mvc;
 using Microsoft.Data.Entity;
 using System;

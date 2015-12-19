@@ -1,8 +1,9 @@
-﻿using Newtonsoft.Json;
+﻿using GOP.Models;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 
-namespace GOP.Models
+namespace GOP.ViewModels
 {
     public class SoloGameView
     {

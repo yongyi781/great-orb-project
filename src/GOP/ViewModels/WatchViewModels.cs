@@ -1,4 +1,6 @@
-﻿namespace GOP.Models
+﻿using GOP.Models;
+
+namespace GOP.ViewModels
 {
     public enum GameType { Solo, Multiplayer }
 

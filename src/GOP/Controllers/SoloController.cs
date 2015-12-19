@@ -1,4 +1,5 @@
 ﻿using GOP.Models;
+using GOP.ViewModels;
 using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Mvc;
 using Microsoft.Data.Entity;
@@ -35,7 +36,7 @@ namespace GOP.Controllers
 
             var isCustomGameType = spawns != null || reach != DefaultReach;
             var currentUser = await GetCurrentUserAsync();
-                
+
             return View(new SoloViewModel
             {
                 CustomAltar = customAltar,
@@ -44,7 +45,7 @@ namespace GOP.Controllers
                 GopControls = currentUser?.GopControls
             });
         }
-        
+
         [HttpGet("api/[controller]")]
         public IEnumerable<SoloGameView> Get()
         {

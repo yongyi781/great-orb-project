@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace GOP.Models
+namespace GOP.ViewModels
 {
     public class ExternalLoginConfirmationViewModel
     {

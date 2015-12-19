@@ -1,5 +1,6 @@
 ﻿using GOP.Hubs;
 using GOP.Models;
+using GOP.ViewModels;
 using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.SignalR;
 using Microsoft.Data.Entity;
