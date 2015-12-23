@@ -18,7 +18,6 @@
     "Microsoft.AspNet.Mvc": "6.0.0-*",
     "Microsoft.AspNet.Mvc.TagHelpers": "6.0.0-*",
     "Microsoft.AspNet.Server.Kestrel": "1.0.0-*",
-    "Microsoft.AspNet.Server.WebListener": "1.0.0-*",
     "Microsoft.AspNet.SignalR.Server": "3.0.0-*",
     "Microsoft.AspNet.StaticFiles": "1.0.0-*",
     "Microsoft.AspNet.Tooling.Razor": "1.0.0-*",
@@ -32,8 +31,8 @@
   },
 
   "commands": {
-    "web": "Microsoft.AspNet.Server.Kestrel",
-    "web2": "Microsoft.AspNet.Server.Kestrel --server.urls http://+:80/",
+    "web": "GOP",
+    "web2": "GOP --server.urls http://+:80/",
     "gen": "Microsoft.Framework.CodeGeneration",
     "ef": "EntityFramework.Commands"
   },

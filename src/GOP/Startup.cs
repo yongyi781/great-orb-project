@@ -1,4 +1,5 @@
 ﻿using GOP.Models;
+using Microsoft.AspNet.Authentication.Cookies;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.Identity.EntityFramework;
@@ -79,16 +80,18 @@ namespace GOP
             }
 
             // Add the platform handler to the request pipeline.
-            //app.UseIISPlatformHandler();
+            app.UseIISPlatformHandler();
 
             app.UseStaticFiles(new StaticFileOptions { ServeUnknownFileTypes = true });
 
             // Add cookie-based authentication to the request pipeline.
             app.UseIdentity();
+            app.UseCookieAuthentication();
             app.UseFacebookAuthentication(options =>
             {
                 options.AppId = Configuration["Authentication:Facebook:AppId"];
                 options.AppSecret = Configuration["Authentication:Facebook:AppSecret"];
+                options.SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
             });
             app.UseSignalR();
 
@@ -109,6 +112,14 @@ namespace GOP
         }
 
         // Entry point for the application.
-        public static void Main(string[] args) => WebApplication.Run<Startup>(args);
+        public static void Main(string[] args)
+        {
+            var application = new WebApplicationBuilder()
+                .UseConfiguration(WebApplicationConfiguration.GetDefault(args))
+                .UseStartup<Startup>()
+                .Build();
+
+            application.Run();
+        }
     }
 }
