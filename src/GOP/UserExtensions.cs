@@ -6,7 +6,7 @@ namespace GOP
     {
         public static int? GetUserIdInt32(this ClaimsPrincipal user)
         {
-            string id = PrincipalExtensions.GetUserId(user);
+            string id = user.GetUserId();
             return id == null ? null : (int?)int.Parse(id);
         }
     }

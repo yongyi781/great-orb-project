@@ -2,6 +2,7 @@
 using Microsoft.AspNet.Authentication.Cookies;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Hosting;
+using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.EntityFramework;
 using Microsoft.AspNet.StaticFiles;
 using Microsoft.Data.Entity;
@@ -80,18 +81,16 @@ namespace GOP
             }
 
             // Add the platform handler to the request pipeline.
-            app.UseIISPlatformHandler();
+            //app.UseIISPlatformHandler();
 
             app.UseStaticFiles(new StaticFileOptions { ServeUnknownFileTypes = true });
 
             // Add cookie-based authentication to the request pipeline.
             app.UseIdentity();
-            app.UseCookieAuthentication();
             app.UseFacebookAuthentication(options =>
             {
                 options.AppId = Configuration["Authentication:Facebook:AppId"];
                 options.AppSecret = Configuration["Authentication:Facebook:AppSecret"];
-                options.SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
             });
             app.UseSignalR();
 
