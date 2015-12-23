@@ -86,7 +86,7 @@ namespace GOP.Controllers
                 // If the user does not have an account, then ask the user to create an account.
                 ViewData["ReturnUrl"] = returnUrl;
                 ViewData["LoginProvider"] = info.LoginProvider;
-                return View("ExternalLoginConfirmation", new ExternalLoginConfirmationViewModel { ChatColor = RandomColor() });
+                return View(nameof(ExternalLoginConfirmation), new ExternalLoginConfirmationViewModel { ChatColor = RandomColor() });
             }
         }
 

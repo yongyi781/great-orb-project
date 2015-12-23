@@ -6,8 +6,11 @@ namespace GOP
     {
         public static int? GetUserIdInt32(this ClaimsPrincipal user)
         {
-            string id = user.GetUserId();
-            return id == null ? null : (int?)int.Parse(id);
+            string idStr = user.GetUserId();
+            int id;
+            if (idStr != null && int.TryParse(idStr, out id))
+                return id;
+            return null;
         }
     }
 }

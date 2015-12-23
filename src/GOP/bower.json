@@ -10,9 +10,6 @@
     "jquery-validation-unobtrusive": "*",
     "knockout": "*",
     "signalr": "*",
-    "font-awesome": "4.4.0"
-  },
-  "resolutions": {
-    "font-awesome": "4.4.0"
+    "font-awesome": "*"
   }
 }

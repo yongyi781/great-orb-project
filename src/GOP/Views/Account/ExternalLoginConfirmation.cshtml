@@ -6,10 +6,10 @@
 <h2>@ViewData["Title"].</h2>
 <h3>Associate your @ViewData["LoginProvider"] account.</h3>
 
-<form asp-controller="Account" asp-action="ExternalLoginConfirmation" asp-route-returnurl="@ViewBag.ReturnUrl" method="post" class="form-horizontal" role="form">
-    <h4>Association Form</h4>
+<form asp-controller="Account" asp-action="ExternalLoginConfirmation" asp-route-returnurl="@ViewData["ReturnUrl"]" method="post" class="form-horizontal" role="form">
+    <h4>Associate your Facebook account</h4>
     <hr />
-    <div asp-validation-summary="ValidationSummary.All" class="text-danger"></div>
+    <div asp-validation-summary="All" class="text-danger"></div>
 
     <p class="text-info">
         You've successfully authenticated with <strong>@ViewData["LoginProvider"]</strong>.
