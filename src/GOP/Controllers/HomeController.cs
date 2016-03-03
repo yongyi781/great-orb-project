@@ -1,13 +1,14 @@
 ﻿using GOP.Models;
-using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Identity;
-using Microsoft.AspNet.Mvc;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.PlatformAbstractions;
 using Microsoft.Net.Http.Headers;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace GOP.Controllers
 {
@@ -40,10 +41,10 @@ namespace GOP.Controllers
         }
 
         [HttpPost]
-        public IActionResult Upload(IFormFile file)
+        public async Task<IActionResult> Upload(IFormFile file)
         {
             if (file == null)
-                return HttpBadRequest("There is no file.");
+                return BadRequest("There is no file.");
             var header = ContentDispositionHeaderValue.Parse(file.ContentDisposition);
             var fileNameWithExt = header.FileName.Trim('"');
             var fileName = Path.GetFileNameWithoutExtension(fileNameWithExt);
@@ -67,7 +68,12 @@ namespace GOP.Controllers
                 fileNameWithExt = fileName + (++i) + ext;
             }
             if (!alreadyExists)
-                file.SaveAs(Path.Combine(targetDir, fileNameWithExt));
+            {
+                using (var fs = System.IO.File.OpenWrite(Path.Combine(targetDir, fileNameWithExt)))
+                {
+                    await file.CopyToAsync(fs);
+                }
+            }
 
             return Content("http://" + Request.Host + "/uploads/" + Uri.EscapeDataString(fileNameWithExt));
         }

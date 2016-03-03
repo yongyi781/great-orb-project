@@ -1,6 +1,7 @@
 ﻿using GOP.Models;
 using GOP.ViewModels;
-using Microsoft.AspNet.Mvc;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
@@ -13,6 +14,9 @@ namespace GOP.Controllers
         [FromServices]
         public ApplicationDbContext DbContext { get; set; }
 
+        [FromServices]
+        public UserManager<ApplicationUser> UserManager { get; set; }
+
         public IActionResult Index()
         {
             return View();
@@ -22,7 +26,7 @@ namespace GOP.Controllers
         {
             var result = DbContext.DeadPracticeResults.SingleOrDefault(r => r.Id == id);
             if (result == null)
-                return HttpNotFound();
+                return NotFound();
 
             var data = JArray.Parse(result.Data);
             var count = data.Count;
@@ -47,7 +51,7 @@ namespace GOP.Controllers
         [HttpPost("api/[controller]")]
         public string Post(string settings, string data)
         {
-            var userId = User.GetUserIdInt32();
+            var userId = UserManager.GetUserIdInt32(User);
 
             // First try to find it in the database
             var result = DbContext.DeadPracticeResults.Where(r => r.Settings == settings && r.Data == data).FirstOrDefault();

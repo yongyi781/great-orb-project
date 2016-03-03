@@ -1,6 +1,6 @@
 ﻿using GOP.Models;
 using GOP.ViewModels;
-using Microsoft.AspNet.SignalR;
+using Microsoft.AspNetCore.SignalR;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;

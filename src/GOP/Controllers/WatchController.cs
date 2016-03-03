@@ -1,6 +1,6 @@
 ﻿using GOP.Models;
 using GOP.ViewModels;
-using Microsoft.AspNet.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using System.Linq;
 
 namespace GOP.Controllers
@@ -27,7 +27,7 @@ namespace GOP.Controllers
             }
 
             if (game == null)
-                return HttpNotFound();
+                return NotFound();
 
             // See if needs a custom altar
             CustomAltar customAltar = null;

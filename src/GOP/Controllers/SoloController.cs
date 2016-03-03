@@ -1,12 +1,11 @@
 ﻿using GOP.Models;
 using GOP.ViewModels;
-using Microsoft.AspNet.Identity;
-using Microsoft.AspNet.Mvc;
-using Microsoft.Data.Entity;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace GOP.Controllers
@@ -16,6 +15,7 @@ namespace GOP.Controllers
         public const int DefaultMaxRandomSeed = 200;
         public const int MaxOrbs = 52;
         public const int DefaultReach = 10;
+        public const int DefaultTicks = 199;
 
         [FromServices]
         public ApplicationDbContext DbContext { get; set; }
@@ -23,7 +23,7 @@ namespace GOP.Controllers
         [FromServices]
         public UserManager<ApplicationUser> UserManager { get; set; }
 
-        public async Task<IActionResult> Index(int? altar, string spawns, int reach = DefaultReach, int numOrbs = 3)
+        public async Task<IActionResult> Index(int? altar, string spawns, int reach = DefaultReach, int numOrbs = 3, int ticks = DefaultTicks)
         {
             DbContext.CacheViewUsers = true;
             DbContext.LoadUsersIntoCache();
@@ -34,7 +34,7 @@ namespace GOP.Controllers
 
             var soloGames = GetSoloGames();
 
-            var isCustomGameType = spawns != null || reach != DefaultReach;
+            var isCustomGameType = spawns != null || reach != DefaultReach || ticks != DefaultTicks;
             var currentUser = await GetCurrentUserAsync();
 
             return View(new SoloViewModel
@@ -57,7 +57,7 @@ namespace GOP.Controllers
         {
             var result = DbContext.SoloGames.Where(g => g.Id == id).FirstOrDefault();
             if (result == null)
-                return HttpNotFound();
+                return NotFound();
             return new ObjectResult(GetSoloGameView(result));
         }
 
@@ -67,7 +67,7 @@ namespace GOP.Controllers
             var soloGame = new SoloGame
             {
                 Timestamp = DateTimeOffset.Now,
-                UserId = User.GetUserIdInt32(),
+                UserId = UserManager.GetUserIdInt32(User),
                 IpAddress = HttpContext.Connection.RemoteIpAddress.ToString(),
                 NumberOfOrbs = numberOfOrbs,
                 Seed = seed,
@@ -98,7 +98,7 @@ namespace GOP.Controllers
 
         private async Task<ApplicationUser> GetCurrentUserAsync()
         {
-            return await UserManager.FindByIdAsync(User.GetUserId());
+            return await UserManager.FindByIdAsync(UserManager.GetUserId(User));
         }
     }
 }

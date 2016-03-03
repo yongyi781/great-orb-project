@@ -1,8 +1,8 @@
 using System;
-using Microsoft.Data.Entity;
-using Microsoft.Data.Entity.Metadata;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata;
 using GOP.Models;
-using Microsoft.Data.Entity.Infrastructure;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 
 namespace GOP.Migrations
 {
@@ -115,7 +115,7 @@ namespace GOP.Migrations
                     b.HasKey("IpAddress");
                 });
 
-            builder.Entity("Microsoft.AspNet.Identity.EntityFramework.IdentityRole<int>", b =>
+            builder.Entity("Microsoft.AspNetCore.Identity.EntityFramework.IdentityRole<int>", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd();
@@ -137,7 +137,7 @@ namespace GOP.Migrations
                     b.HasAnnotation("Relational:TableName", "AspNetRoles");
                 });
 
-            builder.Entity("Microsoft.AspNet.Identity.EntityFramework.IdentityRoleClaim<int>", b =>
+            builder.Entity("Microsoft.AspNetCore.Identity.EntityFramework.IdentityRoleClaim<int>", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd();
@@ -153,7 +153,7 @@ namespace GOP.Migrations
                     b.HasAnnotation("Relational:TableName", "AspNetRoleClaims");
                 });
 
-            builder.Entity("Microsoft.AspNet.Identity.EntityFramework.IdentityUserClaim<int>", b =>
+            builder.Entity("Microsoft.AspNetCore.Identity.EntityFramework.IdentityUserClaim<int>", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd();
@@ -169,7 +169,7 @@ namespace GOP.Migrations
                     b.HasAnnotation("Relational:TableName", "AspNetUserClaims");
                 });
 
-            builder.Entity("Microsoft.AspNet.Identity.EntityFramework.IdentityUserLogin<int>", b =>
+            builder.Entity("Microsoft.AspNetCore.Identity.EntityFramework.IdentityUserLogin<int>", b =>
                 {
                     b.Property<string>("LoginProvider");
 
@@ -184,7 +184,7 @@ namespace GOP.Migrations
                     b.HasAnnotation("Relational:TableName", "AspNetUserLogins");
                 });
 
-            builder.Entity("Microsoft.AspNet.Identity.EntityFramework.IdentityUserRole<int>", b =>
+            builder.Entity("Microsoft.AspNetCore.Identity.EntityFramework.IdentityUserRole<int>", b =>
                 {
                     b.Property<int>("UserId");
 
@@ -202,30 +202,30 @@ namespace GOP.Migrations
                         .HasForeignKey("UserId");
                 });
 
-            builder.Entity("Microsoft.AspNet.Identity.EntityFramework.IdentityRoleClaim<int>", b =>
+            builder.Entity("Microsoft.AspNetCore.Identity.EntityFramework.IdentityRoleClaim<int>", b =>
                 {
-                    b.HasOne("Microsoft.AspNet.Identity.EntityFramework.IdentityRole<int>")
+                    b.HasOne("Microsoft.AspNetCore.Identity.EntityFramework.IdentityRole<int>")
                         .WithMany()
                         .HasForeignKey("RoleId");
                 });
 
-            builder.Entity("Microsoft.AspNet.Identity.EntityFramework.IdentityUserClaim<int>", b =>
+            builder.Entity("Microsoft.AspNetCore.Identity.EntityFramework.IdentityUserClaim<int>", b =>
                 {
                     b.HasOne("GOP.Models.ApplicationUser")
                         .WithMany()
                         .HasForeignKey("UserId");
                 });
 
-            builder.Entity("Microsoft.AspNet.Identity.EntityFramework.IdentityUserLogin<int>", b =>
+            builder.Entity("Microsoft.AspNetCore.Identity.EntityFramework.IdentityUserLogin<int>", b =>
                 {
                     b.HasOne("GOP.Models.ApplicationUser")
                         .WithMany()
                         .HasForeignKey("UserId");
                 });
 
-            builder.Entity("Microsoft.AspNet.Identity.EntityFramework.IdentityUserRole<int>", b =>
+            builder.Entity("Microsoft.AspNetCore.Identity.EntityFramework.IdentityUserRole<int>", b =>
                 {
-                    b.HasOne("Microsoft.AspNet.Identity.EntityFramework.IdentityRole<int>")
+                    b.HasOne("Microsoft.AspNetCore.Identity.EntityFramework.IdentityRole<int>")
                         .WithMany()
                         .HasForeignKey("RoleId");
 

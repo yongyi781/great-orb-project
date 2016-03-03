@@ -1,9 +1,10 @@
 ﻿using GOP.Hubs;
 using GOP.Models;
 using GOP.ViewModels;
-using Microsoft.AspNet.Mvc;
-using Microsoft.AspNet.SignalR;
-using Microsoft.Data.Entity;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,6 +17,9 @@ namespace GOP.Controllers
     {
         [FromServices]
         public ApplicationDbContext DbContext { get; set; }
+
+        [FromServices]
+        public UserManager<ApplicationUser> UserManager { get; set; }
 
         [FromServices]
         public IHubContext<ChatHub> ChatHub { get; set; }
@@ -64,7 +68,7 @@ namespace GOP.Controllers
         {
             var result = DbContext.ChatMessages.Where(m => m.Id == id).FirstOrDefault();
             if (result == null)
-                return HttpNotFound();
+                return NotFound();
             return new ObjectResult(DbContext.GetChatMessageView(result));
         }
 
@@ -73,7 +77,7 @@ namespace GOP.Controllers
         public IActionResult Post(string message)
         {
             if (string.IsNullOrWhiteSpace(message))
-                return HttpBadRequest("You entered an empty message.");
+                return BadRequest("You entered an empty message.");
             message = message.TrimEnd();
 
             if (message[0] == '/' && message.Length > 1)
@@ -101,18 +105,22 @@ namespace GOP.Controllers
                             case "editf":
                                 if (command.Length < 2)
                                     throw new InvalidOperationException("<b>Usage:</b> /edit &lt;new message&gt;");
-                                EditLastMessage(command[1], User.GetUserIdInt32() == 1);
+                                EditLastMessage(command[1], UserManager.GetUserIdInt32(User) == 1);
                                 break;
                             case "del":
                                 DeleteLastMessage();
                                 break;
                             case "delf":
-                                DeleteLastMessage(User.GetUserIdInt32() == 1);
+                                DeleteLastMessage(UserManager.GetUserIdInt32(User) == 1);
                                 break;
                             case "rand":
                                 lock (Random)
                                 {
-                                    return new ObjectResult(Random.Next());
+                                    var value = Random.Next();
+                                    var username = DbContext.GetUsername(GopUser.GetCurrentUser(HttpContext));
+                                    var randMessage = $"{username} has generated the random number {value}!";
+                                    ChatHub.Clients.All.ShowMessage(randMessage);
+                                    return Content(randMessage);
                                 }
                             case "kick":
                                 return Content($"The yellow orb was kicked {KickCounter.Kick()} times!");
@@ -136,7 +144,7 @@ namespace GOP.Controllers
                     }
                     catch (InvalidOperationException ex)
                     {
-                        return HttpBadRequest(ex.Message);
+                        return BadRequest(ex.Message);
                     }
                 }
             }
@@ -146,7 +154,7 @@ namespace GOP.Controllers
                 {
                     IpAddress = HttpContext.Connection.RemoteIpAddress.ToString(),
                     Timestamp = DateTimeOffset.Now,
-                    UserId = User.GetUserIdInt32(),
+                    UserId = UserManager.GetUserIdInt32(User),
                     Text = message
                 };
 

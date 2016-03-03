@@ -1,7 +1,7 @@
 ﻿using GOP.Models;
 using GOP.ViewModels;
-using Microsoft.AspNet.Mvc;
-using Microsoft.Data.Entity;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,7 +19,7 @@ namespace GOP.Controllers
             ViewData[type + "Active"] = "active";
             var viewModel = Get(type, user, fullOnly, numOrbs, minSeed, maxSeed);
             if (viewModel == null)
-                return HttpNotFound();
+                return NotFound();
             return View(viewModel);
         }
 

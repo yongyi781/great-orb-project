@@ -1,0 +1,88 @@
+﻿<h1>@ViewData["Title"]</h1>
+<form id="compareForm" class="form-horizontal">
+    <div class="form-group">
+        <label for="input1" class="col-lg-2 control-label">Array 1:</label>
+        <div class="col-lg-10">
+            <input type="text" id="input1" class="form-control no-max-width">
+        </div>
+    </div>
+    <div class="form-group">
+        <label for="input2" class="col-lg-2 control-label">Array 2:</label>
+        <div class="col-lg-10">
+            <input type="text" id="input2" class="form-control no-max-width">
+        </div>
+    </div>
+    <div class="form-group">
+        <div class="col-offset-2 col-lg-10">
+            <button class="btn btn-primary">Compare</button>
+        </div>
+    </div>
+</form>
+<h2>Result</h2>
+<div>
+    Diff: <span id="compareDiff" class="compare"></span><br />
+    3-orb average diff: <span id="averageDiff3" class="compare"></span><br />
+    6-orb average diff: <span id="averageDiff6" class="compare"></span><br />
+    12-orb average diff: <span id="averageDiff12" class="compare"></span>
+</div>
+
+@section styles {
+    <style>
+        .pos { color: #00ff24; }
+        .neg { color: red; }
+        .neu { color: grey; }
+    </style>
+}
+
+@section Scripts {
+    <script>
+        function parseScoredTicks(str) {
+            return str.replace(/[\[\]]/g, "").trim().split(" ").map(function (s) { return parseInt(s); });
+        }
+
+        function windowedAverage(arr, i, count) {
+            var total = 0;
+            var mid = Math.floor(count / 2);
+            for (var j = 0; j < count; j++)
+                total += arr[Math.max(0, Math.min(arr.length - 1, i - mid + j))];
+            return Math.round(total / count);
+        }
+
+        function computeWindowedAverage(arr, count) {
+            var avg = [];
+            var avgFormatted = [];
+            for (var i = 0; i < arr.length; i++) {
+                avg.push(windowedAverage(arr, i, count));
+                avgFormatted.push(format(avg[i]));
+            }
+
+            return { raw: avg, formatted: avgFormatted };
+        }
+
+        function format(num) {
+            return num > 0 ? "<span class='pos'>+" + num + "</span>" :
+                num < 0 ? "<span class='neg'>" + num + "</span>" :
+                "<span class='neu'>" + num + "</span>";
+        }
+
+        $(compareForm).submit(function (e) {
+            e.preventDefault();
+            var arr1 = parseScoredTicks(compareForm.input1.value);
+            var arr2 = parseScoredTicks(compareForm.input2.value);
+            var length = Math.min(arr1.length, arr2.length);
+            var largerLength = Math.max(arr1.length, arr2.length);
+            var diff = [];
+            for (var i = 0; i < length; i++) {
+                diff.push(arr1[i] - arr2[i]);
+            }
+            for (var i = length; i < largerLength; i++) {
+                diff.push(diff[length - 1]);
+            }
+            var diffFormatted = diff.map(function (n) { return format(n); });
+            $(compareDiff).html("[" + diffFormatted.join(" ") + "]");
+            $(averageDiff3).html("[" + computeWindowedAverage(diff, 3).formatted.join(" ") + "]");
+            $(averageDiff6).html("[" + computeWindowedAverage(diff, 6).formatted.join(" ") + "]");
+            $(averageDiff12).html("[" + computeWindowedAverage(diff, 12).formatted.join(" ") + "]");
+        });
+    </script>
+}

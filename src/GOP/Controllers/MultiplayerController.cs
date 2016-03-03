@@ -1,8 +1,11 @@
 ﻿using GOP.Models;
 using GOP.ViewModels;
-using Microsoft.AspNet.Mvc;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Linq;
+using System.Security.Claims;
+using System.Threading.Tasks;
 
 namespace GOP.Controllers
 {
@@ -10,12 +13,34 @@ namespace GOP.Controllers
     {
         [FromServices]
         public ApplicationDbContext DbContext { get; set; }
-        
-        public IActionResult Index(int nGames = int.MaxValue)
+
+        [FromServices]
+        public UserManager<ApplicationUser> UserManager { get; set; }
+
+        public async Task<IActionResult> Index()
         {
             var multiplayerGames = GetMultiplayerGames();
+            var currentUser = await GetCurrentUserAsync();
 
-            return View(new MultiplayerViewModel { CustomAltar = null, Games = multiplayerGames.Take(nGames) });
+            return View(new MultiplayerViewModel
+            {
+                CustomAltar = null,
+                Games = multiplayerGames,
+                GopControls = currentUser?.GopControls
+            });
+        }
+
+        public async Task<IActionResult> Index2()
+        {
+            var multiplayerGames = GetMultiplayerGames();
+            var currentUser = await GetCurrentUserAsync();
+
+            return View(new MultiplayerViewModel
+            {
+                CustomAltar = null,
+                Games = multiplayerGames,
+                GopControls = currentUser?.GopControls
+            });
         }
 
         [HttpGet("api/[controller]")]
@@ -29,7 +54,7 @@ namespace GOP.Controllers
         {
             var result = DbContext.MultiplayerGames.Where(g => g.Id == id).FirstOrDefault();
             if (result == null)
-                return HttpNotFound();
+                return NotFound();
             return new ObjectResult(GetMultiplayerGameView(result));
         }
 
@@ -72,5 +97,10 @@ namespace GOP.Controllers
                 Altar = game.Altar,
                 Score = game.Score
             };
+
+        private async Task<ApplicationUser> GetCurrentUserAsync()
+        {
+            return await UserManager.FindByIdAsync(UserManager.GetUserId(User));
+        }
     }
 }

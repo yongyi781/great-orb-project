@@ -1,8 +1,8 @@
 ﻿using GOP.Models;
 using GOP.ViewModels;
-using Microsoft.AspNet.Identity;
-using Microsoft.AspNet.Mvc;
-using Microsoft.Data.Entity;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -42,7 +42,7 @@ namespace GOP.Controllers
         {
             var puzzle = DbContext.Puzzles.AsNoTracking().Include(p => p.PuzzleSubmissions).SingleOrDefault(p => p.Id == id);
             if (puzzle == null)
-                return HttpNotFound();
+                return NotFound();
 
             var puzzleView = GetPuzzleView(puzzle, GopUser.GetCurrentUser(HttpContext));
             var submissions = puzzleView.IsSolved() ?
@@ -118,7 +118,7 @@ namespace GOP.Controllers
                 PuzzleId = id,
                 Timestamp = DateTimeOffset.Now,
                 IpAddress = HttpContext.Connection.RemoteIpAddress.ToString(),
-                UserId = User.GetUserIdInt32(),
+                UserId = UserManager.GetUserIdInt32(User),
                 Score = score,
                 Code = code
             };
@@ -172,7 +172,7 @@ namespace GOP.Controllers
 
         private async Task<ApplicationUser> GetCurrentUserAsync()
         {
-            return await UserManager.FindByIdAsync(User.GetUserId());
+            return await UserManager.FindByIdAsync(UserManager.GetUserIdInt32(User).ToString());
         }
     }
 }

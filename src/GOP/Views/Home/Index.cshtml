@@ -33,7 +33,7 @@
 <div id="connectionErrors" class="alert alert-danger" style="display: none;">
 </div>
 <div id="chatboxContainer" class="chatbox-container panel panel-primary">
-    <div class="panel-heading"><span class="h3 panel-title">Chat</span><div class="pull-right">(@ViewBag.NumberOfMessages messages)</div></div>
+    <div class="panel-heading"><span class="h3 panel-title">Chat</span><div class="pull-right">(@ViewData["NumberOfMessages"] messages)</div></div>
     <div class="panel-body">
         <div class="chat-top-panel">
             <div class="form-inline">
@@ -131,6 +131,14 @@
                         <tr>
                             <td>/del</td>
                             <td>Deletes your last message, if no one typed after you.</td>
+                        </tr>
+                        <tr>
+                            <td>/rand</td>
+                            <td>Generates a random number from 0 to 2147483646 inclusive.</td>
+                        </tr>
+                        <tr>
+                            <td>/kick</td>
+                            <td>Kicks someone you don't like!</td>
                         </tr>
                     </tbody>
                 </table>

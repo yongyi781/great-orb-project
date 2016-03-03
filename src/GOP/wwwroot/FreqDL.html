@@ -2,7 +2,7 @@
 <html>
 <head>
     <title>Adaptive Frequency Discrimination Experiment</title>
-    <link href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" rel="stylesheet" />
     <style>
         input,
         select,
@@ -12,14 +12,6 @@
     </style>
 </head>
 <body>
-    <form id="messageForm" autocomplete="off" asp-controller="Chat" asp-action="Post">
-        <div class="input-group">
-            <input type="text" id="messageText" class="form-control" name="message" placeholder="Type message here" />
-            <span class="input-group-btn">
-                <button type="submit" id="sendButton" class="btn btn-default">Send</button>
-            </span>
-        </div>
-    </form>
     <div class="container">
         <h1>Adaptive Frequency Discrimination Experiment</h1>
 
@@ -171,7 +163,8 @@
         var soundgen_callback = (function ($) {
             function soundgen_callback(obj) {
                 if (obj.result === "success") {
-                    $("#soundspan").html("<embed src='" + obj.sound + "' volume='0'" + (experimentViewModel.parameters.showAudioPlayer() ? "" : " width='1' height='1' ") + "autostart='true' loop='false' />");
+                    // $("#soundspan").html("<embed src='" + obj.sound + "' volume='0'" + (experimentViewModel.parameters.showAudioPlayer() ? "" : " width='1' height='1' ") + "autostart='true' loop='false' />");
+                    $("#soundspan").html("<audio src='" + obj.sound + "' volume='1'" + (experimentViewModel.parameters.showAudioPlayer() ? " controls " : "") + "autoplay />");
                     $("#serverResult").html("Success! Server processing time: " + obj.statistics.gentime);
                     experimentViewModel.isProcessing(false);
                 }

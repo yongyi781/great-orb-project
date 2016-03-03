@@ -1,5 +1,5 @@
 ﻿using GOP.Models;
-using Microsoft.AspNet.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using System.Linq;
 
 namespace GOP.Controllers
@@ -38,6 +38,11 @@ namespace GOP.Controllers
         }
 
         public IActionResult Test3D()
+        {
+            return View();
+        }
+
+        public IActionResult Compare()
         {
             return View();
         }

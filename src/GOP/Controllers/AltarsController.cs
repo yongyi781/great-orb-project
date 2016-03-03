@@ -1,9 +1,7 @@
-﻿using System;
+﻿using GOP.Models;
+using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNet.Mvc;
-using GOP.Models;
 
 // For more information on enabling MVC for empty projects, visit http://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -11,7 +9,11 @@ namespace GOP.Controllers
 {
     public class AltarsController : Controller
     {
-        [FromServices]
+        public AltarsController(ApplicationDbContext db)
+        {
+            DbContext = db;
+        }
+
         public ApplicationDbContext DbContext { get; set; }
 
         public IActionResult Index()
@@ -30,7 +32,7 @@ namespace GOP.Controllers
         {
             var altar = DbContext.CustomAltars.Where(a => a.Id == id).FirstOrDefault();
             if (altar == null)
-                return HttpNotFound();
+                return NotFound();
             return new ObjectResult(altar);
         }
     }

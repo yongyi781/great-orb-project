@@ -1,11 +1,11 @@
 ﻿using GOP.Models;
-using Microsoft.AspNet.Authentication.Cookies;
-using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.Hosting;
-using Microsoft.AspNet.Identity;
-using Microsoft.AspNet.Identity.EntityFramework;
-using Microsoft.AspNet.StaticFiles;
-using Microsoft.Data.Entity;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.AspNetCore.StaticFiles;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -23,7 +23,7 @@ namespace GOP
                 .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true)
                 .AddUserSecrets();
             builder.AddEnvironmentVariables();
-            Configuration = builder.Build();
+            Configuration = builder.Build().ReloadOnChanged("appsettings.json");
         }
 
         public IConfigurationRoot Configuration { get; set; }
@@ -55,6 +55,7 @@ namespace GOP
 
             // Add MVC services to the services container.
             services.AddMvc();
+            services.AddMvcDnx();
             services.AddSingleton<Random>();
             services.AddSingleton<KickCounter>();
         }
@@ -71,7 +72,7 @@ namespace GOP
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
-                app.UseDatabaseErrorPage(options => options.EnableAll());
+                app.UseDatabaseErrorPage();
             }
             else
             {
@@ -87,10 +88,10 @@ namespace GOP
 
             // Add cookie-based authentication to the request pipeline.
             app.UseIdentity();
-            app.UseFacebookAuthentication(options =>
+            app.UseFacebookAuthentication(new FacebookOptions
             {
-                options.AppId = Configuration["Authentication:Facebook:AppId"];
-                options.AppSecret = Configuration["Authentication:Facebook:AppSecret"];
+                AppId = Configuration["Authentication:Facebook:AppId"],
+                AppSecret = Configuration["Authentication:Facebook:AppSecret"]
             });
             app.UseSignalR();
 
@@ -113,12 +114,14 @@ namespace GOP
         // Entry point for the application.
         public static void Main(string[] args)
         {
-            var application = new WebApplicationBuilder()
-                .UseConfiguration(WebApplicationConfiguration.GetDefault(args))
+            var host = new WebHostBuilder()
+                .UseServer("Microsoft.AspNetCore.Server.Kestrel")
+                .UseIISPlatformHandlerUrl()
+                .UseDefaultConfiguration(args)
                 .UseStartup<Startup>()
                 .Build();
 
-            application.Run();
+            host.Run();
         }
     }
 }
