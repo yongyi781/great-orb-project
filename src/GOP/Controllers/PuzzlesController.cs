@@ -172,7 +172,7 @@ namespace GOP.Controllers
 
         private async Task<ApplicationUser> GetCurrentUserAsync()
         {
-            return await UserManager.FindByIdAsync(UserManager.GetUserIdInt32(User).ToString());
+            return await UserManager.FindByIdAsync(UserManager.GetUserId(User));
         }
     }
 }

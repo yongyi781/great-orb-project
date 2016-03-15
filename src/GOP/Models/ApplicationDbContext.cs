@@ -13,6 +13,8 @@ namespace GOP.Models
 
         public DateTimeOffset CreationTime = DateTimeOffset.Now;
 
+        public ApplicationDbContext(DbContextOptions options) : base(options) { }
+
         public bool CacheViewUsers { get; set; }
 
         public DbSet<ChatMessage> ChatMessages { get; set; }
