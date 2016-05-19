@@ -1,0 +1,145 @@
+﻿<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <title>Pascal's Triangle</title>
+    <style>
+        body {
+            font: 14px Roboto;
+        }
+
+        input[type=number] {
+            max-width: 60px;
+        }
+
+        .pascal {
+            font: 9pt Consolas, monospace;
+            white-space: nowrap;
+        }
+    </style>
+</head>
+<body>
+    Transition rule: <input type="text" id="transitionRule" value="1,1" />
+    Starting row: <input type="text" id="startRow" value="1" />
+    Number of rows: <input type="number" id="numRows" value="200" />
+    Modulus: <input type="number" id="modulus" value="3" />
+    <label><input type="checkbox" id="useColor" checked />Color?</label>
+    <button id="generate">Generate</button>
+    <span id="elapsed">0 ms</span>
+    <div class="pascal" id="pascal"></div>
+
+    <script src="https://code.jquery.com/jquery-2.2.1.min.js" integrity="sha256-gvQgAFzTH6trSrAWoH1iPo9Xc96QxSZ3feW6kem+O00="
+            crossorigin="anonymous"></script>
+    <script>
+        // accepts parameters
+        // h  Object = {h:x, s:y, v:z}
+        // OR
+        // h, s, v
+        function HSVtoRGB(h, s, v) {
+            var r, g, b, i, f, p, q, t;
+            if (arguments.length === 1) {
+                s = h.s; v = h.v; h = h.h;
+            }
+            i = Math.floor(h * 6);
+            f = h * 6 - i;
+            p = v * (1 - s);
+            q = v * (1 - f * s);
+            t = v * (1 - (1 - f) * s);
+            switch (i % 6) {
+                case 0: r = v; g = t; b = p; break;
+                case 1: r = q; g = v; b = p; break;
+                case 2: r = p; g = v; b = t; break;
+                case 3: r = p; g = q; b = v; break;
+                case 4: r = t; g = p; b = v; break;
+                case 5: r = v; g = p; b = q; break;
+            }
+            return {
+                r: Math.round(r * 255),
+                g: Math.round(g * 255),
+                b: Math.round(b * 255)
+            };
+        }
+
+        function generateColorWheel(numColors, saturation, value) {
+            // Hue from 0 to 360
+            var colors = [];
+            for (var i = 0; i < numColors; i++) {
+                var rgb = HSVtoRGB(i / numColors, saturation, value);
+                colors.push("rgb(" + rgb.r + "," + rgb.g + "," + rgb.b + ")");
+            }
+            return colors;
+        }
+
+        function multiply(poly1, poly2, modulus) {
+            if (modulus === void 0) modulus = 0;
+
+            var degree = poly1.length + poly2.length - 1;
+            var result = [];
+            for (var i = 0; i < degree; i++)
+                result[i] = 0;
+            for (var i = 0; i < poly1.length; i++) {
+                for (var j = 0; j < poly2.length; j++) {
+                    result[i + j] += poly1[i] * poly2[j];
+                    if (modulus > 0)
+                        result[i + j] %= modulus;
+                }
+            }
+            return result;
+        }
+
+        function pascal(rows, f, g, modulus) {
+            if (modulus === void 0) modulus = 0;
+
+            var triangle = [g];
+            for (var i = 0; i < rows; i++) {
+                g = multiply(f, g, modulus);
+                triangle.push(g);
+            }
+            return triangle;
+        }
+
+        function displayPascal() {
+            var timestamp = new Date();
+
+            var transitionRuleStr = $("#transitionRule").val();
+            var f = transitionRuleStr.split(",").map(function (x) { return parseInt(x, 10); });
+            var startingRowStr = $("#startRow").val();
+            var g = startingRowStr.split(",").map(function (x) { return parseInt(x, 10); });
+            var modulus = parseInt($("#modulus").val(), 10);
+            var numRows = parseInt($("#numRows").val(), 10);
+            var useColor = $("#useColor").prop("checked");
+            var pas = pascal(numRows, f, g, modulus);
+            var alphabet = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz".split("").concat("&nbsp;");
+            var colors = generateColorWheel(modulus, 0.75, 0.9);
+
+            var mapElement = modulus === 0 ? function (x) { return x + " "; } : useColor ? function (x) {
+                return x === 0 ? "0" : "<span style='background-color:" + colors[x] +  ";'>" + alphabet[Math.min(x, alphabet.length - 1)] + "</span>";
+            } : function (x) {
+                return alphabet[Math.min(x, alphabet.length - 1)];
+            };
+
+            var maxDigitLength = numRows.toString().length;
+
+            var divs = pas.map(function (row, i) {
+                var pad = maxDigitLength - i.toString().length;
+                return "<div>" + i + ": " + Array(pad+1).join("&nbsp;") + row.map(mapElement).join("") + "</div>";
+            });
+
+            $("#pascal").empty().append(divs);
+
+            var elapsed = new Date() - timestamp;
+            $("#elapsed").text(elapsed + " ms");
+        }
+
+        $(function () {
+            $("#generate").click(displayPascal);
+
+            $("#transitionRule, #startRow, #numRows, #modulus").keydown(function (e) {
+                if (e.keyCode === 13)
+                    $("#generate").click();
+            });
+        });
+    </script>
+</body>
+</html>
