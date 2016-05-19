@@ -19,11 +19,12 @@ namespace GOP
         {
             // Setup configuration sources.
             var builder = new ConfigurationBuilder()
-                .AddJsonFile("appsettings.json")
+                .SetBasePath(env.ContentRootPath)
+                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
                 .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true)
                 .AddUserSecrets();
             builder.AddEnvironmentVariables();
-            Configuration = builder.Build().ReloadOnChanged("appsettings.json");
+            Configuration = builder.Build();
         }
 
         public IConfigurationRoot Configuration { get; set; }
@@ -34,7 +35,7 @@ namespace GOP
             // Add EF services to the services container.
             services.AddEntityFrameworkSqlServer()
                 .AddDbContext<ApplicationDbContext>(options =>
-                    options.UseSqlServer(Configuration["Data:DefaultConnection:ConnectionString"]));
+                    options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
 
             // Add Identity services to the services container.
             services.AddIdentity<ApplicationUser, IdentityRole<int>>(options =>
@@ -54,7 +55,6 @@ namespace GOP
 
             // Add MVC services to the services container.
             services.AddMvc();
-            services.AddMvcDnx();
             services.AddSingleton<Random>();
             services.AddSingleton<KickCounter>();
         }
@@ -79,9 +79,6 @@ namespace GOP
                 // sends the request to the following path or controller action.
                 app.UseStatusCodePages();
             }
-
-            // Add the platform handler to the request pipeline.
-            //app.UseIISPlatformHandler();
 
             app.UseStaticFiles(new StaticFileOptions { ServeUnknownFileTypes = true });
 
@@ -108,19 +105,6 @@ namespace GOP
             });
 
             app.UseFileServer(true);
-        }
-
-        // Entry point for the application.
-        public static void Main(string[] args)
-        {
-            var host = new WebHostBuilder()
-                .UseServer("Microsoft.AspNetCore.Server.Kestrel")
-                .UseIISPlatformHandlerUrl()
-                .UseDefaultConfiguration(args)
-                .UseStartup<Startup>()
-                .Build();
-
-            host.Run();
         }
     }
 }

@@ -1,10 +1,5 @@
 {
   "userSecretsId": "aspnet5-GOP-b861afa2-78db-4387-a3bc-393f99145638",
-  "version": "1.0.0-*",
-  "compilationOptions": {
-    "emitEntryPoint": true,
-    "preserveCompilationContext": true
-  },
 
   "dependencies": {
     "Microsoft.AspNetCore.Authentication.Cookies": "1.0.0-*",
@@ -12,18 +7,18 @@
     "Microsoft.AspNetCore.Diagnostics": "1.0.0-*",
     "Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore": "1.0.0-*",
     "Microsoft.AspNetCore.Identity.EntityFrameworkCore": "1.0.0-*",
-    "Microsoft.AspNetCore.IISPlatformHandler": "1.0.0-*",
     "Microsoft.AspNetCore.Mvc": "1.0.0-*",
-    "Microsoft.AspNetCore.Mvc.Dnx": "1.0.0-*",
     "Microsoft.AspNetCore.Mvc.Razor": "1.0.0-*",
     "Microsoft.AspNetCore.Mvc.TagHelpers": "1.0.0-*",
+    "Microsoft.AspNetCore.Server.IISIntegration": "1.0.0-*",
     "Microsoft.AspNetCore.Server.Kestrel": "1.0.0-*",
     "Microsoft.AspNetCore.SignalR.Server": "0.1.0-*",
     "Microsoft.AspNetCore.StaticFiles": "1.0.0-*",
-    "Microsoft.EntityFrameworkCore.Commands": "1.0.0-*",
+    //"Microsoft.EntityFrameworkCore.Commands": "1.0.0-*",
     "Microsoft.EntityFrameworkCore.SqlServer": "1.0.0-*",
-    "Microsoft.EntityFrameworkCore.SqlServer.Design": "1.0.0-*",
-    "Microsoft.Extensions.Configuration.FileProviderExtensions": "1.0.0-*",
+    "Microsoft.Extensions.Configuration.EnvironmentVariables": "1.0.0-*",
+    //"Microsoft.EntityFrameworkCore.SqlServer.Design": "1.0.0-*",
+    //"Microsoft.Extensions.Configuration.FileProviderExtensions": "1.0.0-*",
     "Microsoft.Extensions.Configuration.Json": "1.0.0-*",
     "Microsoft.Extensions.Configuration.UserSecrets": "1.0.0-*",
     "Microsoft.Extensions.Logging": "1.0.0-*",
@@ -31,39 +26,67 @@
     "Microsoft.Extensions.Logging.Debug": "1.0.0-*"
   },
 
-  "commands": {
-    "web": "GOP",
-    "web2": "GOP --server.urls http://+:80/",
-    "gen": "Microsoft.Framework.CodeGeneration",
-    "ef": "Microsoft.EntityFrameworkCore.Commands"
-  },
+  //"commands": {
+  //  "web": "GOP",
+  //  "web2": "GOP --server.urls http://+:80/",
+  //  "gen": "Microsoft.Framework.CodeGeneration",
+  //  "ef": "Microsoft.EntityFrameworkCore.Commands"
+  //},
 
-  "frameworks": {
-    "net451": {
-      "frameworkAssemblies": {
-        "System.Collections": "4.0.0.0"
-      }
+  "tools": {
+    "Microsoft.AspNetCore.Razor.Tools": {
+      "version": "1.0.0-preview1-final",
+      "imports": "portable-net45+win8+dnxcore50"
+    },
+    "Microsoft.AspNetCore.Server.IISIntegration.Tools": {
+      "version": "1.0.0-preview1-final",
+      "imports": "portable-net45+win8+dnxcore50"
+    },
+    "Microsoft.EntityFrameworkCore.Tools": {
+      "version": "1.0.0-preview1-final",
+      "imports": [
+        "portable-net45+win8+dnxcore50",
+        "portable-net45+win8"
+      ]
+    },
+    "Microsoft.Extensions.SecretManager.Tools": {
+      "version": "1.0.0-preview1-final",
+      "imports": "portable-net45+win8+dnxcore50"
+    },
+    "Microsoft.VisualStudio.Web.CodeGeneration.Tools": {
+      "version": "1.0.0-preview1-final",
+      "imports": [
+        "portable-net45+win8+dnxcore50",
+        "portable-net45+win8"
+      ]
     }
   },
 
-  "exclude": [
-    "wwwroot",
-    "node_modules",
-    "bower_components"
-  ],
-
-  "publishExclude": [
-    "**.user",
-    "**.vspscc"
-  ],
-
-  "scripts": {
-    "prepublish": [ "npm install", "bower install", "gulp default" ]
+  "frameworks": {
+    "net461": { }
   },
 
-  "content": [
-    "appsettings.json",
-    "project.json",
-    "Views"
-  ]
+  "buildOptions": {
+    "emitEntryPoint": true,
+    "preserveCompilationContext": true,
+    "compile": {
+      "exclude": [
+        "wwwroot"
+      ]
+    }
+  },
+
+  "publishOptions": {
+    "include": [
+      "wwwroot",
+      "Views",
+      "appsettings.json",
+      "web.config"
+    ]
+  },
+
+  "scripts": {
+    "prepublish": [ "npm install", "bower install", "gulp default" ],
+    "postpublish": [ "dotnet publish-iis --publish-folder %publish:OutputPath% --framework %publish:FullTargetFramework%" ]
+  }
 }

@@ -1,4 +1,5 @@
 ﻿using GOP.Models;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -15,7 +16,7 @@ namespace GOP.Controllers
     public class HomeController : Controller
     {
         [FromServices]
-        public IApplicationEnvironment ApplicationEnvironment { get; set; }
+        public IHostingEnvironment ApplicationEnvironment { get; set; }
 
         [FromServices]
         public ApplicationDbContext DbContext { get; set; }
@@ -49,7 +50,7 @@ namespace GOP.Controllers
             var fileNameWithExt = header.FileName.Trim('"');
             var fileName = Path.GetFileNameWithoutExtension(fileNameWithExt);
             var ext = Path.GetExtension(fileNameWithExt);
-            var targetDir = Path.Combine(ApplicationEnvironment.ApplicationBasePath, "wwwroot\\uploads");
+            var targetDir = Path.Combine(ApplicationEnvironment.WebRootPath, "uploads");
 
             bool alreadyExists = false;
             int i = 1;

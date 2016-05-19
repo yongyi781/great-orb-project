@@ -27,7 +27,6 @@
                 break;
             default:
                 throw new Error("Invalid action type.");
-                break;
         }
         return s;
     }
