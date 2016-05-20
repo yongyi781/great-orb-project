@@ -67,16 +67,16 @@ class GopUI {
             altarAndStartLocationForced: false,
             allowInput: true,
             gopControls: {
-                run: 'R',
-                repeller: 'Q',
-                attractor: 'Z'
+                run: "R",
+                repeller: "Q",
+                attractor: "Z"
             },
         },
 
         callbacks: {
-            setActionCallback: (action) => { },
-            isGameFinished: () => this.gameState.currentTick >= GameState.ticksPerAltar,
-            tick: () => { }
+            setActionCallback: (action: GameAction): void => { },
+            isGameFinished: (): boolean => this.gameState.currentTick >= GameState.ticksPerAltar,
+            tick: (): void => { }
         },
 
         interface: {
@@ -146,10 +146,11 @@ class GopUI {
         this.gameplayData = new GameplayData(new GameStartInfo(this.options.game.seed, this.options.game.altar,
             this.options.game.startLocations.map(p => new PlayerStartInfo(p, true, false))));
 
-        if (this.options.interface.showScore)
+        if (this.options.interface.showScore) {
             this.$scoreInfoDiv.append(
                 $('<div>Score: </div>').append(this.$scoreSpan),
                 $('<div>Estimated score: </div>').append(this.$estScoreSpan));
+        }
 
         this.$playerControlsDiv = $('<div class="side-container"></div>').append(
             $('<label>Run (' + this.options.client.gopControls.run + ')</label>').prepend(this.$runCheckBox),
@@ -159,21 +160,22 @@ class GopUI {
             .append(this.$playerControlsDiv)
             .append(this.$scoreInfoDiv);
         if (this.options.interface.showNavigationButtons) {
-
             this.$minusTicksButton = $('<button type="button" class="btn btn-default">-' + this.options.interface.plusMinusTicksAdvance + ' ticks</button>');
             this.$plusTicksButton = $('<button type="button" class="btn btn-default">+' + this.options.interface.plusMinusTicksAdvance + ' ticks</button>');
             this.$minusPlusTicksDiv = $('<div class="side text-center"/>').append(this.$minusTicksButton, "&nbsp;", this.$plusTicksButton);
 
             this.$sidebar.append(this.$minusPlusTicksDiv);
         }
-        if (this.options.interface.showRestart)
+        if (this.options.interface.showRestart) {
             this.$sidebar.append($("<div/>").append(this.$restartButton));
-        if (this.options.interface.showSave)
+        }
+        if (this.options.interface.showSave) {
             this.$sidebar.append($("<div/>").append(this.$saveButton));
+        }
         this.$sidebar.append(this.$scoredTicksDiv);
-        if (this.options.interface.showGameCode)
+        if (this.options.interface.showGameCode) {
             this.$sidebar.append(this.$gameCodeDiv);
-
+        }
         this.$rootContainer
             .css({ marginTop: this.options.interface.margin, marginBottom: this.options.interface.margin })
             .append(this.$canvas, this.$sidebar);
@@ -211,15 +213,17 @@ class GopUI {
     onMinusTicksClicked() {
         var tickToLoad = this.gameState.currentTick - this.options.interface.plusMinusTicksAdvance;
         this.restartGame(this.gameplayData.toString(), undefined, undefined, this.player.index, false);
-        for (var i = 0; i < tickToLoad; i++)
+        for (var i = 0; i < tickToLoad; i++) {
             this.tick(true, false);
+        }
         this.isGameRunning = true;
         this.updateDisplay();
     }
 
     onPlusTicksClicked() {
-        for (var i = 0; i < this.options.interface.plusMinusTicksAdvance; i++)
+        for (var i = 0; i < this.options.interface.plusMinusTicksAdvance; i++) {
             this.tick(false, false);
+        }
         this.updateDisplay();
     }
 
@@ -227,8 +231,9 @@ class GopUI {
         this.recalculateCanvasSize();
         this.gopCanvas = new GopCanvas(this.canvas, this.gameState, this.options.client.visibilityRadius, 0);
 
-        if (this.options.game.suppressRandomSpawns)
+        if (this.options.game.suppressRandomSpawns) {
             this.gameState.random = null;
+        }
         GameState.ticksPerAltar = this.options.game.ticksPerAltar;
 
         $(window).resize(() => {
@@ -304,9 +309,9 @@ class GopUI {
             .mousedown(this.onCanvasMouseDown.bind(this))
             .on("contextmenu", e => e.preventDefault())
             .mousemove(e => {
-                var loc = GopUI.getMouseClickLocation(e);
-                var p = this.gopCanvas.fromScreenCoords(loc.x, loc.y, false);
-                var pTrunc = this.gopCanvas.fromScreenCoords(loc.x, loc.y, true);
+                //var loc = GopUI.getMouseClickLocation(e);
+                //var p = this.gopCanvas.fromScreenCoords(loc.x, loc.y, false);
+                //var pTrunc = this.gopCanvas.fromScreenCoords(loc.x, loc.y, true);
                 var menuMargin = 20;
                 this.canvasFocused = true;
                 var popupMenu = this.$popupMenu[0];
@@ -403,8 +408,8 @@ class GopUI {
                     this.hidePopupMenu();
                 }
                 e.preventDefault();
-            }
-        }
+            };
+        };
 
         var loc = GopUI.getMouseClickLocation(e);
         var p = this.gopCanvas.fromScreenCoords(loc.x, loc.y, false);
@@ -426,17 +431,16 @@ class GopUI {
                 }
             }
             if (!foundOrb) {
-                if (pTrunc.equals(this.player.location) || (GopBoard.isInAltar(pTrunc) && GopBoard.isPlayerAdjacentToAltar(this.player.location)))
+                if (pTrunc.equals(this.player.location) || (GopBoard.isInAltar(pTrunc) && GopBoard.isPlayerAdjacentToAltar(this.player.location))) {
                     this.setPlayerAction(GameAction.idle());
-                else if (GopBoard.isInAltar(pTrunc)) {
+                } else if (GopBoard.isInAltar(pTrunc)) {
                     // Find closest square
                     this.setPlayerAction(GameAction.move(this.gameState.board.nearestAltarPoint(this.player.location, PathMode.Player)));
-                }
-                else
+                } else {
                     this.setPlayerAction(GameAction.move(pTrunc));
+                }
             }
-        }
-        else if (e.button === 2) {
+        } else if (e.button === 2) {
             // Clear all menu items
             this.$popupMenu.find("a").remove();
 
@@ -446,7 +450,7 @@ class GopUI {
                     var attractMenuItem = $("<a class='context-menu-item'></a>")
                         .html((this.player.repel ? "Repel" : "Attract") + " <span style='color: yellow;'>Orb " + GameAction.orbIndexToChar(i) + "</span>")
                         .mousedown(onContextMenuAttractOrbMouseDown(i)).on("contextmenu", e => e.preventDefault());
-                    var repelMenuItem = document.createElement("a");
+                    //var repelMenuItem = document.createElement("a");
                     this.$popupMenu.append(attractMenuItem);
                 }
             }
@@ -518,10 +522,11 @@ class GopUI {
                 this.gameplayData.actions.sliceForPlayer(this.player.index, this.gameState.currentTick);
             };
 
-            if (this.options.client.latency > 0)
+            if (this.options.client.latency > 0) {
                 setTimeout(f, this.options.client.latency);
-            else
+            } else {
                 f();
+            }
         }
     }
 
@@ -531,14 +536,14 @@ class GopUI {
         this.$estScoreSpan.text(this.getEstimatedScore());
         this.$runCheckBox.prop("checked", this.player.run);
         this.$repelCheckBox.prop("checked", this.player.repel);
-        this.$scoredTicksSpan.html('<span>' + this.gameState.scoredTicks.join('</span>&nbsp;<span>') + '</span>');
+        this.$scoredTicksSpan.html("<span>" + this.gameState.scoredTicks.join("</span>&nbsp;<span>") + "</span>");
         this.$gameCodeText.text(this.gameplayData.toString());
     }
 
     tick(force = false, redraw = true) {
-        if (!force && !this.isGameRunning)
+        if (!force && !this.isGameRunning) {
             return;
-
+        }
         this.gameState.players.forEach((player, index) => {
             var loadedActions = this.gameplayData.actions.getForPlayer(index);
             if (loadedActions.length > this.gameState.currentTick) {
@@ -569,8 +574,9 @@ class GopUI {
     }
 
     updatePointer() {
-        if (this.mousePosition)
+        if (this.mousePosition) {
             this.$canvas.css("cursor", this.isMouseOverAnyOrb(this.gopCanvas.fromScreenCoords(this.mousePosition.x, this.mousePosition.y, false)) ? "pointer" : "default");
+        }
     }
 
     isMouseOverOrb(clickLoc: Point, orbLoc: Point) {
@@ -591,8 +597,7 @@ class GopUI {
             if (value) {
                 this.lastTimestamp = performance.now();
                 this.animationHandle = requestAnimationFrame(this.paint.bind(this));
-            }
-            else {
+            } else {
                 cancelAnimationFrame(this.animationHandle);
                 this.animationHandle = null;
                 this.gopCanvas.tickProgress = 0;
@@ -634,9 +639,10 @@ class GopUI {
         return new Point(offX, offY);
     }
 
-    private static getKeyCodeFor(str) {
-        if (str in GopUI.keyCodes)
+    private static getKeyCodeFor(str: string) {
+        if (str in GopUI.keyCodes) {
             return GopUI.keyCodes[str];
+        }
         return str.charCodeAt(0);
     }
 
