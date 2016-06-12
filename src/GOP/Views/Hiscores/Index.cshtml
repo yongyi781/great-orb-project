@@ -110,17 +110,17 @@
             );
 
             table = $("#hiscoresTable").DataTable({
-                data: data.Rows,
+                data: data.rows,
                 deferRender: true,
                 columns: [
-                    { data: "Seed" },
-                    { data: "Scores.0" },
-                    { data: "Scores.1" },
-                    { data: "Scores.2" },
-                    { data: "Scores.3" },
-                    { data: "Scores.4" },
-                    { data: "Scores.5" },
-                    { data: "Sum" }
+                    { data: "seed" },
+                    { data: "scores.0" },
+                    { data: "scores.1" },
+                    { data: "scores.2" },
+                    { data: "scores.3" },
+                    { data: "scores.4" },
+                    { data: "scores.5" },
+                    { data: "sum" }
                 ]
             });
 

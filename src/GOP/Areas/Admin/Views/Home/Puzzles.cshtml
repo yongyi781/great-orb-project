@@ -25,32 +25,32 @@
         $(function () {
             data = @Json.Serialize(Model);
             data.forEach(function (s) {
-                s.Submission.Timestamp = new Date(s.Submission.Timestamp);
+                s.submission.timestamp = new Date(s.submission.timestamp);
             });
 
             var table = $("#submissionsTable").DataTable({
                 data: data,
                 deferRender: true,
                 columns: [
-                    { data: "Submission.Id" },
+                    { data: "submission.id" },
                     {
-                        data: "Submission.Timestamp",
+                        data: "submission.timestamp",
                         render: function (data, type, row) {
                             if (type === "display")
                                 return data.toLocaleString();
                             return data;
                         }
                     },
-                    { data: "Submission.IpAddress" },
-                    { data: "Username" },
-                    { data: "Submission.PuzzleId" },
-                    { data: "Submission.Score" }
+                    { data: "submission.ipAddress" },
+                    { data: "username" },
+                    { data: "submission.puzzleId" },
+                    { data: "submission.score" }
                 ]
             });
 
             $("#submissionsTable").on("click", "tbody > tr", function () {
                 var data = table.row(this).data();
-                window.open("/Puzzle/" + data.Submission.PuzzleId + "?code=" + data.Submission.Code);
+                window.open("/Puzzle/" + data.submission.puzzleId + "?code=" + data.submission.code);
             });
         })
     </script>

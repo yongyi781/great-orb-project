@@ -6,9 +6,9 @@
 <div id="animationContainer"></div>
 
 @section Scripts {
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r71/three.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r77/three.js"></script>
     <script>
-        (function () {
+        $(function () {
             var WIDTH = 960,
                 HEIGHT = 540,
                 VIEW_ANGLE = 75,
@@ -19,21 +19,31 @@
             var scene = new THREE.Scene();
             var camera = new THREE.PerspectiveCamera(VIEW_ANGLE, ASPECT, NEAR, FAR);
             var renderer = new THREE.WebGLRenderer({ antialias: true });
-            camera.position.z = 300;
+            camera.position.z = 30;
+            camera.position.y = 5;
 
             var sphereMaterial = new THREE.MeshLambertMaterial({
                 color: 0xccccff,
                 refractionRatio: 0.985,
                 reflectivity: 0.9
             });
-            var sphere = new THREE.Mesh(new THREE.SphereGeometry(50, 16, 16), sphereMaterial);
+            var sphere = new THREE.Mesh(new THREE.SphereGeometry(5, 16, 16), sphereMaterial);
             scene.add(sphere);
 
             var skyboxGeometry = new THREE.CubeGeometry(10000, 10000, 10000);
-            var skyboxMaterial = new THREE.MeshBasicMaterial({ color: 0x033F47, side: THREE.BackSide });
+            var skyboxMaterial = new THREE.MeshBasicMaterial({ color: 0x333F47, side: THREE.BackSide });
             var skybox = new THREE.Mesh(skyboxGeometry, skyboxMaterial);
 
             scene.add(skybox);
+
+            var mesh = null;
+
+            var loader = new THREE.JSONLoader();
+            loader.load("/models/wood_block.json", function (geometry) {
+                console.log("Loaded model!");
+                mesh = new THREE.Mesh(geometry, sphereMaterial);
+                scene.add(mesh);
+            });
 
             renderer.setClearColor(0x333F47, 1);
 
@@ -41,9 +51,9 @@
             var pointLight = new THREE.PointLight(0xFFFFFF);
 
             // set its position
-            pointLight.position.x = 10;
+            pointLight.position.x = 0;
             pointLight.position.y = 50;
-            pointLight.position.z = 130;
+            pointLight.position.z = -13;
 
             // add to the scene
             scene.add(pointLight);
@@ -54,13 +64,16 @@
             // draw!
             function render(timestamp) {
                 requestAnimationFrame(render);
-                sphere.position.x = 300 * Math.sin(0.005 * timestamp);
-                sphere.position.y = 30 * Math.cos(0.005 * timestamp);
-                sphere.position.z = -300 + 300 * Math.sin(0.005 * timestamp);
+                sphere.position.x = 10 * Math.sin(0.005 * timestamp);
+                sphere.position.y = 10 * Math.cos(0.005 * timestamp);
+                sphere.position.z = -10 + 10 * Math.sin(0.005 * timestamp);
+                mesh.position.x = 10 * Math.sin(0.005 * timestamp);
+                mesh.position.y = -10 * Math.cos(0.005 * timestamp);
+                mesh.position.z = -10 + 10 * Math.sin(0.005 * timestamp);
                 renderer.render(scene, camera);
             }
 
             requestAnimationFrame(render);
-        })();
+        });
     </script>
 }

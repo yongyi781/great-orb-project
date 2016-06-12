@@ -81,7 +81,7 @@
                     {
                         <form id="logoutForm" asp-controller="Account" asp-action="LogOut" asp-route-returnurl="@Context.Request.Path" class="navbar-right">
                             <ul class="nav navbar-nav navbar-right">
-                                <li><p class="navbar-text">Hello <ba>@User.Identity.Name</ba>!</p></li>
+                                <li><p class="navbar-text">Hello <b>@User.Identity.Name</b>!</p></li>
                                 <li><a href="#" onclick="$('#logoutForm').submit()">Log out</a></li>
                             </ul>
                         </form>

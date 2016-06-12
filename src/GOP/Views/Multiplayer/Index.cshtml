@@ -45,7 +45,7 @@
 
             games = @Json.Serialize(Model.Games);
             games.forEach(function (game) {
-                game.Timestamp = new Date(game.Timestamp);
+                game.timestamp = new Date(game.timestamp);
             });
 
             $.fn.dataTable.ext.search.push(
@@ -69,9 +69,9 @@
                 data: games,
                 deferRender: true,
                 columns: [
-                    { data: "Id" },
+                    { data: "id" },
                     {
-                        data: "Timestamp",
+                        data: "timestamp",
                         render: function (data, type, row) {
                             if (type === "display")
                                 return data.toLocaleString();
@@ -79,18 +79,18 @@
                         }
                     },
                     {
-                         data: "NumberOfPlayers",
+                         data: "numberOfPlayers",
                          render: function (data, type, row) {
                             if (type === "display" && data in GameModes)
                                 return GameModes[data];
                             return data;
                          }
                     },
-                    { data: "Usernames" },
-                    { data: "NumberOfOrbs" },
-                    { data: "Seed" },
+                    { data: "usernames" },
+                    { data: "numberOfOrbs" },
+                    { data: "seed" },
                     {
-                        data: "Altar",
+                        data: "altar",
                         render: function (data, type, row) {
                             if (type === "display") {
                                 if (AltarData[data] !== void 0) {
@@ -103,7 +103,7 @@
                             return data;
                         }
                     },
-                    { data: "Score" }
+                    { data: "score" }
                 ]
             });
 

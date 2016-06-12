@@ -107,7 +107,7 @@
                     code: gopui.gameplayData.toString()
                 }, function (data) {
                     gopui.$saveButton.text("Saved");
-                    data.Timestamp = new Date(s.Timestamp);
+                    data.timestamp = new Date(s.timestamp);
                     table.row.add(data);
                     table.draw();
                 });
@@ -117,31 +117,31 @@
             $("#submissionsTable").on("click", "tbody > tr", function () {
                 var data = table.row(this).data();
                 if (data !== void 0) {
-                    gopui.restartGame(data.Code);
+                    gopui.restartGame(data.code);
                     gopui.$rootContainer[0].scrollIntoView(true);
                 }
             });
 
             data = @Json.Serialize(Model.Submissions);
             data.forEach(function (s) {
-                s.Timestamp = new Date(s.Timestamp);
+                s.timestamp = new Date(s.timestamp);
             });
 
             table = $("#submissionsTable").DataTable({
                 data: data,
                 deferRender: true,
                 columns: [
-                    { data: "Id" },
+                    { data: "id" },
                     {
-                        data: "Timestamp",
+                        data: "timestamp",
                         render: function (data, type, row) {
                             if (type === "display")
                                 return data.toLocaleString();
                             return data;
                         }
                     },
-                    { data: "Username" },
-                    { data: "Score" }
+                    { data: "username" },
+                    { data: "score" }
                 ]
             });
         })

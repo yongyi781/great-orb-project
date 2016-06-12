@@ -296,7 +296,7 @@
                         code: gopui.gameplayData.toString() },
                         function (data) {
                             gopui.$saveButton.text("Saved");
-                            data.Timestamp = new Date(data.Timestamp);
+                            data.timestamp = new Date(data.timestamp);
                             table.row.add(data);
                             table.draw();
                         });
@@ -323,7 +323,7 @@
             if (games !== null)
             {
                 games.forEach(function (game) {
-                    game.Timestamp = new Date(game.Timestamp);
+                    game.timestamp = new Date(game.timestamp);
                 });
 
                 $.fn.dataTable.ext.search.push(
@@ -347,20 +347,20 @@
                     data: games,
                     deferRender: true,
                     columns: [
-                        { data: "Id" },
+                        { data: "id" },
                         {
-                            data: "Timestamp",
+                            data: "timestamp",
                             render: function (data, type, row) {
                                 if (type === "display")
                                     return data.toLocaleString();
                                 return data;
                             }
                         },
-                        { data: "Username" },
-                        { data: "NumberOfOrbs" },
-                        { data: "Seed" },
+                        { data: "username" },
+                        { data: "numberOfOrbs" },
+                        { data: "seed" },
                         {
-                            data: "Altar",
+                            data: "altar",
                             render: function (data, type, row) {
                                 if (type === "display") {
                                     if (AltarData[data] !== void 0) {
@@ -373,7 +373,7 @@
                                 return data;
                             }
                         },
-                        { data: "Score" }
+                        { data: "score" }
                     ]
                 });
 
