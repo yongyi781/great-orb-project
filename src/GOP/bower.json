@@ -3,16 +3,16 @@
   "private": true,
   "dependencies": {
     "bootstrap": "3.3.6",
-    "bootstrap-social": "4.12.0",
+    "bootstrap-social": "5.0.0",
     "bootswatch": "3.3.6",
     "jquery": "2.2.3",
     "jquery-validation": "1.15.0",
-    "jquery-validation-unobtrusive": "*",
+    "jquery-validation-unobtrusive": "3.2.6",
     "knockout": "3.4.0",
-    "signalr": "*",
-    "font-awesome": "4.6.1"
+    "signalr": "2.2.0",
+    "font-awesome": "4.6.3"
   },
   "resolutions": {
-    "font-awesome": "4.6.1"
+    "font-awesome": "4.6.3"
   }
 }

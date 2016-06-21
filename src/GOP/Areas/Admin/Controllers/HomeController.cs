@@ -49,5 +49,23 @@ namespace GOP.Areas.Admin.Controllers
                        Username = DbContext.GetUsername(new GopUser(s.UserId, s.IpAddress))
                    };
         }
+
+        public IEnumerable<string> FindSoloCodeMismatches()
+        {
+            // Fix solo custom altar codes
+            foreach (var item in DbContext.SoloGames)
+            {
+                var codeElements = item.Code.Split(new[] { ' ' }, 3);
+                var altar = int.Parse(codeElements[1]);
+                if (altar != item.Altar)
+                {
+                    codeElements[1] = item.Altar.ToString();
+                    var newCode = string.Join(" ", codeElements);
+                    item.Code = newCode;
+                    yield return newCode;
+                }
+            }
+            DbContext.SaveChanges();
+        }
     }
 }

@@ -15,19 +15,23 @@ namespace GOP.Controllers
     [Route("api/[controller]")]
     public class ChatController : Controller
     {
-        [FromServices]
+        public ChatController(ApplicationDbContext dbContext,
+            UserManager<ApplicationUser> userManager,
+            IHubContext<ChatHub> chatHub,
+            Random random,
+            KickCounter kickCounter)
+        {
+            DbContext = dbContext;
+            UserManager = userManager;
+            ChatHub = chatHub;
+            Random = random;
+            KickCounter = kickCounter;
+        }
+        
         public ApplicationDbContext DbContext { get; set; }
-
-        [FromServices]
         public UserManager<ApplicationUser> UserManager { get; set; }
-
-        [FromServices]
         public IHubContext<ChatHub> ChatHub { get; set; }
-
-        [FromServices]
         public Random Random { get; set; }
-
-        [FromServices]
         public KickCounter KickCounter { get; set; }
 
         [HttpGet]
