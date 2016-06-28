@@ -1,0 +1,88 @@
+﻿@{
+    ViewData["Title"] = "Base64 Tools";
+}
+
+<div class="form-group">
+    <label class="control-label" for="encoded">Encoded text:</label>
+    <textarea class="form-control" rows="10" id="encoded"></textarea>
+    <span class="text-danger" id="errorSpan" hidden>Invalid base64 string.</span>
+</div>
+<div class="form-group">
+    <label class="control-label" for="decoded">Decoded text:</label>
+    <textarea class="form-control" rows="10" id="decoded" readonly></textarea>
+</div>
+<div class="form-group">
+    <label class="control-label" for="decodedByteArray">Decoded byte array:</label>
+    <textarea class="form-control" rows="10" id="decodedByteArray" readonly></textarea>
+</div>
+<div class="form-inline">
+    <label class="contorl-label" for="contentType">Content type:</label>
+    <input class="form-control" id="contentType" value="application/octet-stream" />
+    <a class="btn btn-primary" id="download" download>Download</a>
+    <a class="btn btn-primary" id="view" target="_blank">View</a>
+</div>
+
+@section scripts {
+    <script>
+        function setEncodedInputError(hasError, message) {
+            if (hasError) {
+                $("#encoded").parent().addClass("has-error");
+                $("#errorSpan").show().text(message);
+            } else {
+                $("#encoded").parent().removeClass("has-error");
+                $("#errorSpan").hide();
+            }
+        }
+
+        function toByteArray(str) {
+            var bytes = new Array(str.length);
+            for (var i = 0; i < str.length; i++) {
+                bytes[i] = str.charCodeAt(i);
+            }
+            return bytes;
+        }
+
+        function getExtensionForContentType(contentType) {
+            if (contentType.includes("icon"))
+                return ".ico";
+            if (contentType.includes("png"))
+                return ".png";
+            if (contentType.includes("txt"))
+                return ".txt";
+            return "";
+        }
+
+        $(() => {
+            $("#encoded").keyup(() => {
+                try {
+                    var decodedText = atob($("#encoded").val());
+                    $("#decoded").val(decodedText);
+
+                    var byteArray = toByteArray(decodedText);
+                    "f".s;
+                    var byteArrayStr = byteArray.map(b => (b < 16 ? "0" + b.toString(16) : b.toString(16)).toUpperCase()).join(" ");
+
+                    $("#decodedByteArray").val(byteArrayStr);
+                    // Downloading
+                    var contentType = $("#contentType").val();
+                    $("#download, #view").attr("href", "data:" + contentType + ";base64," + $("#encoded").val())
+
+                    setEncodedInputError(false);
+                } catch (ex) {
+                    setEncodedInputError(true, ex.message);
+                }
+            });
+
+            $("#contentType").change(() => {
+                var contentType = $("#contentType").val();
+                $("#download, #view").attr("href", "data:" + contentType + ";base64," + $("#encoded").val())
+                $("#download").attr("download", "data" + getExtensionForContentType(contentType));
+            });
+
+            $("#decoded").keyup((e) => {
+                var encodedText = btoa($(e.currentTarget).val());
+                $("#encoded").val(encodedText);
+            });
+        });
+    </script>
+}
