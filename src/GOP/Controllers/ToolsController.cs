@@ -46,5 +46,10 @@ namespace GOP.Controllers
         {
             return View();
         }
+
+        public IActionResult Base64()
+        {
+            return View();
+        }
     }
 }
