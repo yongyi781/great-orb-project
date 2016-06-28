@@ -23,6 +23,10 @@ footer, .container {
     background-color: rgb(5, 5, 7);
 }
 
+.container {
+    padding-bottom: 10px;
+}
+
 .form-control {
     color: #555;
 }
