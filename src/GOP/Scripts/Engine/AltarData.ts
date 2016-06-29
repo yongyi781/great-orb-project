@@ -1,4 +1,4 @@
-﻿interface AltarInfo {
+﻿interface IAltarInfo {
     name: string;
     grid: number[][];
     spawns: Point[];
@@ -7,7 +7,7 @@
     groundPattern?: number[][];
 }
 
-var AltarData: AltarInfo[] = [
+var AltarData: IAltarInfo[] = [
     {
         name: "none",
         grid: [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],

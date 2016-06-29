@@ -20,14 +20,14 @@
      * @param {Point} point the point.
      * @returns {Boolean}
      */
-    static isNaN(point: Point) { return point === void 0 || isNaN(point.x) || isNaN(point.y) }
-    
+    static isNaN(point: Point) { return point === void 0 || isNaN(point.x) || isNaN(point.y); }
+
     /**
-      * Returns the squared distance from this point to another.
-      * @param {Point} left A point.
-      * @param {Point} right A point.
-      * @returns {Number}
-      */
+     * Returns the squared distance from this point to another.
+     * @param {Point} left A point.
+     * @param {Point} right A point.
+     * @returns {Number}
+     */
     static distanceSquared(left: Point, right: Point) {
         var dx = left.x - right.x;
         var dy = left.y - right.y;

@@ -250,7 +250,9 @@
             (!this.canMove(pOrb, dx, 0, PathMode.Orb) && !this.canMove(pOrb, 0, dy, PathMode.Orb)));
     }
 
-    // Returns a string representation of the grid.
+    /**
+     * Returns a string representation of the grid.
+     */
     toString() {
         var s = "";
         for (var y = this.numRows - 1; y >= 0; y--) {
@@ -281,8 +283,8 @@
     }
 
     /**
-      * Returns whether the point (representing an orb) is in the altar.
-      */
+     * Returns whether the point (representing an orb) is in the altar.
+     */
     static isAdjacentToAltar(p: Point) {
         return Math.abs(p.x) <= 2 && Math.abs(p.y) <= 2;
     }
@@ -300,7 +302,7 @@
     static isInAltar(p: Point) {
         return Math.abs(p.x) <= 1 && Math.abs(p.y) <= 1;
     }
-    
+
     /**
      * Returns the offset location the orb target is when the player clicks it from that location.
      */
@@ -360,9 +362,8 @@
                     p => new Point(p.y, p.x));
             return GopBoard.getLineOfSight(new Point(-p1.y, -p1.x), new Point(-p2.y, -p2.x)).map(
                 p => new Point(-p.y, -p.x));
-        }
-        else    // Now we can handle the first octant
-        {
+        } else {
+            // Now we can handle the first octant
             result.push(p1);
             var x = p1.x + 1;
             var y = p1.y;

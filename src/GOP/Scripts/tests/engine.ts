@@ -124,7 +124,6 @@ test("Mind scoring trick at (-13,-5)", () => {
     var gs = new GameState(new GopBoard(53, 53), [new Point(-13, -5)], [new Point(-6, 1)], 1, 0, Altar.Mind);
     var player = gs.players[0];
     player.repel = true;
-    var orb = gs.orbs[0];
 
     player.action = GameAction.attract(0, false, false, true);
     for (var i = 0; i < 6; i++)
@@ -159,7 +158,6 @@ test("Repel while orb is moving to an out-of-reach position should not attract",
 test("Prototick for orb should not extend to second orb", () => {
     var gs = new GameState(new GopBoard(53, 53), [new Point(0, 2)], [new Point(-5, -1), new Point(-8, 2)], 2, 0, Altar.Air);
     var player = gs.players[0];
-    var orbA = gs.orbs[0];
     var orbB = gs.orbs[1];
 
     player.action = GameAction.attract(0, false, false, true);
@@ -174,7 +172,6 @@ test("Prototick for orb should not extend to second orb", () => {
 test("Non-glitch repel should not move player", () => {
     var gs = new GameState(new GopBoard(53, 53), [new Point(3, -1)], [new Point(-1, 5)], 1, 0, Altar.Air);
     var player = gs.players[0];
-    var orb = gs.orbs[0];
 
     player.action = GameAction.attract(0, false, false, true);
     gs.step();
@@ -186,7 +183,6 @@ test("Non-glitch repel should not move player", () => {
 test("Weird portal angle on air using prototick-force-attract", () => {
     var gs = new GameState(new GopBoard(53, 53), [new Point(2, -2)], [new Point(-3, -7)], 1, 0, Altar.Air);
     var player = gs.players[0];
-    var orb = gs.orbs[0];
 
     player.action = GameAction.attract(0, false, false, true);
     gs.step();
@@ -232,7 +228,6 @@ test("Swapping wands during pillar #5", () => {
     var gs = new GameState(new GopBoard(53, 53), [new Point(2, 2)], [new Point(-1, -9)], 1, 0, Altar.Air);
     var player = gs.players[0];
     player.run = false;
-    var orb = gs.orbs[0];
 
     player.action = GameAction.attract(0, false, false, true);
     gs.step();
@@ -319,7 +314,7 @@ gopTestSinglePlayer("Orb tap switch prototick", new Point(2, 0), [new Point(2, 4
         new Point(2, 0), new Point(2, 0)
     ],
     [, new Point(2, -4)], 1
-    );
+);
 
 gopTestSinglePlayer("Orb double tap", new Point(2, 0), [new Point(2, -5)], Altar.Air, "*A*A-----",
     [
@@ -327,7 +322,7 @@ gopTestSinglePlayer("Orb double tap", new Point(2, 0), [new Point(2, -5)], Altar
         new Point(2, 0), new Point(2, 0)
     ],
     [new Point(2, -3)], 0
-    );
+);
 
 gopTestSinglePlayer("Air orb near portal correct drag", new Point(2, 0), [new Point(-5, -8)], Altar.Air, "(2,2)*A{q}A{q}*AA[4]",
     [
@@ -335,17 +330,17 @@ gopTestSinglePlayer("Air orb near portal correct drag", new Point(2, 0), [new Po
         new Point(0, -5), new Point(-2, -7), new Point(-3, -7)
     ],
     [new Point(-4, -6)], 0
-    );
+);
 
 gopTestSinglePlayer("Air orb near portal correct drag #2", new Point(1, 2), [new Point(-5, -8)], Altar.Air, "*AAA",
     [new Point(1, 2), new Point(2, 1), new Point(2, 1)],
     [new Point(-4, -6)], 0
-    );
+);
 
 gopTestSinglePlayer("Prototick when clicking moving orb again", new Point(0, -2), [new Point(-5, 1)], Altar.Air, "*AA(-3,0)*AA",
     [new Point(-2, -2), new Point(-2, -2), new Point(-3, 0), new Point(-3, 0), new Point(-4, 0)],
     [new Point(-3, 0)], 0
-    );
+);
 
 gopTestSinglePlayer("Repel pillar orb when it moves on top of player #1", new Point(0, -2), [new Point(-5, 1)], Altar.Air, "*AA(-3,0){q}*AA---",
     [
@@ -353,7 +348,7 @@ gopTestSinglePlayer("Repel pillar orb when it moves on top of player #1", new Po
         new Point(-4, 0), new Point(-4, 0), new Point(-4, 0)
     ],
     [], 1
-    );
+);
 
 gopTestSinglePlayer("Clicking pillar orb again when out of reach", new Point(-1, -2), [new Point(2, -7)], Altar.Air, "*AA*A{q}A----",
     [
@@ -361,14 +356,14 @@ gopTestSinglePlayer("Clicking pillar orb again when out of reach", new Point(-1,
         new Point(0, -5), new Point(0, -5), new Point(0, -5)
     ],
     [], 1
-    );
+);
 
 gopTestSinglePlayer("Switch from repel to attract should not immediately reach far orb", new Point(0, -2), [new Point(2, 8)], Altar.Air, "{q}*A{q}A-",
     [
         new Point(2, -2), new Point(2, 0), new Point(2, 0)
     ],
     [new Point(2, 8)], 0
-    );
+);
 
 gopTestSinglePlayer("Clicking pillar orb again when out of reach with prototick", new Point(-1, -2), [new Point(1, -6)], Altar.Air, "*A*A{q}AA----",
     [
@@ -376,7 +371,7 @@ gopTestSinglePlayer("Clicking pillar orb again when out of reach with prototick"
         new Point(0, -5), new Point(0, -5), new Point(0, -5)
     ],
     [], 1
-    );
+);
 
 gopTestSinglePlayer("Test for no prototick when held", new Point(2, 0), [new Point(-1, 8), new Point(-4, 2)], Altar.Air, "(1,-2)*AA[5]*B----",
     [
@@ -385,14 +380,14 @@ gopTestSinglePlayer("Test for no prototick when held", new Point(2, 0), [new Poi
         new Point(2, 0), new Point(2, 0)
     ],
     [], 2
-    );
+);
 
 gopTestSinglePlayer("Should not move when switching to repel between orbs", new Point(2, -2), [new Point(-1, -5), new Point(2, 8)], Altar.Air, "{q}*AA{q}*B",
     [
         new Point(2, -2), new Point(2, -2), new Point(2, -2)
     ],
     [], 0
-    );
+);
 
 gopTestSinglePlayer("Prototick after one square move", new Point(0, -2), [new Point(-4, 2), new Point(2, 5)], Altar.Air, "*A*BBB----",
     [
@@ -400,7 +395,7 @@ gopTestSinglePlayer("Prototick after one square move", new Point(0, -2), [new Po
         new Point(2, -2), new Point(2, -2), new Point(2, -2)
     ],
     [, new Point(2, 3)], 1
-    );
+);
 
 gopTestSinglePlayer("Fancy repel trick angle for pillar #4", new Point(0, 2), [new Point(1, -8)], Altar.Air, "{r}*A{q}A{r}{q}AA-*A----",
     [
@@ -408,7 +403,7 @@ gopTestSinglePlayer("Fancy repel trick angle for pillar #4", new Point(0, 2), [n
         new Point(-2, 0), new Point(-2, 0), new Point(-2, 0), new Point(-2, 0), new Point(-2, 0)
     ],
     [], 1
-    );
+);
 
 gopTestSinglePlayer("Prototick delay takes precedence over move delay", new Point(0, -2), [new Point(1, 7), new Point(1, 7)], Altar.Air, "(-1,-2)*A{r}{q}A{r}{q}*B{q}B----",
     [
@@ -416,7 +411,7 @@ gopTestSinglePlayer("Prototick delay takes precedence over move delay", new Poin
         new Point(-2, 0), new Point(-2, 0), new Point(-2, 0), new Point(-2, 0)
     ],
     [new Point(1, 5), new Point(1, 7)], 0
-    );
+);
 
 gopTestSinglePlayer("Prototick takes precedence over move delay after moving", new Point(0, -2), [new Point(2, 8), new Point(2, -4)], Altar.Air, "*A{q}A{q}*A*B-[4]",
     [
@@ -424,7 +419,7 @@ gopTestSinglePlayer("Prototick takes precedence over move delay after moving", n
         new Point(2, 0), new Point(2, 0), new Point(2, 0)
     ],
     [new Point(2, 6)], 1
-    )
+);
 
 // TODO
 //gopTestSinglePlayer("TODO: repel while orb is moving to a too-far position should cancel and not move player", new Point(-11, -5), [new Point(-6, 0)], Altar.MIND, "{q}*A(-13,-5)*AA",

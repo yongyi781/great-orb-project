@@ -19,15 +19,17 @@ enum Tool {
 class Anglemap {
     constructor(private gameCanvas: HTMLCanvasElement) {
         $(this.gameCanvas).mousedown(e => {
-            if (e.button !== 0)
+            if (e.button !== 0) {
                 return;
+            }
             var offX = (e.offsetX || e.pageX - $(e.target).offset().left);
             var offY = (e.offsetY || e.pageY - $(e.target).offset().top);
             var p = this.fromScreenCoords(offX, offY);
 
             if (this.currentTool === Tool.Pointer || this.currentTool === Tool.ColorDist) {
-                if (!isNaN(this.playerX) && !isNaN(this.playerY))
+                if (!isNaN(this.playerX) && !isNaN(this.playerY)) {
                     this.invalidatedSquares.push(new Point(this.playerX, this.playerY));
+                }
                 if (p.x === this.playerX && p.y === this.playerY) {
                     this.playerX = this.playerY = this.orbX = this.orbY = NaN;
                 } else {
@@ -44,8 +46,9 @@ class Anglemap {
                 }
             } else if (this.currentTool >= Tool.LineOfSight && this.currentTool <= Tool.ClosestReachable) {
                 // Set player and orb locations.
-                if (!isNaN(this.playerX) && !isNaN(this.playerY))
+                if (!isNaN(this.playerX) && !isNaN(this.playerY)) {
                     this.invalidatedSquares.push(new Point(this.playerX, this.playerY));
+                }
                 if (p.x === this.playerX && p.y === this.playerY) {
                     this.playerX = this.playerY = NaN;
                 } else {
@@ -115,9 +118,11 @@ class Anglemap {
 
     // Returns the index of (x, y) in points.
     indexOf(points, x, y) {
-        for (var i = 0; i < points.length; ++i)
-            if (points[i].x === x && points[i].y === y)
+        for (var i = 0; i < points.length; ++i) {
+            if (points[i].x === x && points[i].y === y) {
                 return i;
+            }
+        }
         return -1;
     }
 
@@ -140,18 +145,14 @@ class Anglemap {
         if (mabs > 2) {
             dx = 0;
             dy *= 2;
-        }
-        else if (mabs > 1) {
+        } else if (mabs > 1) {
             dy *= 2;
-        }
-        else if (mabs === 1) {
+        } else if (mabs === 1) {
             dx *= 2;
             dy *= 2;
-        }
-        else if (mabs >= 0.5) {
+        } else if (mabs >= 0.5) {
             dx *= 2;
-        }
-        else {
+        } else {
             dx *= 2;
             dy = 0;
         }
@@ -166,13 +167,16 @@ class Anglemap {
 
     // Sets the grid at point p to the new tile.
     setTile(p: Point, tile: Tile) {
-        if (this.gopBoard.get(p) != tile) {
-            if (!this.gopBoard.canMoveWest(p, PathMode.Sight))
+        if (this.gopBoard.get(p) !== tile) {
+            if (!this.gopBoard.canMoveWest(p, PathMode.Sight)) {
                 this.invalidatedSquares.push(new Point(p.x - 1, p.y));
-            if (!this.gopBoard.canMoveSouth(p, PathMode.Sight))
+            }
+            if (!this.gopBoard.canMoveSouth(p, PathMode.Sight)) {
                 this.invalidatedSquares.push(new Point(p.x, p.y - 1));
-            if (this.gopBoard.get(p) === Tile.WallSW)
+            }
+            if (this.gopBoard.get(p) === Tile.WallSW) {
                 this.invalidatedSquares.push(new Point(p.x - 1, p.y - 1));
+            }
             this.gopBoard.set(p, tile);
             this.invalidatedSquares.push(p);
         }
@@ -196,14 +200,12 @@ class Anglemap {
             this.context.moveTo(s.x, s.y + this.cellHeight);
             this.context.lineTo(s.x + this.cellWidth, s.y + this.cellHeight);
             this.context.stroke();
-        }
-        else if (this.gopBoard.get(p) === Tile.WallW) {
+        } else if (this.gopBoard.get(p) === Tile.WallW) {
             this.context.beginPath();
             this.context.moveTo(s.x, s.y);
             this.context.lineTo(s.x, s.y + this.cellHeight);
             this.context.stroke();
-        }
-        else if (this.gopBoard.get(p) === Tile.WallSW) {
+        } else if (this.gopBoard.get(p) === Tile.WallSW) {
             this.context.beginPath();
             this.context.moveTo(s.x, s.y);
             this.context.lineTo(s.x, s.y + this.cellHeight);
@@ -253,12 +255,13 @@ class Anglemap {
         if (p1.x === p2.x || p1.y === p2.y || Math.abs(p2.x - p1.x) === Math.abs(p2.y - p1.y))
             return new Point(0.5, 0.5); // Center
         var m = (p2.y - p1.y) / (p2.x - p1.x);
-        if (Math.abs(m) < 1)
+        if (Math.abs(m) < 1) {
             return new Point(1, 0.5);   // Midpoint of right edge
-        else if (m > 0)
+        } else if (m > 0) {
             return new Point(0.5, 0);   // Midpoint of top edge
-        else
+        } else {
             return new Point(0.5, 1);   // Midpoint of bottom edge
+        }
     }
 
     // Draws the line of sight from (x1, y1) to (x2, y2).
@@ -293,8 +296,7 @@ class Anglemap {
                 this.fillSquare(this.pathStopColor, p.x, p.y, true);
                 found = true;
                 color = this.pathPostColor;
-            }
-            else {
+            } else {
                 this.fillSquare(color, p.x, p.y, true);
             }
         }
@@ -315,14 +317,15 @@ class Anglemap {
             // Exclude spots that are right next to the orb, as attracting from those spaces is unproductive.
             // Also exclude spots from which attracting an orb does not do anything.
             if (this.gopBoard.canReach(currPoint, p2) && Point.walkingDistance(currPoint, p2) > 1 && this.gopBoard.willMoveOrb(currPoint, p2)) {
-                if (minDist === Infinity)
+                if (minDist === Infinity) {
                     minDist = curr.dist;
-                if (curr.dist === minDist)
+                }
+                if (curr.dist === minDist) {
                     best.push(curr);
-                else if (curr.dist <= minDist + (minDist % 2))
+                } else if (curr.dist <= minDist + (minDist % 2)) {
                     secondBest.push(curr);
-            }
-            else if (curr.dist > minDist + (minDist % 2))
+                }
+            } else if (curr.dist > minDist + (minDist % 2))
                 break;
 
             var offsets = [[-1, 0], [1, 0], [0, -1], [0, 1], [-1, -1], [-1, 1], [1, -1], [1, 1]];
@@ -400,14 +403,15 @@ class Anglemap {
         if (!isNaN(this.orbX) && !isNaN(this.orbY))
             this.fillSquare(this.orbColor, this.orbX, this.orbY, true);
         if (!isNaN(this.playerX) && !isNaN(this.playerY)) {
-            if (this.currentTool === Tool.LineOfSight)
+            if (this.currentTool === Tool.LineOfSight) {
                 this.drawLineOfSight(playerLoc, orbLoc);
-            else if (this.currentTool === Tool.PathRunning || this.currentTool === Tool.PathWalking)
+            } else if (this.currentTool === Tool.PathRunning || this.currentTool === Tool.PathWalking) {
                 this.drawPath(playerLoc, orbLoc);
-            else if (this.currentTool === Tool.ClosestReachable)
+            } else if (this.currentTool === Tool.ClosestReachable) {
                 this.drawBestAttractingPositions(this.playerX, this.playerY, this.orbX, this.orbY);
-            else if (this.currentTool === Tool.ColorDist)
+            } else if (this.currentTool === Tool.ColorDist) {
                 this.drawDistanceColorGradient(this.playerX, this.playerY);
+            }
             this.fillSquare(this.playerColor, this.playerX, this.playerY, false);
         }
         this.drawSpawns();
