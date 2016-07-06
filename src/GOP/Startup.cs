@@ -89,6 +89,7 @@ namespace GOP
                 AppId = Configuration["Authentication:Facebook:AppId"],
                 AppSecret = Configuration["Authentication:Facebook:AppSecret"]
             });
+            app.UseWebSockets();
             app.UseSignalR();
 
             // Add MVC to the request pipeline.

@@ -1,5 +1,4 @@
 {
-  
   "userSecretsId": "aspnet5-GOP-b861afa2-78db-4387-a3bc-393f99145638",
 
   "dependencies": {
@@ -10,16 +9,17 @@
     "Microsoft.AspNetCore.Identity.EntityFrameworkCore": "1.1.0-*",
     "Microsoft.AspNetCore.Mvc": "1.1.0-*",
     "Microsoft.AspNetCore.Razor.Tools": {
-      "version": "1.0.0-*",
+      "version": "1.0.0-preview2-final",
       "type": "build"
     },
     "Microsoft.AspNetCore.Server.IISIntegration": "1.1.0-*",
     "Microsoft.AspNetCore.Server.Kestrel": "1.1.0-*",
     "Microsoft.AspNetCore.SignalR.Server": "0.2.0-*",
     "Microsoft.AspNetCore.StaticFiles": "1.1.0-*",
+    "Microsoft.AspNetCore.WebSockets.Server": "0.2.0-*",
     "Microsoft.EntityFrameworkCore.SqlServer": "1.1.0-*",
     "Microsoft.EntityFrameworkCore.Tools": {
-      "version": "1.0.0-*",
+      "version": "1.0.0-preview2-final",
       "type": "build"
     },
     "Microsoft.Extensions.Configuration.CommandLine": "1.1.0-*",
@@ -30,37 +30,37 @@
     "Microsoft.Extensions.Logging.Console": "1.1.0-*",
     "Microsoft.Extensions.Logging.Debug": "1.1.0-*",
     "Microsoft.VisualStudio.Web.CodeGeneration.Tools": {
-      "version": "1.0.0-*",
+      "version": "1.0.0-preview2-final",
       "type": "build"
     },
     "Microsoft.VisualStudio.Web.CodeGenerators.Mvc": {
-      "version": "1.0.0-*",
+      "version": "1.0.0-preview2-final",
       "type": "build"
     }
   },
 
   "tools": {
     "Microsoft.AspNetCore.Razor.Tools": {
-      "version": "1.0.0-*",
+      "version": "1.0.0-preview2-final",
       "imports": "portable-net45+win8+dnxcore50"
     },
     "Microsoft.AspNetCore.Server.IISIntegration.Tools": {
-      "version": "1.0.0-*",
+      "version": "1.0.0-preview2-final",
       "imports": "portable-net45+win8+dnxcore50"
     },
     "Microsoft.EntityFrameworkCore.Tools": {
-      "version": "1.0.0-*",
+      "version": "1.0.0-preview2-final",
       "imports": [
         "portable-net45+win8+dnxcore50",
         "portable-net45+win8"
       ]
     },
     "Microsoft.Extensions.SecretManager.Tools": {
-      "version": "1.0.0-*",
+      "version": "1.0.0-preview2-final",
       "imports": "portable-net45+win8+dnxcore50"
     },
     "Microsoft.VisualStudio.Web.CodeGeneration.Tools": {
-      "version": "1.0.0-*",
+      "version": "1.0.0-preview2-final",
       "imports": [
         "portable-net45+win8+dnxcore50",
         "portable-net45+win8"
@@ -79,7 +79,8 @@
       "exclude": [
         "wwwroot"
       ]
-    }
+    },
+    "optimize": true
   },
 
   "publishOptions": {
