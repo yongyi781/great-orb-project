@@ -1,6 +1,4 @@
-﻿/// <reference path="../typings/tsd.d.ts" />
-
-enum Tool {
+﻿enum Tool {
     Pointer,
     Barrier,
     Rock,
