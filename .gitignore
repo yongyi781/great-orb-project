@@ -212,12 +212,13 @@ _Pvt_Extensions/
 ModelManifest.xml
 
 artifacts/
-src/GOP/wwwroot/lib/
-src/GOP/wwwroot/js/
-src/GOP/wwwroot/downloads/
-src/GOP/wwwroot/images/**/
-src/GOP/wwwroot/uploads/
-src/GOP/wwwroot/uploads_old/
-src/GOP/scripts/**/*.js
-src/GOP/typings/
-src/GOP/Views/Tools/Test.cshtml
+/src/GOP/wwwroot/lib/
+/src/GOP/wwwroot/js/
+/src/GOP/wwwroot/downloads/
+/src/GOP/wwwroot/images/**/
+/src/GOP/wwwroot/uploads/
+/src/GOP/wwwroot/uploads_old/
+/src/GOP/scripts/**/*.js
+/src/GOP/typings/
+/src/GOP/Views/Tools/Test.cshtml
+/src/GOP/Views/Tools/Test3D.cshtml
