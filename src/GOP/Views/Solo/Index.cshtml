@@ -177,6 +177,20 @@
         </div>
     </div>
 </div>
+<div id="confirmChangeAltarModal" class="modal fade">
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+            <div class="modal-body">
+                You will lose your current game if you switch altars. Continue?
+            </div>
+            <div class="modal-footer">
+                <button type="button" data-dismiss="modal" class="btn btn-primary" id="yes">Yes</button>
+                <button type="button" data-dismiss="modal" class="btn">No</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 @section scripts {
     <script src="~/js/gop.min.js"></script>
     <script src="~/js/gopui.js"></script>
@@ -246,7 +260,7 @@
             @if (Model.GopControls != null)
             {
                 @: options.client.gopControls = JSON.parse('@Html.Raw(Model.GopControls)');
-            }
+                                                                                    }
 
             @if (Model.CustomAltar != null)
             {
@@ -267,8 +281,15 @@
             });
 
             $("input[name=altar]:radio").change(function (e) {
-                if (!isUpdatingSeedAltarDisplay)
-                    restartGame(undefined, undefined, parseInt($(this).val(), 10));
+                if (!isUpdatingSeedAltarDisplay) {
+                    if (gopui.isGameRunning) {
+                        $("#confirmChangeAltarModal").modal().one("click", "#yes", function () {
+                            restartGame(undefined, undefined, parseInt($(e.currentTarget).val(), 10));
+                        });
+                    } else {
+                        restartGame(undefined, undefined, parseInt($(e.currentTarget).val(), 10));
+                    }
+                }
             });
 
             $("#loadButton").click(function () {

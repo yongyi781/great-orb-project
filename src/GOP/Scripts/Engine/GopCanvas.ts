@@ -11,6 +11,7 @@
     tickProgress = 0;
     rotationAngle = 0;
     player: Player;
+    isRunning: boolean;
 
     numImagesLoaded = 0;
     numImagesTotal = 7; // Orb image + altar images
@@ -208,18 +209,70 @@
         }
     }
 
-    drawTimer() {
-        if (this.gameState.currentTick < GameState.ticksPerAltar - 3) {
-            let radius = this.timerRadius * this.cellWidth;
-            let cx = this.fgCanvas.width - radius - 10;
-            let cy = radius + 10;
-            this.fgContext.fillStyle = "rgba(255, 255, 0, 0.2)";
+    drawHUD() {
+        this.drawRunRepelIndicators();
+        this.drawTimerAndScore();
+    }
+
+    drawRunRepelIndicators() {
+        let x = this.fgCanvas.width - 20;
+        let y = 30;
+
+        this.fgContext.textAlign = "right";
+        this.fgContext.font = "24px Roboto";
+
+        this.fgContext.fillStyle = this.player.run ? "#ddeedd" : "#ccbbbb";
+        let runText = `Run ${this.player.run ? "on" : "off"}`;
+        this.fgContext.fillText(runText, x, y);
+
+        this.fgContext.fillStyle = this.player.repel ? "#ddeedd" : "#ccbbbb";
+        let repelText = `Repel ${this.player.repel ? "on" : "off"}`;
+        this.fgContext.fillText(repelText, x, y + 30);
+    }
+
+    drawTimerAndScore() {
+        let timerEnd = GameState.ticksPerAltar - 3;
+        let radius = this.timerRadius * this.cellWidth;
+        let timerX = this.fgCanvas.width - radius - 30;
+        let timerY = this.fgCanvas.height - radius - 75;
+        // Draw timer outline
+        this.fgContext.lineWidth = 2;
+        this.fgContext.strokeStyle = "rgba(255, 255, 0, 0.1)";
+        this.fgContext.beginPath();
+        this.fgContext.arc(timerX, timerY, radius, 0, 2 * Math.PI);
+        this.fgContext.stroke();
+
+        if (!this.isRunning && this.gameState.currentTick > 0) {
+            this.fgContext.fillStyle = "rgba(0, 255, 0, 0.2)";
+            this.fgContext.moveTo(timerX, timerY);
+            this.fgContext.arc(timerX, timerY, radius, 0, 2 * Math.PI);
+            this.fgContext.fill();
+        } else if (this.gameState.currentTick < timerEnd) {
+            // Draw timer inside
+            this.fgContext.fillStyle = this.gameState.currentTick >= 0.75 * timerEnd ?
+                "rgba(255, 0, 0, 0.2)" : "rgba(255, 255, 0, 0.2)";
             this.fgContext.beginPath();
-            this.fgContext.moveTo(cx, cy);
-            this.fgContext.arc(cx, cy, radius, -Math.PI / 2, -Math.PI / 2 - 2 * Math.PI * (1 - this.gameState.currentTick / (GameState.ticksPerAltar - 3)), true);
-            this.fgContext.lineTo(cx, cy);
+            this.fgContext.moveTo(timerX, timerY);
+            this.fgContext.arc(timerX, timerY, radius, -Math.PI / 2, -Math.PI / 2 - 2 * Math.PI * (1 - this.gameState.currentTick / (timerEnd)), true);
+            this.fgContext.lineTo(timerX, timerY);
             this.fgContext.fill();
         }
+
+        // Draw current tick
+        this.fgContext.textAlign = "center";
+        this.fgContext.textBaseline = "middle";
+
+        this.fgContext.font = "20px Roboto";
+        this.fgContext.fillStyle = "#ffff80";
+        this.fgContext.fillText(this.gameState.currentTick.toString(), timerX, timerY);
+
+        // Draw score
+        this.fgContext.font = "24px Roboto";
+        this.fgContext.fillStyle = "#eeeeee";
+        this.fgContext.fillText(this.gameState.score.toString(), timerX, timerY + radius + 24);
+        this.fgContext.font = "16px Roboto";
+        this.fgContext.fillStyle = "#ccccdd";
+        this.fgContext.fillText(`Estimated: ${this.getEstimatedScore().toString()}`, timerX, timerY + radius + 48);
     }
 
     /**
@@ -274,8 +327,13 @@
         this.fgContext.restore();
 
         if (this.showTimer) {
-            this.drawTimer();
+            this.drawHUD();
         }
+    }
+
+    getEstimatedScore() {
+        let offset = 3;
+        return this.gameState.currentTick === 0 ? 0 : Math.round(this.gameState.score * (GameState.ticksPerAltar - offset) / (Math.max(1, this.gameState.currentTick - offset)));
     }
 
     private loadImages() {

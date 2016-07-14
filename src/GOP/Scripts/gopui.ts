@@ -105,11 +105,6 @@ class GopUI {
     $repelCheckBox = $('<input type="checkbox"/>');
     $playerControlsDiv: JQuery;
 
-    $tickSpan = $("<span/>");
-    $scoreSpan = $("<span/>");
-    $estScoreSpan = $("<span/>");
-    $scoreInfoDiv = $('<div class="side-container"/>').append($("<div>Tick: </div>").append(this.$tickSpan));
-
     $minusTicksButton: JQuery;
     $plusTicksButton: JQuery;
     $minusPlusTicksDiv: JQuery;
@@ -146,19 +141,12 @@ class GopUI {
         this.gameplayData = new GameplayData(new GameStartInfo(this.options.game.seed, this.options.game.altar,
             this.options.game.startLocations.map(p => new PlayerStartInfo(p, true, false))));
 
-        if (this.options.interface.showScore) {
-            this.$scoreInfoDiv.append(
-                $("<div>Score: </div>").append(this.$scoreSpan),
-                $("<div>Estimated score: </div>").append(this.$estScoreSpan));
-        }
-
         this.$playerControlsDiv = $('<div class="side-container"></div>').append(
             $("<label>Run (" + this.options.client.gopControls.run + ")</label>").prepend(this.$runCheckBox),
             "&nbsp;",
             $("<label>Repel (" + this.options.client.gopControls.repeller + "/" + this.options.client.gopControls.attractor + ")</label>").prepend(this.$repelCheckBox));
         this.$sidebar
-            .append(this.$playerControlsDiv)
-            .append(this.$scoreInfoDiv);
+            .append(this.$playerControlsDiv);
         if (this.options.interface.showNavigationButtons) {
             this.$minusTicksButton = $('<button type="button" class="btn btn-default">-' + this.options.interface.plusMinusTicksAdvance + " ticks</button>");
             this.$plusTicksButton = $('<button type="button" class="btn btn-default">+' + this.options.interface.plusMinusTicksAdvance + " ticks</button>");
@@ -516,7 +504,7 @@ class GopUI {
             return;
         }
 
-        if (!this.isGameRunning) {
+        if (!this.isGameRunning && this.gameState.currentTick === 0) {
             let startPlayer = this.gameplayData.startInfo.players[this.player.index];
             if (run !== void 0 && run !== null) {
                 startPlayer.run = this.player.run = run;
@@ -546,9 +534,6 @@ class GopUI {
     }
 
     updateDisplay() {
-        this.$tickSpan.text(this.gameState.currentTick + (this.options.interface.showTickTextSuffix ? " of " + GameState.ticksPerAltar : ""));
-        this.$scoreSpan.text(this.gameState.score);
-        this.$estScoreSpan.text(this.getEstimatedScore());
         this.$runCheckBox.prop("checked", this.player.run);
         this.$repelCheckBox.prop("checked", this.player.repel);
         this.$scoredTicksSpan.html("<span>" + this.gameState.scoredTicks.join("</span>&nbsp;<span>") + "</span>");
@@ -584,12 +569,7 @@ class GopUI {
 
         this.options.callbacks.tick();
     }
-
-    getEstimatedScore() {
-        let offset = 3;
-        return this.gameState.currentTick === 0 ? 0 : Math.round(this.gameState.score * (GameState.ticksPerAltar - offset) / (Math.max(1, this.gameState.currentTick - offset)));
-    }
-
+    
     updatePointer() {
         if (this.mousePosition) {
             this.$canvas.css("cursor", this.isMouseOverAnyOrb(this.gopCanvas.fromScreenCoords(this.mousePosition.x, this.mousePosition.y, false)) ? "pointer" : "default");
@@ -610,6 +590,7 @@ class GopUI {
     }
 
     set isGameRunning(value) {
+        this.gopCanvas.isRunning = value;
         if (this.isGameRunning !== value) {
             if (value) {
                 this.lastTimestamp = performance.now();
