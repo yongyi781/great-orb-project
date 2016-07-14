@@ -29,8 +29,8 @@
      * @returns {Number}
      */
     static distanceSquared(left: Point, right: Point) {
-        var dx = left.x - right.x;
-        var dy = left.y - right.y;
+        let dx = left.x - right.x;
+        let dy = left.y - right.y;
         return dx * dx + dy * dy;
     }
 
@@ -39,15 +39,16 @@
     }
 
     static lerp(left: Point, right: Point, t: number) {
-        if (Point.isNaN(left)) return right;
-        if (Point.isNaN(right)) return left;
+        if (Point.isNaN(left)) { return right; }
+        if (Point.isNaN(right)) { return left; }
         return new Point((1 - t) * left.x + t * right.x, (1 - t) * left.y + t * right.y);
     }
 
     static parse(str: string) {
-        if (str[0] === "(" || str[0] === "[")
+        if (str[0] === "(" || str[0] === "[") {
             str = str.substring(1, str.length - 1);
-        var arr = str.split(",", 2);
+        }
+        let arr = str.split(",", 2);
         return new Point(parseInt(arr[0], 10), parseInt(arr[1], 10));
     }
 

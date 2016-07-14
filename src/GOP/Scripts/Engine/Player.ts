@@ -45,24 +45,28 @@
     // Used in both moving and attracting.
     stepMove(isSecondAttract: boolean) {
         if (this.movePath.length > 0) {
-            var next = this.movePath.shift();
-            if (this.movePath.length > 0 && this.run)
+            let next = this.movePath.shift();
+            if (this.movePath.length > 0 && this.run) {
                 next = this.movePath.shift();
+            }
             if (next !== undefined) {
                 this.location = next;
                 this.hasMovedThisTick = true;
-                if (!isSecondAttract)
+                if (!isSecondAttract) {
                     this.delayAttractFromMoving = true;
+                }
             }
         }
     }
 
     step() {
-        if (!this.action)
+        if (!this.action) {
             this.action = GameAction.idle();
+        }
 
-        if (this.action.toggleRun)
+        if (this.action.toggleRun) {
             this.run = !this.run;
+        }
 
         this.prevLocation = this.location;
         this.isAttracting = false;
@@ -70,8 +74,8 @@
 
         if (this.forceAttractOrb !== null) {
             // Override player's action.
-            var toggleRun = this.action.toggleRun;
-            var changeWand = this.action.changeWand;
+            let toggleRun = this.action.toggleRun;
+            let changeWand = this.action.changeWand;
             this.action = this.previousAction.copy();
             this.action.toggleRun = toggleRun;
             this.action.changeWand = changeWand;
@@ -81,7 +85,7 @@
             this.action = GameAction.idle(this.action.toggleRun, this.action.changeWand);
         }
 
-        var attractTwice = false;
+        let attractTwice = false;
         switch (this.action.type) {
             case ActionType.Idle:
                 this.stopAttracting();
@@ -115,7 +119,7 @@
                     this.action.isNewAttract = true;
                 }
 
-                var orb = this.gs.orbs[this.action.orbIndex];
+                let orb = this.gs.orbs[this.action.orbIndex];
                 if (this.forceAttractOrb !== null ||
                     (!this.action.isNewAttract && !this.gs.board.canReach(this.location, orb.location, this.repel))) {
                     // "pre-attract" before wand changes state.
@@ -130,25 +134,29 @@
                 break;
         }
 
-        if (this.action.changeWand)
+        if (this.action.changeWand) {
             this.repel = !this.repel;
-        if (this.action.type === ActionType.Attract)
+        }
+        if (this.action.type === ActionType.Attract) {
             this.stepAttract(attractTwice);
+        }
         this.previousAction = this.action;
     }
 
     forceAttractNextTick(orb: Orb) {
-        if (!this.delayAttractFromPrototick || this.currentOrb === orb)
+        if (!this.delayAttractFromPrototick || this.currentOrb === orb) {
             this.forceAttractOrb = orb;
+        }
     }
 
     stepAttract(isSecondAttract: boolean) {
-        var board = this.gs.board;
-        var orb = this.gs.orbs[this.action.orbIndex];
-        var canReach = board.canReach(this.location, orb.location, this.repel);
+        let board = this.gs.board;
+        let orb = this.gs.orbs[this.action.orbIndex];
+        let canReach = board.canReach(this.location, orb.location, this.repel);
 
-        if (Point.isNaN(orb.location))
+        if (Point.isNaN(orb.location)) {
             return;
+        }
 
         if (this.forceAttractOrb !== null) {
             // Attract no matter what!
@@ -167,8 +175,9 @@
         if (!canReach) {
             // Can't reach, start dragging.
             // Recalculate move path.
-            if (Point.isNaN(this.lastOrbClickLocation))
+            if (Point.isNaN(this.lastOrbClickLocation)) {
                 this.lastOrbClickLocation = orb.location;
+            }
 
             if (!this.lastOrbClickLocation.equals(this.lastAttractTarget)) {
                 this.movePath = this.gs.board.getPlayerPath(this.location, this.lastOrbClickLocation, true);
@@ -179,16 +188,18 @@
                 this.movePath = this.gs.board.getPlayerPath(this.location, orb.location, true);
             }
 
-            if (!this.hasMovedThisTick)
+            if (!this.hasMovedThisTick) {
                 this.stepMove(isSecondAttract);
+            }
 
             if (board.canReach(this.location, orb.location, this.repel)) {
                 // Pre-movement
                 this.forceAttractNextTick(orb);
             }
 
-            if (!isSecondAttract)
+            if (!isSecondAttract) {
                 this.delayAttractFromPrototick = false;
+            }
         } else if (this.delayAttractFromMoving || this.delayAttractFromPrototick) {
             if (this.delayAttractFromPrototick) {
                 this.delayAttractFromPrototick = false;
@@ -212,25 +223,28 @@
             this.action.isNewAttract = false;
         }
 
-        if (!this.hasMovedThisTick)
+        if (!this.hasMovedThisTick) {
             this.delayAttractFromMoving = false;
-        else if (!isSecondAttract)
+        } else if (!isSecondAttract) {
             this.delayAttractFromMoving = true;
+        }
     }
 
     attractSuccess(orb: Orb) {
         this.forceAttractOrb = null;
-        var cancelAttract = false;
-        var orbOffset = GopBoard.getOrbOffset(this.location.subtract(orb.location), !this.repel);
+        let cancelAttract = false;
+        let orbOffset = GopBoard.getOrbOffset(this.location.subtract(orb.location), !this.repel);
         if (this.repel) {
-            if (Point.walkingDistance(this.location, orb.location) >= this.gs.board.reachDistance - 2)
+            if (Point.walkingDistance(this.location, orb.location) >= this.gs.board.reachDistance - 2) {
                 cancelAttract = true;
-            else
+            } else {
                 orbOffset = orbOffset.negate();
+            }
         }
 
-        if (this.isAttractIneffective(orb))
+        if (this.isAttractIneffective(orb)) {
             this.attractIneffective = true;
+        }
 
         if (!this.attractIneffective && !cancelAttract) {
             orb.wasTouchedThisTick = true;
@@ -244,8 +258,7 @@
         this.lastOrbClickLocation = orb.location;
         if (this.action.isNewAttract) {
             this.holdLength = 1;
-        }
-        else if (!this.isAttracting) {
+        } else if (!this.isAttracting) {
             this.holdLength++;
         }
 
@@ -254,12 +267,14 @@
     }
 
     isAttractIneffective(orb: Orb) {
-        if (orb.controllingPlayer === this || orb.controllingPlayer === null || orb.controlState === OrbControlState.Free)
+        if (orb.controllingPlayer === this || orb.controllingPlayer === null || orb.controlState === OrbControlState.Free) {
             return false;
+        }
         if (Point.isNaN(orb.target)) {
             // Orb is not moving.
-            if (orb.controlState === OrbControlState.Wait2)
+            if (orb.controlState === OrbControlState.Wait2) {
                 return false;
+            }
             return this.index < orb.controllingPlayer.index;
         }
         return true;

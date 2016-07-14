@@ -25,7 +25,7 @@
     }
 
     init_by_array(init_key: number[], key_length: number) {
-        var i, j, k, s;
+        let i, j, k, s;
         this.init_genrand(19650218);
         i = 1; j = 0;
         k = (this.N > key_length ? this.N : key_length);
@@ -35,7 +35,7 @@
             this.mt[i] >>>= 0; /* for WORDSIZE > 32 machines */
             i++; j++;
             if (i >= this.N) { this.mt[0] = this.mt[this.N - 1]; i = 1; }
-            if (j >= key_length) j = 0;
+            if (j >= key_length) { j = 0; }
         }
         for (k = this.N - 1; k; k--) {
             s = this.mt[i - 1] ^ (this.mt[i - 1] >>> 30);
@@ -52,15 +52,16 @@
      * Generates a random number on [0,0xffffffff]-interval
      */
     genrand_int32() {
-        var y;
-        var mag01 = new Array(0x0, this.MATRIX_A);
+        let y;
+        let mag01 = new Array(0x0, this.MATRIX_A);
         /* mag01[x] = x * MATRIX_A  for x=0,1 */
 
         if (this.mti >= this.N) { /* generate N words at one time */
-            var kk;
+            let kk;
 
-            if (this.mti === this.N + 1)   /* if init_genrand() has not been called, */
-                this.init_genrand(5489); /* a default initial seed is used */
+            if (this.mti === this.N + 1) {  /* if init_genrand() has not been called, */
+                this.init_genrand(5489);    /* a default initial seed is used */
+            }
 
             for (kk = 0; kk < this.N - this.M; kk++) {
                 y = (this.mt[kk] & this.UPPER_MASK) | (this.mt[kk + 1] & this.LOWER_MASK);
@@ -93,9 +94,10 @@
      */
     nextInt(maxValue: number): number {
         while (true) {
-            var ret = this.genrand_int32();
-            if (Math.floor(ret / maxValue) < Math.floor(4294967295 / maxValue) || 4294967295 % maxValue === maxValue - 1)
+            let ret = this.genrand_int32();
+            if (Math.floor(ret / maxValue) < Math.floor(4294967295 / maxValue) || 4294967295 % maxValue === maxValue - 1) {
                 return ret % maxValue;
+            }
         }
     }
 }

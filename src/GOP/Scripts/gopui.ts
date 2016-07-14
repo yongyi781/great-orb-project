@@ -74,9 +74,9 @@ class GopUI {
         },
 
         callbacks: {
-            setActionCallback: (action: GameAction): void => { },
+            setActionCallback: action => undefined,
             isGameFinished: (): boolean => this.gameState.currentTick >= GameState.ticksPerAltar,
-            tick: (): void => { }
+            tick: () => undefined
         },
 
         interface: {
@@ -105,10 +105,10 @@ class GopUI {
     $repelCheckBox = $('<input type="checkbox"/>');
     $playerControlsDiv: JQuery;
 
-    $tickSpan = $('<span/>');
-    $scoreSpan = $('<span/>');
-    $estScoreSpan = $('<span/>');
-    $scoreInfoDiv = $('<div class="side-container"/>').append($('<div>Tick: </div>').append(this.$tickSpan));
+    $tickSpan = $("<span/>");
+    $scoreSpan = $("<span/>");
+    $estScoreSpan = $("<span/>");
+    $scoreInfoDiv = $('<div class="side-container"/>').append($("<div>Tick: </div>").append(this.$tickSpan));
 
     $minusTicksButton: JQuery;
     $plusTicksButton: JQuery;
@@ -148,20 +148,20 @@ class GopUI {
 
         if (this.options.interface.showScore) {
             this.$scoreInfoDiv.append(
-                $('<div>Score: </div>').append(this.$scoreSpan),
-                $('<div>Estimated score: </div>').append(this.$estScoreSpan));
+                $("<div>Score: </div>").append(this.$scoreSpan),
+                $("<div>Estimated score: </div>").append(this.$estScoreSpan));
         }
 
         this.$playerControlsDiv = $('<div class="side-container"></div>').append(
-            $('<label>Run (' + this.options.client.gopControls.run + ')</label>').prepend(this.$runCheckBox),
+            $("<label>Run (" + this.options.client.gopControls.run + ")</label>").prepend(this.$runCheckBox),
             "&nbsp;",
-            $('<label>Repel (' + this.options.client.gopControls.repeller + '/' + this.options.client.gopControls.attractor + ')</label>').prepend(this.$repelCheckBox));
+            $("<label>Repel (" + this.options.client.gopControls.repeller + "/" + this.options.client.gopControls.attractor + ")</label>").prepend(this.$repelCheckBox));
         this.$sidebar
             .append(this.$playerControlsDiv)
             .append(this.$scoreInfoDiv);
         if (this.options.interface.showNavigationButtons) {
-            this.$minusTicksButton = $('<button type="button" class="btn btn-default">-' + this.options.interface.plusMinusTicksAdvance + ' ticks</button>');
-            this.$plusTicksButton = $('<button type="button" class="btn btn-default">+' + this.options.interface.plusMinusTicksAdvance + ' ticks</button>');
+            this.$minusTicksButton = $('<button type="button" class="btn btn-default">-' + this.options.interface.plusMinusTicksAdvance + " ticks</button>");
+            this.$plusTicksButton = $('<button type="button" class="btn btn-default">+' + this.options.interface.plusMinusTicksAdvance + " ticks</button>");
             this.$minusPlusTicksDiv = $('<div class="side text-center"/>').append(this.$minusTicksButton, "&nbsp;", this.$plusTicksButton);
 
             this.$sidebar.append(this.$minusPlusTicksDiv);
@@ -201,9 +201,9 @@ class GopUI {
      * Recalculates the canvas size and returns whether the canvas needs to be redrawn.
      */
     recalculateCanvasSize() {
-        var numCells = 2 * this.options.client.visibilityRadius + 1;
-        var oldSize = this.canvas.width;
-        var newSize = numCells * Math.min(27, Math.max(4, Math.floor(($(window).innerHeight() - this.options.interface.margin) / numCells)));
+        let numCells = 2 * this.options.client.visibilityRadius + 1;
+        let oldSize = this.canvas.width;
+        let newSize = numCells * Math.min(27, Math.max(4, Math.floor(($(window).innerHeight() - this.options.interface.margin) / numCells)));
         if (oldSize !== newSize) {
             this.canvas.width = this.canvas.height = newSize;
         }
@@ -211,9 +211,9 @@ class GopUI {
     }
 
     onMinusTicksClicked() {
-        var tickToLoad = this.gameState.currentTick - this.options.interface.plusMinusTicksAdvance;
+        let tickToLoad = this.gameState.currentTick - this.options.interface.plusMinusTicksAdvance;
         this.restartGame(this.gameplayData.toString(), undefined, undefined, this.player.index, false);
-        for (var i = 0; i < tickToLoad; i++) {
+        for (let i = 0; i < tickToLoad; i++) {
             this.tick(true, false);
         }
         this.isGameRunning = true;
@@ -221,7 +221,7 @@ class GopUI {
     }
 
     onPlusTicksClicked() {
-        for (var i = 0; i < this.options.interface.plusMinusTicksAdvance; i++) {
+        for (let i = 0; i < this.options.interface.plusMinusTicksAdvance; i++) {
             this.tick(false, false);
         }
         this.updateDisplay();
@@ -291,7 +291,7 @@ class GopUI {
                     case 52:
                     case 53:
                         if (this.options.client.enablePlayerSwitching) {
-                            var player = this.gameState.players[e.which - 49];
+                            let player = this.gameState.players[e.which - 49];
                             if (player !== undefined) {
                                 this.player = player;
                                 // Repaint
@@ -309,35 +309,39 @@ class GopUI {
             .mousedown(this.onCanvasMouseDown.bind(this))
             .on("contextmenu", e => e.preventDefault())
             .mousemove(e => {
-                //var loc = GopUI.getMouseClickLocation(e);
-                //var p = this.gopCanvas.fromScreenCoords(loc.x, loc.y, false);
-                //var pTrunc = this.gopCanvas.fromScreenCoords(loc.x, loc.y, true);
-                var menuMargin = 20;
+                //let loc = GopUI.getMouseClickLocation(e);
+                //let p = this.gopCanvas.fromScreenCoords(loc.x, loc.y, false);
+                //let pTrunc = this.gopCanvas.fromScreenCoords(loc.x, loc.y, true);
+                let menuMargin = 20;
                 this.canvasFocused = true;
-                var popupMenu = this.$popupMenu[0];
+                let popupMenu = this.$popupMenu[0];
                 if (e.pageX < popupMenu.offsetLeft - menuMargin || e.pageX > popupMenu.offsetLeft + popupMenu.offsetWidth + menuMargin ||
-                    e.pageY < popupMenu.offsetTop - menuMargin || e.pageY > popupMenu.offsetTop + popupMenu.offsetHeight + menuMargin)
+                    e.pageY < popupMenu.offsetTop - menuMargin || e.pageY > popupMenu.offsetTop + popupMenu.offsetHeight + menuMargin) {
                     this.hidePopupMenu();
+                }
                 this.mousePosition = GopUI.getMouseClickLocation(e);
                 this.updatePointer();
             })
             .mouseleave(() => { this.canvasFocused = false; });
 
         this.$runCheckBox.click(e => {
-            if (this.isGameRunning)
+            if (this.isGameRunning) {
                 e.preventDefault();
+            }
             this.setPlayerRunAndRepel(!this.player.run, null);
         });
         this.$repelCheckBox.click(e => {
-            if (this.isGameRunning)
+            if (this.isGameRunning) {
                 e.preventDefault();
+            }
             this.setPlayerRunAndRepel(null, !this.player.repel);
         });
         this.$minusTicksButton.click(() => this.onMinusTicksClicked());
         this.$plusTicksButton.click(() => this.onPlusTicksClicked());
         this.$restartButton.click(() => {
-            if (this.options.client.allowInput)
+            if (this.options.client.allowInput) {
                 this.restartGame(undefined, undefined, undefined, this.player.index);
+            }
         });
 
         this.$popupMenu
@@ -353,21 +357,23 @@ class GopUI {
 
         if (code !== void 0) {
             this.gameplayData = GameplayData.parse(code);
-            var startInfo = this.gameplayData.startInfo;
+            let startInfo = this.gameplayData.startInfo;
             this.gameState.altar = startInfo.altar;
             this.gameState.seed = startInfo.seed;
             this.gameState.players = startInfo.players.map((value, index) => {
-                var player = new Player(this.gameState, value.location, index);
+                let player = new Player(this.gameState, value.location, index);
                 player.run = value.run;
                 player.repel = value.repel;
                 return player;
             });
             this.isGameRunning = true;
         } else {
-            if (seed !== void 0)
+            if (seed !== void 0) {
                 this.gameState.seed = seed;
-            if (altar !== void 0)
+            }
+            if (altar !== void 0) {
                 this.gameState.altar = altar;
+            }
             this.gameplayData = new GameplayData(new GameStartInfo(this.gameState.seed, this.gameState.altar,
                 this.gameState.players.map(player => new PlayerStartInfo(player.location, player.run, player.repel))));
 
@@ -401,27 +407,28 @@ class GopUI {
     }
 
     onCanvasMouseDown(e: JQueryMouseEventObject) {
-        var onContextMenuAttractOrbMouseDown = (orbIndex: number) => {
-            return (e: JQueryMouseEventObject) => {
-                if (e.button === 0) {
+        let onContextMenuAttractOrbMouseDown = (orbIndex: number) => {
+            return (eInner: JQueryMouseEventObject) => {
+                if (eInner.button === 0) {
                     this.setPlayerAction(GameAction.attract(orbIndex, false, false, true));
                     this.hidePopupMenu();
                 }
-                e.preventDefault();
+                eInner.preventDefault();
             };
         };
 
-        var loc = GopUI.getMouseClickLocation(e);
-        var p = this.gopCanvas.fromScreenCoords(loc.x, loc.y, false);
-        var pTrunc = this.gopCanvas.fromScreenCoords(loc.x, loc.y, true);
-        var i: number;
+        let loc = GopUI.getMouseClickLocation(e);
+        let p = this.gopCanvas.fromScreenCoords(loc.x, loc.y, false);
+        let pTrunc = this.gopCanvas.fromScreenCoords(loc.x, loc.y, true);
+        let i: number;
 
         if (e.button === 0) {
             // Left-click.
             this.hidePopupMenu();
-            if (!this.onclick(pTrunc))
+            if (!this.onclick(pTrunc)) {
                 return;
-            var foundOrb = false;
+            }
+            let foundOrb = false;
             for (i = 0; i < this.gameState.orbs.length; ++i) {
                 if (this.isMouseOverOrb(p, this.gopCanvas.getDrawLocation(this.gameState.orbs[i]))) {
                     // Attract orb!
@@ -447,24 +454,25 @@ class GopUI {
             for (i = 0; i < this.gameState.orbs.length; ++i) {
                 if (this.isMouseOverOrb(p, this.gopCanvas.getDrawLocation(this.gameState.orbs[i]))) {
                     // Add attract and repel menu items
-                    var attractMenuItem = $("<a class='context-menu-item'></a>")
+                    let attractMenuItem = $("<a class='context-menu-item'></a>")
                         .html((this.player.repel ? "Repel" : "Attract") + " <span style='color: yellow;'>Orb " + GameAction.orbIndexToChar(i) + "</span>")
-                        .mousedown(onContextMenuAttractOrbMouseDown(i)).on("contextmenu", e => e.preventDefault());
-                    //var repelMenuItem = document.createElement("a");
+                        .mousedown(onContextMenuAttractOrbMouseDown(i)).on("contextmenu", eInner => eInner.preventDefault());
+                    //let repelMenuItem = document.createElement("a");
                     this.$popupMenu.append(attractMenuItem);
                 }
             }
 
-            var walkMenuItem = $("<a class='context-menu-item'>Walk to " + pTrunc + "</a>")
-                .mousedown(e => {
-                    if (e.button === 0) {
+            let walkMenuItem = $("<a class='context-menu-item'>Walk to " + pTrunc + "</a>")
+                .mousedown(eInner => {
+                    if (eInner.button === 0) {
                         this.hidePopupMenu();
-                        if (!this.onclick(pTrunc))
+                        if (!this.onclick(pTrunc)) {
                             return;
+                        }
                         this.setPlayerAction(GameAction.move(pTrunc));
                     }
-                    e.preventDefault();
-                }).on("contextmenu", e => e.preventDefault());
+                    eInner.preventDefault();
+                }).on("contextmenu", eInner => eInner.preventDefault());
 
             this.$popupMenu.append(walkMenuItem).css({
                 "position": "absolute",
@@ -475,11 +483,12 @@ class GopUI {
     }
 
     setPlayerAction(action: GameAction) {
-        if (!this.options.client.allowInput)
+        if (!this.options.client.allowInput) {
             return;
+        }
 
         if (!this.options.client.useServer) {
-            var f = () => {
+            let f = () => {
                 // Don't touch run and repel
                 action.toggleRun = this.player.action.toggleRun;
                 action.changeWand = this.player.action.changeWand;
@@ -488,10 +497,11 @@ class GopUI {
                 this.gameplayData.actions.sliceForPlayer(this.player.index, this.gameState.currentTick);
             };
 
-            if (this.options.client.latency > 0)
+            if (this.options.client.latency > 0) {
                 setTimeout(f, this.options.client.latency);
-            else
+            } else {
                 f();
+            }
         }
 
         this.options.callbacks.setActionCallback(action);
@@ -502,22 +512,27 @@ class GopUI {
     }
 
     setPlayerRunAndRepel(run?: boolean, repel?: boolean) {
-        if (!this.options.client.allowInput)
+        if (!this.options.client.allowInput) {
             return;
+        }
 
         if (!this.isGameRunning) {
-            var startPlayer = this.gameplayData.startInfo.players[this.player.index];
-            if (run !== void 0 && run !== null)
+            let startPlayer = this.gameplayData.startInfo.players[this.player.index];
+            if (run !== void 0 && run !== null) {
                 startPlayer.run = this.player.run = run;
-            if (repel !== void 0 && repel !== null)
+            }
+            if (repel !== void 0 && repel !== null) {
                 startPlayer.repel = this.player.repel = repel;
+            }
             this.updateDisplay();
         } else {
-            var f = () => {
-                if (run !== void 0 && run !== null)
+            let f = () => {
+                if (run !== void 0 && run !== null) {
                     this.player.action.toggleRun = this.player.run !== run;
-                if (repel !== void 0 && repel !== null)
+                }
+                if (repel !== void 0 && repel !== null) {
                     this.player.action.changeWand = this.player.repel !== repel;
+                }
                 // Erase gameplay data after the current tick.
                 this.gameplayData.actions.sliceForPlayer(this.player.index, this.gameState.currentTick);
             };
@@ -545,7 +560,7 @@ class GopUI {
             return;
         }
         this.gameState.players.forEach((player, index) => {
-            var loadedActions = this.gameplayData.actions.getForPlayer(index);
+            let loadedActions = this.gameplayData.actions.getForPlayer(index);
             if (loadedActions.length > this.gameState.currentTick) {
                 // Autoplay from game code
                 player.action = loadedActions[this.gameState.currentTick];
@@ -559,17 +574,19 @@ class GopUI {
         // Set toggles to false so that the player doesn't continuously repel/attract/repel/attract/etc...
         this.gameState.players.forEach(player => { player.action = player.action.copy(true); });
 
-        if (this.options.callbacks.isGameFinished())
+        if (this.options.callbacks.isGameFinished()) {
             this.isGameRunning = false;
+        }
 
-        if (redraw)
+        if (redraw) {
             this.updateDisplay();
+        }
 
         this.options.callbacks.tick();
     }
 
     getEstimatedScore() {
-        var offset = 3;
+        let offset = 3;
         return this.gameState.currentTick === 0 ? 0 : Math.round(this.gameState.score * (GameState.ticksPerAltar - offset) / (Math.max(1, this.gameState.currentTick - offset)));
     }
 
@@ -580,7 +597,7 @@ class GopUI {
     }
 
     isMouseOverOrb(clickLoc: Point, orbLoc: Point) {
-        var diff = clickLoc.subtract(orbLoc);
+        let diff = clickLoc.subtract(orbLoc);
         return Math.abs(diff.x) < 0.5 * this.gopCanvas.orbSize && Math.abs(diff.y) < 0.5 * this.gopCanvas.orbSize;
     }
 
@@ -634,8 +651,8 @@ class GopUI {
      * Returns the mouse click location of an event.
      */
     private static getMouseClickLocation(e: JQueryMouseEventObject | MouseEvent) {
-        var offX = (e.offsetX || e.pageX - $(e.target).offset().left);
-        var offY = (e.offsetY || e.pageY - $(e.target).offset().top);
+        let offX = (e.offsetX || e.pageX - $(e.target).offset().left);
+        let offY = (e.offsetY || e.pageY - $(e.target).offset().top);
         return new Point(offX, offY);
     }
 

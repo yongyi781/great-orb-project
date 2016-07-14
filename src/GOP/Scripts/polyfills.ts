@@ -6,33 +6,32 @@
 // MIT license
 
 (() => {
-    var lastTime = 0;
-    var vendors = ['ms', 'moz', 'webkit', 'o'];
-    for (var x = 0; x < vendors.length && !window.requestAnimationFrame; ++x) {
+    let lastTime = 0;
+    let vendors = ['ms', 'moz', 'webkit', 'o'];
+    for (let x = 0; x < vendors.length && !window.requestAnimationFrame; ++x) {
         window.requestAnimationFrame = window[vendors[x] + 'RequestAnimationFrame'];
         window.cancelAnimationFrame = window[vendors[x] + 'CancelAnimationFrame']
-        || window[vendors[x] + 'CancelRequestAnimationFrame'];
+            || window[vendors[x] + 'CancelRequestAnimationFrame'];
     }
 
-    if (!window.requestAnimationFrame)
+    if (!window.requestAnimationFrame) {
         window.requestAnimationFrame = (callback) => {
-            var currTime = new Date().getTime();
-            var timeToCall = Math.max(0, 16 - (currTime - lastTime));
-            var id = window.setTimeout(() => { callback(currTime + timeToCall); },
+            let currTime = new Date().getTime();
+            let timeToCall = Math.max(0, 16 - (currTime - lastTime));
+            let id = window.setTimeout(() => { callback(currTime + timeToCall); },
                 timeToCall);
             lastTime = currTime + timeToCall;
             return id;
         };
+    }
 
-    if (!window.cancelAnimationFrame)
-        window.cancelAnimationFrame = id => {
-            clearTimeout(id);
-        };
+    if (!window.cancelAnimationFrame) {
+        window.cancelAnimationFrame = id => { clearTimeout(id); };
+    }
 })();
 
 // @license http://opensource.org/licenses/MIT
 // copyright Paul Irish 2015
-
 
 // Date.now() is supported everywhere except IE8. For IE8 we use the Date.now polyfill
 //   github.com/Financial-Times/polyfill-service/blob/master/polyfills/Date.now/polyfill.js
@@ -51,7 +50,7 @@
     });
 
     if (!("now" in window.performance)) {
-        var nowOffset = Date.now();
+        let nowOffset = Date.now();
 
         if (performance.timing && performance.timing.navigationStart) {
             nowOffset = performance.timing.navigationStart;
@@ -59,6 +58,6 @@
 
         window.performance.now = function now() {
             return Date.now() - nowOffset;
-        }
+        };
     }
 })();

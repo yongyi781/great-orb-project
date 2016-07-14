@@ -13,8 +13,9 @@
         public numberOfOrbs = 3,
         public seed = 5489,
         public altar = Altar.Air) {
-        for (var i = 0; i < playerLocations.length; i++)
+        for (let i = 0; i < playerLocations.length; i++) {
             this.players.push(new Player(this, playerLocations[i], i));
+        }
         this.reset(altar);
     }
 
@@ -23,19 +24,22 @@
     }
 
     reset(altar?: Altar) {
-        if (altar !== void 0)
+        if (altar !== void 0) {
             this.altar = altar;
+        }
         this.board.loadAltar(this.altar);
         this.orbs = [];
         this.presetSpawnStack = this.presetSpawns.slice(0);
-        for (var i = 0; i < this.numberOfOrbs; ++i)
+        for (let i = 0; i < this.numberOfOrbs; ++i) {
             this.orbs.push(new Orb(this, i));
+        }
         this.players.forEach(player => player.freeze());
 
         // Limit to the range [0,2147483647]
         this.seed = (this.seed >>> 0) & 0x7fffffff;
-        if (this.random)
+        if (this.random) {
             this.random.init_genrand(this.seed);
+        }
         this.scoredTicks = [];
         this.score = 0;
         this.currentTick = 0;

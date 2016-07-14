@@ -32,16 +32,18 @@
     }
 
     groundColor() {
-        var c = AltarData[this.gameState.altar].groundColor;
-        if (c === void 0)
+        let c = AltarData[this.gameState.altar].groundColor;
+        if (c === void 0) {
             return GopCanvas.defaultGroundColor;
-        if (c instanceof Array)
+        }
+        if (c instanceof Array) {
             return c[0];
+        }
         return <string>c;
     }
 
     tileColor(x, y) {
-        var tile = this.board.get(new Point(x, y));
+        let tile = this.board.get(new Point(x, y));
         switch (tile) {
             case Tile.Floor:
             case Tile.WallW:
@@ -49,9 +51,10 @@
             case Tile.WallSW:
             case Tile.Minipillar1:
             case Tile.Minipillar2:
-                var pattern = AltarData[this.gameState.altar].groundPattern;
-                if (pattern !== void 0)
+                let pattern = AltarData[this.gameState.altar].groundPattern;
+                if (pattern !== void 0) {
                     return AltarData[this.gameState.altar].groundColor[pattern[this.board.ymax - y][x + this.board.xmax]];
+                }
                 return this.groundColor();
             case Tile.Barrier:
                 return "black";
@@ -89,7 +92,7 @@
      */
     toScreenCoords(x: number, y: number, relative = false) {
         if (relative) {
-            var center = this.getDrawLocation(this.player);
+            let center = this.getDrawLocation(this.player);
             return new Point((x - center.x + this.visibilityRadius) * this.cellWidth, (-y + center.y + this.visibilityRadius) * this.cellHeight);
         }
         return new Point((x + this.visibilityRadius) * this.cellWidth, (-y + this.visibilityRadius) * this.cellHeight);
@@ -99,12 +102,12 @@
      * Converts screen coordinates to grid coordinates.
      */
     fromScreenCoords(x: number, y: number, truncate = true) {
-        var center = this.getDrawLocation(this.player);
-        var p = new Point(x / this.cellWidth - this.visibilityRadius - 0.5, -y / this.cellHeight + this.visibilityRadius + 0.5);
-        var pRotated = new Point(
+        let center = this.getDrawLocation(this.player);
+        let p = new Point(x / this.cellWidth - this.visibilityRadius - 0.5, -y / this.cellHeight + this.visibilityRadius + 0.5);
+        let pRotated = new Point(
             p.x * Math.cos(this.rotationAngle) - p.y * Math.sin(this.rotationAngle),
             p.x * Math.sin(this.rotationAngle) + p.y * Math.cos(this.rotationAngle));
-        var pTranslated = new Point(pRotated.x + center.x, pRotated.y + center.y);
+        let pTranslated = new Point(pRotated.x + center.x, pRotated.y + center.y);
         return truncate ? new Point(Math.floor(pTranslated.x + 0.5), Math.ceil(pTranslated.y - 0.5)) : new Point(pTranslated.x, pTranslated.y);
     }
 
@@ -112,22 +115,22 @@
      * Fills the square at the point (x, y) with the specified fill style.
      */
     bgFillSquare(context: CanvasRenderingContext2D, fillStyle: string, x: number, y: number, sizeDiff = 0) {
-        var square = this.toBgScreenCoords(x, y);
+        let square = this.toBgScreenCoords(x, y);
         context.fillStyle = fillStyle;
         context.fillRect(square.x, square.y, this.cellWidth + sizeDiff, this.cellHeight + sizeDiff);
     }
 
     /**
-    * Fills the square at the point (x, y) with the specified fill style.
-    */
+     * Fills the square at the point (x, y) with the specified fill style.
+     */
     fillSquare(context: CanvasRenderingContext2D, fillStyle: string, x: number, y: number, sizeDiff = 0) {
-        var square = this.toScreenCoords(x, y);
+        let square = this.toScreenCoords(x, y);
         context.fillStyle = fillStyle;
         context.fillRect(square.x, square.y, this.cellWidth + sizeDiff, this.cellHeight + sizeDiff);
     }
 
     fillSquareWithImage(src: string, x: number, y: number, factor: number) {
-        var square = this.toScreenCoords(x, y, true);
+        let square = this.toScreenCoords(x, y, true);
         this.fgContext.drawImage(this.orbImage, square.x - 0.5 * (factor - 1) * this.cellWidth, square.y - 0.5 * (factor - 1) * this.cellHeight, factor * this.cellWidth, factor * this.cellHeight);
     }
 
@@ -135,26 +138,24 @@
      * Draws walls at (x, y) according to the board grid state.
      */
     drawWalls(x: number, y: number) {
-        var p = new Point(x, y);
-        if (this.board.get(p) < Tile.WallW)
+        let p = new Point(x, y);
+        if (this.board.get(p) < Tile.WallW) {
             return;
+        }
 
-        var s = this.toBgScreenCoords(x, y);
+        let s = this.toBgScreenCoords(x, y);
         this.bgContext.beginPath();
         if (this.board.get(p) === Tile.WallS) {
             this.bgContext.moveTo(s.x, s.y + this.cellHeight);
             this.bgContext.lineTo(s.x + this.cellWidth, s.y + this.cellHeight);
-        }
-        else if (this.board.get(p) === Tile.WallW) {
+        } else if (this.board.get(p) === Tile.WallW) {
             this.bgContext.moveTo(s.x, s.y);
             this.bgContext.lineTo(s.x, s.y + this.cellHeight);
-        }
-        else if (this.board.get(p) === Tile.WallSW) {
+        } else if (this.board.get(p) === Tile.WallSW) {
             this.bgContext.moveTo(s.x, s.y);
             this.bgContext.lineTo(s.x, s.y + this.cellHeight);
             this.bgContext.lineTo(s.x + this.cellWidth, s.y + this.cellHeight);
-        }
-        else if (this.board.get(p) >= Tile.Minipillar1) {
+        } else if (this.board.get(p) >= Tile.Minipillar1) {
             this.bgContext.fillStyle = "black";
             this.bgContext.fillRect(s.x - 3, s.y + this.cellHeight - 3, 5, 5);
         }
@@ -167,32 +168,37 @@
     paintBackground() {
         this.bgContext.fillStyle = this.groundColor();
         this.bgContext.fillRect(0, 0, this.bgCanvas.width, this.bgCanvas.height);
-        for (var y = -this.board.ymax; y <= this.board.ymax; y++)
-            for (var x = -this.board.xmax; x <= this.board.xmax; x++)
-                if (this.tileColor(x, y) !== this.groundColor())
+        for (let y = -this.board.ymax; y <= this.board.ymax; y++) {
+            for (let x = -this.board.xmax; x <= this.board.xmax; x++) {
+                if (this.tileColor(x, y) !== this.groundColor()) {
                     this.bgFillSquare(this.bgContext, this.tileColor(x, y), x, y, 0);
+                }
+            }
+        }
         // Draw gridlines
         this.bgContext.lineWidth = 1;
         this.bgContext.strokeStyle = GopCanvas.gridlineColor;
         this.bgContext.beginPath();
-        for (var x = 1; x <= this.board.numColumns; ++x) {
+        for (let x = 1; x <= this.board.numColumns; ++x) {
             this.bgContext.moveTo(x * this.cellWidth - 0.5, 0);
             this.bgContext.lineTo(x * this.cellWidth - 0.5, this.bgCanvas.height);
         }
-        for (var y = 0; y < this.board.numRows; ++y) {
+        for (let y = 0; y < this.board.numRows; ++y) {
             this.bgContext.moveTo(0, y * this.cellHeight - 0.5);
             this.bgContext.lineTo(this.bgCanvas.width, y * this.cellHeight - 0.5);
         }
         this.bgContext.stroke();
         this.bgContext.strokeStyle = "black";
         this.bgContext.lineWidth = 3;
-        for (var x = -this.board.xmax; x <= this.board.xmax; ++x)
-            for (var y = -this.board.ymax; y <= this.board.ymax; ++y)
+        for (let x = -this.board.xmax; x <= this.board.xmax; ++x) {
+            for (let y = -this.board.ymax; y <= this.board.ymax; ++y) {
                 this.drawWalls(x, y);
+            }
+        }
         // Draw altar images!
         if (this.gameState.altar > 0 && this.gameState.altar <= this.altarImages.length) {
-            var drawLocation = this.toBgScreenCoords(-1, 1);
-            var margin = this.cellWidth / 3;
+            let drawLocation = this.toBgScreenCoords(-1, 1);
+            let margin = this.cellWidth / 3;
             this.bgContext.drawImage(
                 this.altarImages[this.gameState.altar - 1],
                 drawLocation.x + margin,
@@ -204,9 +210,9 @@
 
     drawTimer() {
         if (this.gameState.currentTick < GameState.ticksPerAltar - 3) {
-            var radius = this.timerRadius * this.cellWidth;
-            var cx = this.fgCanvas.width - radius - 10;
-            var cy = radius + 10;
+            let radius = this.timerRadius * this.cellWidth;
+            let cx = this.fgCanvas.width - radius - 10;
+            let cy = radius + 10;
             this.fgContext.fillStyle = "rgba(255, 255, 0, 0.2)";
             this.fgContext.beginPath();
             this.fgContext.moveTo(cx, cy);
@@ -220,7 +226,7 @@
      * Paints the GOP canvas.
      */
     paint() {
-        var center = this.player === undefined ? Point.zero : this.getDrawLocation(this.player);
+        let center = this.player === undefined ? Point.zero : this.getDrawLocation(this.player);
 
         if (this.rotationAngle !== 0) {
             // Rotate by rotationAngle
@@ -238,12 +244,12 @@
         this.fgContext.restore();
 
         this.gameState.players.forEach((player, index) => {
-            var drawLocation = this.getDrawLocation(player);
+            let drawLocation = this.getDrawLocation(player);
             if (player.isAttracting && player.currentOrb !== null) {
                 // Draw attracting pulses
-                var orbDrawLocation = this.getDrawLocation(player.currentOrb);
-                var p = player.repel ? Point.lerp(drawLocation, orbDrawLocation, this.tickProgress) : Point.lerp(orbDrawLocation, drawLocation, this.tickProgress);
-                var screenCoords = this.toScreenCoords(p.x + 0.5, p.y - 0.5, true);
+                let orbDrawLocation = this.getDrawLocation(player.currentOrb);
+                let p = player.repel ? Point.lerp(drawLocation, orbDrawLocation, this.tickProgress) : Point.lerp(orbDrawLocation, drawLocation, this.tickProgress);
+                let screenCoords = this.toScreenCoords(p.x + 0.5, p.y - 0.5, true);
                 this.fgContext.beginPath();
                 this.fgContext.arc(Math.floor(screenCoords.x), Math.floor(screenCoords.y), this.cellWidth / 8, 0, 2 * Math.PI);
                 this.fgContext.fillStyle = "rgba(255, 255, 0, 0.5)";
@@ -252,12 +258,12 @@
             this.fillSquare(this.fgContext, player.isAttracting ? GopCanvas.playerAttractingColors[index] : GopCanvas.playerIdleColors[index], drawLocation.x - center.x, drawLocation.y - center.y, -1);
         }, this);
 
-        for (var i = 0; i < this.gameState.orbs.length; ++i) {
+        for (let i = 0; i < this.gameState.orbs.length; ++i) {
             if (!Point.isNaN(this.gameState.orbs[i].location)) {
-                var p = this.getDrawLocation(this.gameState.orbs[i]);
+                let p = this.getDrawLocation(this.gameState.orbs[i]);
                 // Rotate orbs back
                 this.fgContext.save();
-                var pScreen = this.toScreenCoords(p.x + 0.5, p.y - 0.5, true);
+                let pScreen = this.toScreenCoords(p.x + 0.5, p.y - 0.5, true);
                 this.fgContext.translate(pScreen.x, pScreen.y);
                 this.fgContext.rotate(-this.rotationAngle);
                 this.fgContext.translate(-pScreen.x, -pScreen.y);
@@ -267,23 +273,26 @@
         }
         this.fgContext.restore();
 
-        if (this.showTimer)
+        if (this.showTimer) {
             this.drawTimer();
+        }
     }
 
     private loadImages() {
         this.orbImage = this.loadImage(this.orbImageSrc);
-        for (var i = 0; i < GopCanvas.numAltars; ++i)
+        for (let i = 0; i < GopCanvas.numAltars; ++i) {
             this.altarImages[i] = this.loadImage(this.alterOverlayImagePath + AltarData[i + 1].name + ".png");
+        }
     }
 
     private loadImage(src: string) {
-        var img = new Image();
+        let img = new Image();
         img.src = src;
         img.onload = () => {
             ++this.numImagesLoaded;
-            if (this.numImagesLoaded === this.numImagesTotal)
+            if (this.numImagesLoaded === this.numImagesTotal) {
                 this.onAllImagesLoaded();
+            }
         };
         return img;
     }

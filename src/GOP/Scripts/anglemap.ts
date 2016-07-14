@@ -20,9 +20,9 @@ class Anglemap {
             if (e.button !== 0) {
                 return;
             }
-            var offX = (e.offsetX || e.pageX - $(e.target).offset().left);
-            var offY = (e.offsetY || e.pageY - $(e.target).offset().top);
-            var p = this.fromScreenCoords(offX, offY);
+            let offX = (e.offsetX || e.pageX - $(e.target).offset().left);
+            let offY = (e.offsetY || e.pageY - $(e.target).offset().top);
+            let p = this.fromScreenCoords(offX, offY);
 
             if (this.currentTool === Tool.Pointer || this.currentTool === Tool.ColorDist) {
                 if (!isNaN(this.playerX) && !isNaN(this.playerY)) {
@@ -37,7 +37,7 @@ class Anglemap {
                 }
             } else if (this.currentTool >= Tool.Barrier && this.currentTool <= Tool.WallSW) {
                 if (<number>this.gopBoard.get(p) === <number>this.currentTool) {
-                    var defaultGridState = this.getDefaultGridState(p);
+                    let defaultGridState = this.getDefaultGridState(p);
                     this.setTile(p, defaultGridState === this.currentTool ? Tile.Floor : defaultGridState);
                 } else {
                     this.setTile(p, <number>this.currentTool);
@@ -63,7 +63,7 @@ class Anglemap {
                     }
                 }
             } else if (this.currentTool === Tool.Spawn) {
-                var index = this.indexOf(AltarData[this.currentAltar].spawns, p.x, p.y);
+                let index = this.indexOf(AltarData[this.currentAltar].spawns, p.x, p.y);
                 if (index === -1) {
                     AltarData[this.currentAltar].spawns.push(new Point(p.x, p.y));
                     AltarData[this.currentAltar].spawns.sort((p1, p2) => p1.compare(p2));
@@ -116,7 +116,7 @@ class Anglemap {
 
     // Returns the index of (x, y) in points.
     indexOf(points, x, y) {
-        for (var i = 0; i < points.length; ++i) {
+        for (let i = 0; i < points.length; ++i) {
             if (points[i].x === x && points[i].y === y) {
                 return i;
             }
@@ -137,9 +137,9 @@ class Anglemap {
     // Returns where the orb will end up if the player taps the orb.
     // TODO: Finish
     tapOrb(px, py, ox, oy) {
-        var mabs = Math.abs((py - oy) / (px - ox));
-        var dx = px === ox ? 0 : px > ox ? 1 : -1;
-        var dy = py === oy ? 0 : py > oy ? 1 : -1;
+        let mabs = Math.abs((py - oy) / (px - ox));
+        let dx = px === ox ? 0 : px > ox ? 1 : -1;
+        let dy = py === oy ? 0 : py > oy ? 1 : -1;
         if (mabs > 2) {
             dx = 0;
             dy *= 2;
@@ -182,16 +182,17 @@ class Anglemap {
 
     // Fills the square at the point (x, y) with the specified fill style.
     fillSquare(fillStyle, x, y, invalidate) {
-        var square = this.toScreenCoords(x, y);
+        let square = this.toScreenCoords(x, y);
         this.context.fillStyle = fillStyle;
         this.context.fillRect(square.x, square.y, this.cellWidth - 1, this.cellHeight - 1);
-        if (invalidate)
+        if (invalidate) {
             this.invalidatedSquares.push(new Point(x, y));
+        }
     }
 
     // Draws walls at point p, if any.
     drawWalls(p: Point) {
-        var s = this.toScreenCoords(p.x, p.y);
+        let s = this.toScreenCoords(p.x, p.y);
         this.context.lineWidth = 3;
         if (this.gopBoard.get(p) === Tile.WallS) {
             this.context.beginPath();
@@ -214,8 +215,8 @@ class Anglemap {
 
     // Draws the spawns.
     drawSpawns() {
-        for (var i = 0; i < AltarData[this.currentAltar].spawns.length; i++) {
-            var p = this.toScreenCoords(AltarData[this.currentAltar].spawns[i].x, AltarData[this.currentAltar].spawns[i].y);
+        for (let i = 0; i < AltarData[this.currentAltar].spawns.length; i++) {
+            let p = this.toScreenCoords(AltarData[this.currentAltar].spawns[i].x, AltarData[this.currentAltar].spawns[i].y);
             this.context.fillStyle = "Yellow";
             this.context.fillRect(p.x + this.cellWidth / 2 - 1, p.y + this.cellWidth / 2 - 1, 2, 2);
             this.invalidatedSquares.push(AltarData[this.currentAltar].spawns[i]);
@@ -224,15 +225,18 @@ class Anglemap {
 
     // Highlight all reachable squares from current position.
     highlightReachable() {
-        var playerLoc = new Point(this.playerX, this.playerY);
-        if (Point.isNaN(playerLoc) || this.gopBoard.get(playerLoc) === Tile.Barrier)
+        let playerLoc = new Point(this.playerX, this.playerY);
+        if (Point.isNaN(playerLoc) || this.gopBoard.get(playerLoc) === Tile.Barrier) {
             return;
-        for (var x = Math.max(-this.centerX, this.playerX - 10); x <= Math.min(this.centerX, this.playerX + 10); x++) {
-            for (var y = Math.max(-this.centerY, this.playerY - 10); y <= Math.min(this.centerY, this.playerY + 10); y++) {
-                if (x === this.playerX && y === this.playerY)
+        }
+        for (let x = Math.max(-this.centerX, this.playerX - 10); x <= Math.min(this.centerX, this.playerX + 10); x++) {
+            for (let y = Math.max(-this.centerY, this.playerY - 10); y <= Math.min(this.centerY, this.playerY + 10); y++) {
+                if (x === this.playerX && y === this.playerY) {
                     continue;
-                if (this.gopBoard.findObstacle(GopBoard.getLineOfSight(playerLoc, new Point(x, y))) === -1)
+                }
+                if (this.gopBoard.findObstacle(GopBoard.getLineOfSight(playerLoc, new Point(x, y))) === -1) {
                     this.fillSquare(this.highlightColor, x, y, true);
+                }
             }
         }
     }
@@ -250,9 +254,10 @@ class Anglemap {
      * Gets the offset of the line to draw to illustrate the line-of-sight algorithm.
      */
     static getLosOffset(p1: Point, p2: Point) {
-        if (p1.x === p2.x || p1.y === p2.y || Math.abs(p2.x - p1.x) === Math.abs(p2.y - p1.y))
+        if (p1.x === p2.x || p1.y === p2.y || Math.abs(p2.x - p1.x) === Math.abs(p2.y - p1.y)) {
             return new Point(0.5, 0.5); // Center
-        var m = (p2.y - p1.y) / (p2.x - p1.x);
+        }
+        let m = (p2.y - p1.y) / (p2.x - p1.x);
         if (Math.abs(m) < 1) {
             return new Point(1, 0.5);   // Midpoint of right edge
         } else if (m > 0) {
@@ -264,32 +269,35 @@ class Anglemap {
 
     // Draws the line of sight from (x1, y1) to (x2, y2).
     drawLineOfSight(p1: Point, p2: Point) {
-        if (Point.isNaN(p1) || Point.isNaN(p2) || p1.equals(p2))
+        if (Point.isNaN(p1) || Point.isNaN(p2) || p1.equals(p2)) {
             return;
-        var color = "lime";
-        var losSquares = GopBoard.getLineOfSight(p1, p2);
-        var obstacleIndex = this.gopBoard.findObstacle(losSquares);
-        for (var i = 1; i < losSquares.length; i++) {
-            var p = losSquares[i];
+        }
+        let color = "lime";
+        let losSquares = GopBoard.getLineOfSight(p1, p2);
+        let obstacleIndex = this.gopBoard.findObstacle(losSquares);
+        for (let i = 1; i < losSquares.length; i++) {
+            let p = losSquares[i];
             if (!p.equals(p1)) {
-                if (i === obstacleIndex)
+                if (i === obstacleIndex) {
                     color = "red";
+                }
                 this.fillSquare(color, p.x, p.y, true);
             }
         }
-        var offset = Anglemap.getLosOffset(p1, p2);
+        let offset = Anglemap.getLosOffset(p1, p2);
         this.drawLineOfSightLine(new Point(p1.x + offset.x, p1.y - offset.y), new Point(p2.x + offset.x, p2.y - offset.y));
     }
 
     // Draws the path that a player will take to go from (x1, y1) to (x2, y2).
     drawPath(p1: Point, p2: Point) {
-        if (Point.isNaN(p1) || Point.isNaN(p2) || p1.equals(p2))
+        if (Point.isNaN(p1) || Point.isNaN(p2) || p1.equals(p2)) {
             return;
-        var found = false;
-        var shortestPath = this.gopBoard.getPlayerPath(p1, p2);
-        var color = this.pathColor;
-        for (var i = 0; i < shortestPath.length; i++) {
-            var p = shortestPath[i];
+        }
+        let found = false;
+        let shortestPath = this.gopBoard.getPlayerPath(p1, p2);
+        let color = this.pathColor;
+        for (let i = 0; i < shortestPath.length; i++) {
+            let p = shortestPath[i];
             if (!found && (this.currentTool === Tool.PathWalking || i % 2 === 1) && this.gopBoard.canReach(p, p2)) {
                 this.fillSquare(this.pathStopColor, p.x, p.y, true);
                 found = true;
@@ -301,17 +309,17 @@ class Anglemap {
     }
 
     getBestAttractingPositions(x1, y1, x2, y2) {
-        var p2 = new Point(x2, y2);
-        var nodes = [{ x: x1, y: y1, dist: 0 }];
-        var visited = {};
+        let p2 = new Point(x2, y2);
+        let nodes = [{ x: x1, y: y1, dist: 0 }];
+        let visited = {};
         visited[[x1, y1].toString()] = true;
-        var minDist = Infinity;
-        var best = [];
-        var secondBest = [];
+        let minDist = Infinity;
+        let best = [];
+        let secondBest = [];
 
         while (nodes.length > 0) {
-            var curr = nodes.shift();
-            var currPoint = new Point(curr.x, curr.y);
+            let curr = nodes.shift();
+            let currPoint = new Point(curr.x, curr.y);
             // Exclude spots that are right next to the orb, as attracting from those spaces is unproductive.
             // Also exclude spots from which attracting an orb does not do anything.
             if (this.gopBoard.canReach(currPoint, p2) && Point.walkingDistance(currPoint, p2) > 1 && this.gopBoard.willMoveOrb(currPoint, p2)) {
@@ -323,13 +331,14 @@ class Anglemap {
                 } else if (curr.dist <= minDist + (minDist % 2)) {
                     secondBest.push(curr);
                 }
-            } else if (curr.dist > minDist + (minDist % 2))
+            } else if (curr.dist > minDist + (minDist % 2)) {
                 break;
+            }
 
-            var offsets = [[-1, 0], [1, 0], [0, -1], [0, 1], [-1, -1], [-1, 1], [1, -1], [1, 1]];
-            for (var i = 0; i < offsets.length; ++i) {
-                var newX = curr.x + offsets[i][0];
-                var newY = curr.y + offsets[i][1];
+            let offsets = [[-1, 0], [1, 0], [0, -1], [0, 1], [-1, -1], [-1, 1], [1, -1], [1, 1]];
+            for (let i = 0; i < offsets.length; ++i) {
+                let newX = curr.x + offsets[i][0];
+                let newY = curr.y + offsets[i][1];
                 if (newX >= -this.centerX && newX <= this.centerX && newY >= -this.centerY && newY <= this.centerY && !visited[[newX, newY].toString()] && this.gopBoard.canMove(new Point(curr.x, curr.y), offsets[i][0], offsets[i][1], PathMode.Player)) {
                     visited[[newX, newY].toString()] = true;
                     nodes.push({ x: newX, y: newY, dist: curr.dist + 1 });
@@ -342,13 +351,16 @@ class Anglemap {
 
     // Draws the best positions from which to attract an orb.
     drawBestAttractingPositions(x1, y1, x2, y2) {
-        if (x1 === x2 && y1 === y2 || isNaN(x1) || isNaN(x2) || isNaN(y1) || isNaN(y2))
+        if (x1 === x2 && y1 === y2 || isNaN(x1) || isNaN(x2) || isNaN(y1) || isNaN(y2)) {
             return;
-        var ret = this.getBestAttractingPositions(x1, y1, x2, y2);
-        for (var i = 0; i < ret[0].length; ++i)
+        }
+        let ret = this.getBestAttractingPositions(x1, y1, x2, y2);
+        for (let i = 0; i < ret[0].length; ++i) {
             this.fillSquare(this.bestPositionColor, ret[0][i].x, ret[0][i].y, true);
-        for (var i = 0; i < ret[1].length; ++i)
+        }
+        for (let i = 0; i < ret[1].length; ++i) {
             this.fillSquare(this.secondBestPositionColor, ret[1][i].x, ret[1][i].y, true);
+        }
     }
 
     colorToString(r: number, g: number, b: number) {
@@ -356,31 +368,32 @@ class Anglemap {
     }
 
     drawDistanceColor(x, y, dist) {
-        var runningDist = Math.floor((dist + 1) / 2);
-        var maxDist = 8;
-        var t = runningDist / maxDist;
-        var closeColor = { r: 64, g: 255, b: 64 };
-        var farColor = { r: 255, g: 64, b: 64 };
-        var color = {
+        let runningDist = Math.floor((dist + 1) / 2);
+        let maxDist = 8;
+        let t = runningDist / maxDist;
+        let closeColor = { r: 64, g: 255, b: 64 };
+        let farColor = { r: 255, g: 64, b: 64 };
+        let color = {
             r: (1 - t) * closeColor.r + t * farColor.r,
             g: (1 - t) * closeColor.g + t * farColor.g,
             b: (1 - t) * closeColor.b + t * farColor.b,
         };
-        if (t <= 1)
+        if (t <= 1) {
             this.fillSquare(this.colorToString(color.r, color.g, color.b), x, y, true);
+        }
     }
 
     drawDistanceColorGradient(x, y) {
-        var p = new Point(x, y);
-        var nodes = [{ state: p, dist: 0 }];
-        var visited = {};
+        let p = new Point(x, y);
+        let nodes = [{ state: p, dist: 0 }];
+        let visited = {};
         visited[p.toString()] = true;
 
         while (nodes.length > 0) {
-            var curr = nodes.shift();
+            let curr = nodes.shift();
             this.drawDistanceColor(curr.state.x, curr.state.y, curr.dist);
-            for (var i = 0; i < Point.gridOffsets.length; ++i) {
-                var p2 = curr.state.add(Point.gridOffsets[i]);
+            for (let i = 0; i < Point.gridOffsets.length; ++i) {
+                let p2 = curr.state.add(Point.gridOffsets[i]);
                 if (this.gopBoard.isInRange(p2) && !visited[p2.toString()] && this.gopBoard.canMove(curr.state, Point.gridOffsets[i].x, Point.gridOffsets[i].y, PathMode.Player)) {
                     visited[p2.toString()] = true;
                     nodes.push({ state: p2, dist: curr.dist + 1 });
@@ -391,15 +404,16 @@ class Anglemap {
 
     // Draws the grid with the new grid state.
     drawGrid() {
-        var playerLoc = new Point(this.playerX, this.playerY);
-        var orbLoc = new Point(this.orbX, this.orbY);
+        let playerLoc = new Point(this.playerX, this.playerY);
+        let orbLoc = new Point(this.orbX, this.orbY);
 
         while (this.invalidatedSquares.length > 0) {
-            var p = this.invalidatedSquares.pop();
+            let p = this.invalidatedSquares.pop();
             this.fillSquare(this.stateColors[this.gopBoard.get(p)], p.x, p.y, false);
         }
-        if (!isNaN(this.orbX) && !isNaN(this.orbY))
+        if (!isNaN(this.orbX) && !isNaN(this.orbY)) {
             this.fillSquare(this.orbColor, this.orbX, this.orbY, true);
+        }
         if (!isNaN(this.playerX) && !isNaN(this.playerY)) {
             if (this.currentTool === Tool.LineOfSight) {
                 this.drawLineOfSight(playerLoc, orbLoc);
@@ -413,18 +427,21 @@ class Anglemap {
             this.fillSquare(this.playerColor, this.playerX, this.playerY, false);
         }
         this.drawSpawns();
-        if (this.currentTool <= Tool.WallSW)
+        if (this.currentTool <= Tool.WallSW) {
             this.highlightReachable();
-        for (var x = -this.centerX; x <= this.centerX; x++)
-            for (var y = -this.centerY; y <= this.centerY; y++)
+        }
+        for (let x = -this.centerX; x <= this.centerX; x++) {
+            for (let y = -this.centerY; y <= this.centerY; y++) {
                 this.drawWalls(new Point(x, y));
+            }
+        }
     }
 
     // Loads the default grid state.
     resetGrid() {
-        for (var y = -this.centerY; y <= this.centerY; y++) {
-            for (var x = -this.centerX; x <= this.centerX; x++) {
-                var p = new Point(x, y);
+        for (let y = -this.centerY; y <= this.centerY; y++) {
+            for (let x = -this.centerX; x <= this.centerX; x++) {
+                let p = new Point(x, y);
                 this.gopBoard.set(p, this.getDefaultGridState(p));
                 this.invalidatedSquares.push(p);
             }

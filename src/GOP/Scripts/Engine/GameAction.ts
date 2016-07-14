@@ -14,7 +14,7 @@
     }
 
     toString() {
-        var s = (this.toggleRun ? "{r}" : "") + (this.changeWand ? "{q}" : "") + (this.isNewAttract ? "*" : "");
+        let s = (this.toggleRun ? "{r}" : "") + (this.changeWand ? "{q}" : "") + (this.isNewAttract ? "*" : "");
         switch (this.type) {
             case ActionType.Idle:
                 s += "-";
@@ -48,39 +48,44 @@
     }
 
     static charToOrbIndex(c: string) {
-        var charCode = c.charCodeAt(0);
-        if (charCode >= 97 && charCode <= 122)
+        let charCode = c.charCodeAt(0);
+        if (charCode >= 97 && charCode <= 122) {
             return charCode - 71;
-        if (charCode >= 65 && charCode <= 90)
+        }
+        if (charCode >= 65 && charCode <= 90) {
             return charCode - 65;
+        }
         throw new Error("Invalid orb index char code.");
-   }
+    }
 
     static parse(str: string) {
-        var toggleRun = false, changeWand = false, newAttract = false;
+        let toggleRun = false, changeWand = false, newAttract = false;
 
         while (str[0] === "{" || str[0] === "*") {
             if (str[0] === "*") {
                 newAttract = true;
                 str = str.substr(1);
             } else {
-                var j = str.indexOf("}");
-                var c = str.substring(1, j);
-                if (c === "r")
+                let j = str.indexOf("}");
+                let c = str.substring(1, j);
+                if (c === "r") {
                     toggleRun = true;
-                else if (c === "q")
+                } else if (c === "q") {
                     changeWand = true;
-                else
+                } else {
                     console.warn("Unknown inter-tick action, expected {r} or {q}.");
+                }
                 str = str.substr(j + 1);
             }
         }
 
-        if (str === null || str === undefined || str === "-")
+        if (str === null || str === undefined || str === "-") {
             return GameAction.idle(toggleRun, changeWand);
+        }
 
-        if (str.length === 1)
+        if (str.length === 1) {
             return GameAction.attract(GameAction.charToOrbIndex(str), toggleRun, changeWand, newAttract);
+        }
         return GameAction.move(Point.parse(str), toggleRun, changeWand);
     }
 }

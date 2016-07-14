@@ -9,9 +9,9 @@
      * Parses a string to a player start info. Example: (2,0)r
      */
     static parse(str: string) {
-        var location = Point.parse(str.substring(0, str.indexOf(")") + 1));
-        var run = str.indexOf("r") != -1;
-        var repel = str.indexOf("q") != -1;
+        let location = Point.parse(str.substring(0, str.indexOf(")") + 1));
+        let run = str.indexOf("r") !== -1;
+        let repel = str.indexOf("q") !== -1;
 
         return new PlayerStartInfo(location, run, repel);
     }
@@ -23,7 +23,7 @@ class GameStartInfo {
         public players: PlayerStartInfo[]) { }
 
     toString() {
-        var arr: any[] = [this.seed, this.altar];
+        let arr: any[] = [this.seed, this.altar];
         this.players.forEach(player => {
             arr.push(player.toString());
         });
@@ -34,11 +34,11 @@ class GameStartInfo {
      * Parses a game start info. Example: 24 3 (2,0)r.
      */
     static parse(str: string) {
-        var arr = str.split(" ");
-        var seed = parseInt(arr[0]);
-        var altar = parseInt(arr[1]);
-        var players: PlayerStartInfo[] = [];
-        for (var i = 2; i < arr.length; i++) {
+        let arr = str.split(" ");
+        let seed = +arr[0];
+        let altar = +arr[1];
+        let players: PlayerStartInfo[] = [];
+        for (let i = 2; i < arr.length; i++) {
             players.push(PlayerStartInfo.parse(arr[i]));
         }
         return new GameStartInfo(seed, altar, players);
@@ -52,14 +52,14 @@ class GameStartInfo {
  */
 class GameActionList {
     constructor(public rawActions: GameAction[][]) { }
-    
+
     /**
      * Gets the list of actions for a certain player.
      */
     getForPlayer(playerIndex: number) {
         return this.rawActions[playerIndex];
     }
-    
+
     /**
      * Returns the number of players this action list is holding actions for.
      */
@@ -71,7 +71,7 @@ class GameActionList {
      * Pushes a new list of actions onto the list, one for each player.
      */
     push(actions: GameAction[]) {
-        for (var i = 0; i < this.rawActions.length; i++) {
+        for (let i = 0; i < this.rawActions.length; i++) {
             this.rawActions[i].push(actions[i]);
         }
     }
@@ -89,20 +89,21 @@ class GameActionList {
 
     toString() {
         function formatActionStringWithCount(actionStr: string, count: number) {
-            var str1 = new Array(count + 1).join(actionStr);
-            var str2 = actionStr + "[" + count + "]";
+            let str1 = new Array(count + 1).join(actionStr);
+            let str2 = actionStr + "[" + count + "]";
             return str1.length < str2.length ? str1 : str2;
         }
 
         function formatActionsSinglePlayer(actions: GameAction[]) {
-            var s = "";
+            let s = "";
             if (actions.length > 0) {
-                var c = 1;
-                var prev = actions[0].toString();
-                for (var i = 1; i < actions.length; i++) {
-                    if (!actions[i])
+                let c = 1;
+                let prev = actions[0].toString();
+                for (let i = 1; i < actions.length; i++) {
+                    if (!actions[i]) {
                         break;
-                    var a = actions[i].toString();
+                    }
+                    let a = actions[i].toString();
                     if (a === prev && !actions[i].toggleRun && !actions[i].changeWand && !actions[i].isNewAttract) {
                         ++c;
                     } else {
@@ -120,8 +121,9 @@ class GameActionList {
             return "[" + this.rawActions.map(acts => formatActionsSinglePlayer(acts)).join(";") + "]";
         }
 
-        if (this.rawActions.length > 0)
+        if (this.rawActions.length > 0) {
             return formatActionsSinglePlayer(this.rawActions[0]);
+        }
         return "";
     }
 
@@ -129,32 +131,34 @@ class GameActionList {
      * Parses an action string to a game action list. For example, [*AA*B;*C-[3]].
      */
     static parse(str: string) {
-        function parseSinglePlayer(str: string) {
-            var actions: GameAction[] = [];
-            var regex = /(\*|{r}|{q})*(-|[A-Za-z]|\(-?\d+,-?\d+\))(\[\d+\])?/g;
-            var matches = str.match(regex);
-            if (matches === null)
+        function parseSinglePlayer(str2: string) {
+            let actions: GameAction[] = [];
+            let regex = /(\*|{r}|{q})*(-|[A-Za-z]|\(-?\d+,-?\d+\))(\[\d+\])?/g;
+            let matches = str2.match(regex);
+            if (matches === null) {
                 return actions;
-            str.match(regex).forEach(value => {
-                var count = 1, actionStr = value;
-                if (value[value.length - 1] === ']') {
+            }
+            str2.match(regex).forEach(value => {
+                let count = 1, actionStr = value;
+                if (value[value.length - 1] === "]") {
                     // Repeat with count
-                    var bracketStart = value.indexOf('['), bracketEnd = value.length - 1;
+                    let bracketStart = value.indexOf("["), bracketEnd = value.length - 1;
                     actionStr = value.substring(0, bracketStart);
                     count = parseInt(value.substring(bracketStart + 1, bracketEnd), 10);
                 }
-                var action = GameAction.parse(actionStr);
+                let action = GameAction.parse(actionStr);
                 actions.push(action);
-                while (--count > 0)
+                while (--count > 0) {
                     actions.push(action.copy(true));
+                }
             });
             return actions;
         }
 
         if (str[0] === "[") {
             // Multiple players.
-            var strs = str.substring(1, str.length - 1).split(";");
-            var playerActions = strs.map(parseSinglePlayer);
+            let strs = str.substring(1, str.length - 1).split(";");
+            let playerActions = strs.map(parseSinglePlayer);
             return new GameActionList(playerActions);
         }
         return new GameActionList([parseSinglePlayer(str)]);
@@ -164,9 +168,10 @@ class GameActionList {
 class GameplayData {
     constructor(public startInfo: GameStartInfo, public actions?: GameActionList) {
         if (this.actions === void 0) {
-            var actionArr = [];
-            for (var i = 0; i < startInfo.players.length; i++)
+            let actionArr = [];
+            for (let i = 0; i < startInfo.players.length; i++) {
                 actionArr.push([]);
+            }
             this.actions = new GameActionList(actionArr);
         }
     }
@@ -175,8 +180,9 @@ class GameplayData {
      * Pushes a list of new actions onto the list, one for each player.
      */
     pushActions(newActions: GameAction[]) {
-        if (newActions.length !== this.actions.numPlayers())
+        if (newActions.length !== this.actions.numPlayers()) {
             throw new Error("Action size mismatch.");
+        }
         this.actions.push(newActions);
     }
 
@@ -185,12 +191,12 @@ class GameplayData {
     }
 
     static parse(str: string) {
-        var startInfo: GameStartInfo;
-        var actions: GameActionList;
+        let startInfo: GameStartInfo;
+        let actions: GameActionList;
         if (str[0] === "{") {
             // Start info
-            var index = str.indexOf("}");
-            var initialDataStr = str.substring(1, index);
+            let index = str.indexOf("}");
+            let initialDataStr = str.substring(1, index);
             startInfo = GameStartInfo.parse(initialDataStr);
             str = str.substring(index + 1);
         } else {
