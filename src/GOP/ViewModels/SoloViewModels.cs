@@ -23,4 +23,9 @@ namespace GOP.ViewModels
         public bool IsCustomGameType { get; set; }
         public string GopControls { get; set; }
     }
+
+    public class SoloGamesViewModel
+    {
+        public IEnumerable<SoloGameView> Games { get; set; }
+    }
 }
