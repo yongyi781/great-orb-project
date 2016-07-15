@@ -29,7 +29,7 @@
     callbacks?: {
         setActionCallback: (action: GameAction) => void
         isGameFinished: () => boolean,
-        tick: () => void
+        tick: (force: boolean, redraw: boolean) => void
     };
 
     interface?: {
@@ -76,7 +76,7 @@ class GopUI {
         callbacks: {
             setActionCallback: action => undefined,
             isGameFinished: (): boolean => this.gameState.currentTick >= GameState.ticksPerAltar,
-            tick: () => undefined
+            tick: (force, redraw) => undefined
         },
 
         interface: {
@@ -567,7 +567,7 @@ class GopUI {
             this.updateDisplay();
         }
 
-        this.options.callbacks.tick();
+        this.options.callbacks.tick(force, redraw);
     }
     
     updatePointer() {

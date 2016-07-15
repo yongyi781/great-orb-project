@@ -2,7 +2,7 @@
     ViewData["Title"] = "Spawn Lister";
 }
 
-<h2>Altar</h2>
+<h2>Spawn Lister</h2>
 <div>
     <button name="altar" id="noneButton" class="btn btn-primary" value="0">None</button>
     <button name="altar" id="airButton" class="btn btn-primary" value="1">Air altar</button>
@@ -12,11 +12,18 @@
     <button name="altar" id="fireButton" class="btn btn-primary" value="5">Fire altar</button>
     <button name="altar" id="bodyButton" class="btn btn-primary" value="6">Body altar</button>
 </div>
-<p id="coordsParagraph" class="align-center">Mouse coordinates: <span id="coords">(0,&nbsp;0)</span> | Player coordinates: <span id="playerCoords">N/A</span> | Orb coordinates: <span id="orbCoords">N/A</span> | Distance from orb to altar: <span id="orbDistance">Infinity</span></p>
-<div id="canvasContainer" class="center">
-    <canvas id="gameCanvas" width="848" height="848">You do not have a HTML5-enabled browser. You should download the latest version of your browser.</canvas>
+<p id="coordsParagraph" class="align-center">Mouse coordinates: <span id="coords">(0,&nbsp;0)</span></p>
+<div id="canvasContainer" style="display: inline-block">
+    <canvas id="gameCanvas" tabindex="1" class="pull-left" width="848" height="848">You do not have a HTML5-enabled browser. You should download the latest version of your browser.</canvas>
     <button id="deleteLastSpawnButton" class="btn btn-danger">Delete last spawn</button>
-    <a id="spawnLink" href="~/Solo" target="_blank"></a>
+</div>
+<div>
+    <label for="spawnLink">Share link: </label> <a id="shareLink" href="" target="_blank">[^]</a><br />
+    <input id="shareLinkText" class="share-link" readonly />
+</div>
+<div>
+    <label for="spawnLink">Share link (only these spawns): </label> <a id="shareLink2" href="" target="_blank">[^]</a><br />
+    <input id="shareLink2Text" class="share-link" readonly />
 </div>
 <h2 id="games">Mapped Games</h2>
 <ul>
@@ -41,47 +48,79 @@
     <script src="~/js/gop.min.js"></script>
     <script src="~/js/anglemap.js"></script>
     <script>
-        $(function () {
-            var anglemap = new Anglemap($("#gameCanvas")[0]);
-            var spawnList = [];
+        var anglemap = new Anglemap($("#gameCanvas")[0]);
+        var spawnList = [];
 
-            function updateCoords(element, p) {
-                if (isNaN(p.x) || isNaN(p.y))
-                    element.innerText = "N/A";
-                else
-                    element.innerText = "(" + p.x + ",\u00A0" + p.y + ")";
+        function deleteLastSpawn() {
+            var lastSpawn = spawnList.pop();
+            if (lastSpawn !== undefined) {
+                var oldInvalidatedSquares = anglemap.invalidatedSquares;
+                anglemap.invalidatedSquares = [new Point(lastSpawn[0], lastSpawn[1])];
+                anglemap.drawGrid();
+                anglemap.invalidatedSquares = oldInvalidatedSquares;
+
+                updateShareLinks();
             }
+        }
 
-            function updateSpawnListDisplay() {
-                var str = "http://@(Context.Request.Host)/Solo?altar=" + anglemap.currentAltar + "&spawns=" + JSON.stringify(spawnList);
-                $("#spawnLink").text(str).attr("href", str);
-            }
+        function updateCoords(element, p) {
+            if (isNaN(p.x) || isNaN(p.y))
+                element.innerText = "N/A";
+            else
+                element.innerText = "(" + p.x + ",\u00A0" + p.y + ")";
+        }
 
-            $("#gameCanvas").mousedown(function (e) {
-                if (e.button !== 0)
-                    return;
-                var offX = (e.offsetX || e.pageX - $(e.target).offset().left);
-                var offY = (e.offsetY || e.pageY - $(e.target).offset().top);
-                var p = anglemap.fromScreenCoords(offX, offY);
+        function updateShareLinks() {
+            var basePathStr = "http://@(Context.Request.Host)/Solo";
+            var numorbsUrlStr = "numorbs=" + spawnList.length;
+            var altarUrlStr = "altar=" + anglemap.currentAltar;
+            var spawnsUrlStr = "spawns=" + JSON.stringify(spawnList);
+            var shareUrl = basePathStr + "?" + altarUrlStr + "&" + spawnsUrlStr;
+            var share2Url = basePathStr + "?" + numorbsUrlStr + "&" + altarUrlStr + "&" + spawnsUrlStr;
+            $("#shareLinkText").val(shareUrl);
+            $("#shareLink").attr("href", shareUrl);
+            $("#shareLink2Text").val(share2Url);
+            $("#shareLink2").attr("href", share2Url);
+        }
 
-                spawnList.push([p.x, p.y]);
-                updateSpawnListDisplay();
+        $("#gameCanvas").mousedown(function (e) {
+            if (e.button !== 0)
+                return;
 
-                updateCoords(playerCoords, new Point(anglemap.playerX, anglemap.playerY));
-                updateCoords(orbCoords, new Point(anglemap.orbX, anglemap.orbY));
+            var offX = (e.offsetX || e.pageX - $(e.target).offset().left);
+            var offY = (e.offsetY || e.pageY - $(e.target).offset().top);
+            var p = anglemap.fromScreenCoords(offX, offY);
+            spawnList.push([p.x, p.y]);
+
+            var s = anglemap.toScreenCoords(p.x, p.y);
+            anglemap.context.font = "12px Consolas";
+            anglemap.context.textAlign = "center";
+            anglemap.context.textBaseline = "middle";
+            anglemap.context.fillStyle = "white";
+            anglemap.context.fillText(spawnList.length, s.x + anglemap.cellWidth / 2, s.y + anglemap.cellHeight / 2);
+
+            updateShareLinks();
+        });
+
+        $("#gameCanvas")
+            .mousemove(function (e) { updateCoords(coords, anglemap.fromScreenCoords(e.offsetX, e.offsetY)); })
+            .keydown(function (e) {
+                console.log(e.key);
+                if (e.ctrlKey && e.key === "z") {
+                    deleteLastSpawn();
+                }
             });
 
-            $("#gameCanvas").mousemove(function (e) { updateCoords(coords, anglemap.fromScreenCoords(e.offsetX, e.offsetY)); });
+        $("button[name='altar']").click(function () {
+            spawnList = [];
+            anglemap.setAltar(parseInt($(this).val()));
+            updateShareLinks();
+        });
 
-            $("button[name='altar']").click(function () {
-                anglemap.setAltar(parseInt($(this).val()));
-                updateSpawnListDisplay();
-            });
+        $("#deleteLastSpawnButton").click(deleteLastSpawn);
 
-            $("#deleteLastSpawnButton").click(function () {
-                spawnList.pop();
-                updateSpawnListDisplay();
-            });
+        $(".share-link").click(function () {
+            $(this).select();
         });
     </script>
 }

@@ -21,22 +21,22 @@
 <div data-toggle="buttons">
     <h5>Elements</h5>
     <div class="btn-group">
-        <label class="btn btn-default active"><input type="radio" name="tool" id="pointerTool" value="0" checked> Pointer</label>
-        <label class="btn btn-default"><input type="radio" name="tool" id="spawnTool" value="11"> Spawn</label>
-        <label class="btn btn-default"><input type="radio" name="tool" id="barrierTool" value="1"> Barrier</label>
-        <label class="btn btn-default"><input type="radio" name="tool" id="rockTool" value="2"> Rock</label>
-        <label class="btn btn-default"><input type="radio" name="tool" id="waterTool" value="3"> Water</label>
-        <label class="btn btn-default"><input type="radio" name="tool" id="wallWTool" value="4"> West wall</label>
-        <label class="btn btn-default"><input type="radio" name="tool" id="wallSTool" value="5"> South wall</label>
-        <label class="btn btn-default"><input type="radio" name="tool" id="wallSWTool" value="6"> Southwest wall</label>
+        <label class="btn btn-default active"><input type="radio" name="tool" id="pointerTool" value="0" checked />Pointer</label>
+        <label class="btn btn-default"><input type="radio" name="tool" id="spawnTool" value="11" />Spawn</label>
+        <label class="btn btn-default"><input type="radio" name="tool" id="barrierTool" value="1" />Barrier</label>
+        <label class="btn btn-default"><input type="radio" name="tool" id="rockTool" value="2" />Rock</label>
+        <label class="btn btn-default"><input type="radio" name="tool" id="waterTool" value="3" />Water</label>
+        <label class="btn btn-default"><input type="radio" name="tool" id="wallWTool" value="4" />West wall</label>
+        <label class="btn btn-default"><input type="radio" name="tool" id="wallSTool" value="5" />South wall</label>
+        <label class="btn btn-default"><input type="radio" name="tool" id="wallSWTool" value="6" />Southwest wall</label>
     </div>
     <h5>Utilities</h5>
     <div class="btn-group">
-        <label class="btn btn-default"><input type="radio" name="tool" id="lineOfSightTool" value="7"> Draw line of sight</label>
-        <label class="btn btn-default"><input type="radio" name="tool" id="pathToolRunning" value="8"> Draw path (running)</label>
-        <label class="btn btn-default"><input type="radio" name="tool" id="pathToolWalking" value="9"> Draw path (walking)</label>
-        <label class="btn btn-default"><input type="radio" name="tool" id="findClosestTool" value="10"> Find best positions from which to attract an orb</label>
-        <label class="btn btn-default"><input type="radio" name="tool" id="colorDistanceTool" value="12"> Distance color gradient</label>
+        <label class="btn btn-default"><input type="radio" name="tool" id="lineOfSightTool" value="7" />Draw line of sight</label>
+        <label class="btn btn-default"><input type="radio" name="tool" id="pathToolRunning" value="8" />Draw path (running)</label>
+        <label class="btn btn-default"><input type="radio" name="tool" id="pathToolWalking" value="9" />Draw path (walking)</label>
+        <label class="btn btn-default"><input type="radio" name="tool" id="findClosestTool" value="10" />Find best positions from which to attract an orb</label>
+        <label class="btn btn-default"><input type="radio" name="tool" id="colorDistanceTool" value="12" />Distance color gradient</label>
     </div>
 </div>
 <p id="coordsParagraph" class="align-center">Mouse coordinates: <span id="coords">(0,&nbsp;0)</span> | Player coordinates: <span id="playerCoords">N/A</span> | Orb coordinates: <span id="orbCoords">N/A</span> | Distance from orb to altar: <span id="orbDistance">Infinity</span></p>
@@ -47,9 +47,9 @@
 <a asp-controller="Altars" asp-action="Index">View all custom altars</a>
 <p>Ability to save custom altars has been temporarily suspended.</p>
 @*<form action="~/CustomAltarHandler.ashx" method="post" id="customAltarForm" class="form-inline">
-    <label for="customAltarNameInput">Name (don't include "altar"):</label> <input id="customAltarNameInput" name="name" type="text" class="form-control" maxlength="24" /> <button class="btn btn-primary">Save</button>
-    <p id="customAltarResult"></p>
-</form>*@
+        <label for="customAltarNameInput">Name (don't include "altar"):</label> <input id="customAltarNameInput" name="name" type="text" class="form-control" maxlength="24" /> <button class="btn btn-primary">Save</button>
+        <p id="customAltarResult"></p>
+    </form>*@
 
 @section Scripts {
     <script src="~/js/gop.min.js"></script>
@@ -57,7 +57,7 @@
     <script>
         $(function () {
             var anglemap = new Anglemap($("#gameCanvas")[0]);
-            
+
             function selectAltarButton(altar) {
                 $("input[name=altar][value=" + altar + "]:radio").parent().button("toggle");
             }
@@ -85,7 +85,7 @@
             $("input[name=altar]:radio").change(function () { anglemap.setAltar(parseInt($(this).val(), 10)); });
             $("input[name=tool]").change(function () {
                 var oldTool = anglemap.currentTool;
-                anglemap.currentTool = parseInt($(this).val());
+                anglemap.currentTool = +$(this).val();
                 if (anglemap.currentTool != oldTool && anglemap.currentTool >= Tool.LineOfSight)
                     anglemap.drawGrid();
             });
@@ -122,7 +122,7 @@
             else
             {
                 @: setAltar(Altar.Air);
-            }
+                        }
         });
     </script>
 }

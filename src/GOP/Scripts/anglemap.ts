@@ -11,7 +11,8 @@
     PathWalking,
     ClosestReachable,
     Spawn,
-    ColorDist
+    ColorDist,
+    None = -1
 }
 
 class Anglemap {
@@ -103,11 +104,11 @@ class Anglemap {
     cellWidth = this.canvasWidth / this.numColumns;
     cellHeight = this.canvasHeight / this.numRows;
     currentAltar = Altar.None;
-    currentTool = Tool.Pointer;
+    currentTool = Tool.None;
     gopBoard = new GopBoard(53, 53);
 
     // The array that contains all squares that should be repainted.
-    invalidatedSquares = [];
+    invalidatedSquares: Point[] = [];
 
     // Returns whether an array of points contains (x, y).
     contains(points, x, y) {
@@ -217,9 +218,9 @@ class Anglemap {
     drawSpawns() {
         for (let i = 0; i < AltarData[this.currentAltar].spawns.length; i++) {
             let p = this.toScreenCoords(AltarData[this.currentAltar].spawns[i].x, AltarData[this.currentAltar].spawns[i].y);
-            this.context.fillStyle = "Yellow";
+            this.context.fillStyle = "yellow";
             this.context.fillRect(p.x + this.cellWidth / 2 - 1, p.y + this.cellWidth / 2 - 1, 2, 2);
-            this.invalidatedSquares.push(AltarData[this.currentAltar].spawns[i]);
+            //this.invalidatedSquares.push(AltarData[this.currentAltar].spawns[i]);
         }
     }
 

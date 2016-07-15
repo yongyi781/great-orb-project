@@ -23,6 +23,22 @@ footer, .container {
     background-color: rgb(5, 5, 7);
 }
 
+table.dataTable tbody th.dt-body-left, table.dataTable tbody td.dt-body-left {
+    text-align: left;
+}
+
+table.dataTable tbody th.dt-body-center, table.dataTable tbody td.dt-body-center {
+    text-align: center;
+}
+
+table.dataTable tbody th.dt-body-right, table.dataTable tbody td.dt-body-right {
+    text-align: right;
+}
+
+table.dataTable tbody th.dt-body-justify, table.dataTable tbody td.dt-body-justify {
+    text-align: justify;
+}
+
 .container-main {
     padding-bottom: 10px;
 }
@@ -40,7 +56,6 @@ footer, .container {
 }
 
 .break-word {
-    -epub-word-break: break-all;
     -ms-word-break: break-all;
     word-break: break-all;
 }
@@ -191,18 +206,13 @@ footer, .container {
     display: inline-block;
 }
 
-table.dataTable tbody th.dt-body-left, table.dataTable tbody td.dt-body-left {
-    text-align: left;
-}
-
-table.dataTable tbody th.dt-body-center, table.dataTable tbody td.dt-body-center {
-    text-align: center;
-}
-
-table.dataTable tbody th.dt-body-right, table.dataTable tbody td.dt-body-right {
-    text-align: right;
-}
-
-table.dataTable tbody th.dt-body-justify, table.dataTable tbody td.dt-body-justify {
-    text-align: justify;
+.share-link {
+    background-color: #040404;
+    border: 0;
+    border-radius: 5px;
+    cursor: text;
+    font-family: Consolas, monospace;
+    outline: 0 none;
+    padding: 10px;
+    width :100%;
 }

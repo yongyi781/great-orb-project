@@ -41,6 +41,10 @@
 </div>
 <div id="game"></div>
 
+<div>
+    <label for="spawnLink">Share link: </label><br />
+    <input id="shareLink" class="share-link" readonly />
+</div>
 <h2>Load custom game code</h2>
 <p>If someone shared a string that looked like code in the chat, paste it here and click Load.</p>
 <div id="gameCodeInputContainer" class="form-inline">
@@ -190,7 +194,7 @@
     <script src="~/js/gopui.js"></script>
     <script src="~/js/utils.js"></script>
     <script>
-        var gopui, games, table, isCustom = @(Model.IsCustomGameType ? "true" : "false"), isUpdatingSeedAltarDisplay = false;
+        var gopui, options, games, table, isCustom = @(Model.IsCustomGameType ? "true" : "false"), isUpdatingSeedAltarDisplay = false;
 
         function selectAltarButton(altar) {
             $("input[name=altar][value=" + altar + "]:radio").parent().button("toggle");
@@ -208,8 +212,28 @@
             updateSeedAltarDisplay();
         }
 
+        function updateShareLink() {
+            var args = [];
+            if (options.game.numberOfOrbs !== undefined) {
+                args.push("numorbs=" + options.game.numberOfOrbs);
+            }
+            if (options.game.altar !== undefined) {
+                args.push("altar=" + options.game.altar);
+            }
+            if (options.game.presetSpawns instanceof Array && options.game.presetSpawns.length > 0) {
+                args.push("spawns=" + JSON.stringify(options.game.presetSpawns.map(function (p) { return [p.x, p.y] })));
+            }
+            args.push("code=" + gopui.$gameCodeText.text().replace(/ /g, "+"));
+
+            var shareLinkElement = $("#shareLink")[0];
+            $("#shareLink").val("http://@(Context.Request.Host)/Solo?" + args.join("&"));
+            if ($("#shareLink").is(":focus")) {
+                $("#shareLink").select();            
+            }
+        }
+
         $(function () {
-            var options = {
+            options = {
                 game: {
                     seed: Utils.getQueryAsNumber("seed"),
                     altar: Utils.getQueryAsNumber("altar"),
@@ -234,9 +258,12 @@
                     showScore: Utils.getQueryAsBoolean("showscore")
                 },
                 callbacks: {
-                    tick: function () {
+                    tick: function (force, redraw) {
                         gopui.$saveButton.text("Save").prop("disabled",
                             gopui.gameState.currentTick < GameState.ticksPerAltar);
+                        if (redraw) {
+                            updateShareLink();
+                        }
                     }
                 }
             };
@@ -254,7 +281,7 @@
             @if (Model.GopControls != null)
             {
                 @: options.client.gopControls = JSON.parse('@Html.Raw(Model.GopControls)');
-                                                                                    }
+                                                                                                }
 
             @if (Model.CustomAltar != null)
             {
@@ -285,6 +312,8 @@
                     }
                 }
             });
+
+            $("#shareLink").click(function () { $(this).select(); });
 
             $("#loadButton").click(function () {
                 try {
@@ -340,23 +369,6 @@
                 games.forEach(function (game) {
                     game.timestamp = new Date(game.timestamp);
                 });
-
-                //$.fn.dataTable.ext.search.push(
-                //    function(settings, data, dataIndex) {
-                //        var username = $("#userSearch").val().toLowerCase();
-                //        var numOrbs = parseInt($("#numOrbsSearch").val(), 10);
-                //        var seed = parseInt($("#seedSearch").val(), 10);
-                //        var altar = parseInt($("#altarSearch").val(), 10);
-                //        var dataUsername = data[2].toLowerCase();
-                //        var dataNumOrbs = parseInt(data[3], 10);
-                //        var dataSeed = parseInt(data[4], 10);
-                //        var dataAltar = parseInt(data[5], 10);
-                //        return dataUsername.indexOf(username) > -1 &&
-                //            (isNaN(numOrbs) || dataNumOrbs == numOrbs) &&
-                //            (isNaN(seed) || dataSeed === seed) &&
-                //            (isNaN(altar) || dataAltar === altar);
-                //    }
-                //);
 
                 table = $("#gamesTable").DataTable({
                     data: games,
