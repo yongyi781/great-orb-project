@@ -105,7 +105,6 @@
         $("#gameCanvas")
             .mousemove(function (e) { updateCoords(coords, anglemap.fromScreenCoords(e.offsetX, e.offsetY)); })
             .keydown(function (e) {
-                console.log(e.key);
                 if (e.ctrlKey && e.key === "z") {
                     deleteLastSpawn();
                 }
