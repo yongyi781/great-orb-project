@@ -45,12 +45,6 @@
     <label for="spawnLink">Share link: </label><br />
     <input id="shareLink" class="share-link" readonly />
 </div>
-<h2>Load custom game code</h2>
-<p>If someone shared a string that looked like code in the chat, paste it here and click Load.</p>
-<div id="gameCodeInputContainer" class="form-inline">
-    <input type="text" class="form-control longer" id="gameCodeInput" placeholder="Game code" />
-    <button type="button" id="loadButton" class="btn btn-primary">Load</button>
-</div>
 @if (!Model.IsCustomGameType)
 {
     <h2>Last 10 Games</h2>
@@ -281,7 +275,7 @@
             @if (Model.GopControls != null)
             {
                 @: options.client.gopControls = JSON.parse('@Html.Raw(Model.GopControls)');
-                                                                                                }
+            }
 
             @if (Model.CustomAltar != null)
             {
@@ -314,14 +308,6 @@
             });
 
             $("#shareLink").click(function () { $(this).select(); });
-
-            $("#loadButton").click(function () {
-                try {
-                    restartGame(gameCodeInput.value);
-                } catch (e) {
-                    alert(e);
-                }
-            });
 
             $("#gamesTable").on("click", "tbody > tr", function () {
                 window.open("/Watch/Solo/" + $(this).children("td:first").text());
@@ -359,7 +345,6 @@
             });
 
             Utils.bindEnterKeyToButton($("#seedInput"), $("#restartButton"));
-            Utils.bindEnterKeyToButton($("#gameCodeInput"), $("#loadButton"));
 
             updateSeedAltarDisplay();
 
