@@ -584,7 +584,6 @@
         }
         if (this.rightPressed) {
             this.rotateCamera(this.cameraRotateXSpeed * elapsed, 0);
-            new THREE.Vector3().lerpVectors(
         }
         if (this.zoomInPressed) {
             this.camera.translateZ(-this.zoomSpeed * elapsed);
