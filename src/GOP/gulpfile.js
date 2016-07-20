@@ -9,18 +9,18 @@ var gulp = require("gulp"),
 var paths = {
     webroot: "./wwwroot/",
     emulatorScripts: [
-        "./Scripts/polyfills.js",
-        "./Scripts/Engine/Enums.js",
-        "./Scripts/Engine/Point.js",
-        "./Scripts/Engine/MersenneTwister.js",
-        "./Scripts/Engine/AltarData.js",
-        "./Scripts/Engine/GameAction.js",
-        "./Scripts/Engine/GopBoard.js",
-        "./Scripts/Engine/Orb.js",
-        "./Scripts/Engine/Player.js",
-        "./Scripts/Engine/GameState.js",
-        "./Scripts/Engine/GopCanvas.js",
-        "./Scripts/Engine/GameplayData.js"],
+        "./wwwroot/js/polyfills.js",
+        "./wwwroot/js/Engine/Enums.js",
+        "./wwwroot/js/Engine/Point.js",
+        "./wwwroot/js/Engine/MersenneTwister.js",
+        "./wwwroot/js/Engine/AltarData.js",
+        "./wwwroot/js/Engine/GameAction.js",
+        "./wwwroot/js/Engine/GopBoard.js",
+        "./wwwroot/js/Engine/Orb.js",
+        "./wwwroot/js/Engine/Player.js",
+        "./wwwroot/js/Engine/GameState.js",
+        "./wwwroot/js/Engine/GopCanvas.js",
+        "./wwwroot/js/Engine/GameplayData.js"],
     scripts: ["./Scripts/*.js", "./Scripts/tests/*.js"]
 };
 
@@ -54,23 +54,7 @@ gulp.task("engine:js", function () {
 });
 
 gulp.task("copy:js", ["engine:js"], function () {
-    gulp.src(paths.scripts, { base: "Scripts" }).pipe(gulp.dest(paths.jsDest));
+    //gulp.src(paths.scripts, { base: "Scripts" }).pipe(gulp.dest(paths.jsDest));
 });
 
-gulp.task("min:js", ["engine:js"], function () {
-    gulp.src([paths.js, "!" + paths.minJs], { base: "." })
-        .pipe(concat(paths.concatJsDest))
-        .pipe(uglify())
-        .pipe(gulp.dest("."));
-});
-
-gulp.task("min:css", function () {
-    gulp.src([paths.css, "!" + paths.minCss])
-        .pipe(concat(paths.concatCssDest))
-        .pipe(cssmin())
-        .pipe(gulp.dest("."));
-});
-
-gulp.task("min", ["min:js", "min:css"]);
-
-gulp.task("default", ["copy:js"]);
+gulp.task("default", ["engine:js"]);
