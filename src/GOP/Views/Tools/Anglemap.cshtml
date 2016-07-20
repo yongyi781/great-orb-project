@@ -55,74 +55,72 @@
     <script src="~/js/gop.min.js"></script>
     <script src="~/js/anglemap.js"></script>
     <script>
-        $(function () {
-            var anglemap = new Anglemap($("#gameCanvas")[0]);
+        var anglemap = new Anglemap($("#gameCanvas")[0]);
 
-            function selectAltarButton(altar) {
-                $("input[name=altar][value=" + altar + "]:radio").parent().button("toggle");
-            }
+        function selectAltarButton(altar) {
+            $("input[name=altar][value=" + altar + "]:radio").parent().button("toggle");
+        }
 
-            function setAltar(altar) {
-                anglemap.setAltar(altar);
-                selectAltarButton(altar);
-            }
+        function setAltar(altar) {
+            anglemap.setAltar(altar);
+            selectAltarButton(altar);
+        }
 
-            function updateCoords(element, p) {
-                if (isNaN(p.x) || isNaN(p.y))
-                    element.innerText = "N/A";
-                else
-                    element.innerText = "(" + p.x + ",\u00A0" + p.y + ")";
-            }
-
-            $("#gameCanvas").mousedown(function (e) {
-                updateCoords(playerCoords, new Point(anglemap.playerX, anglemap.playerY));
-                updateCoords(orbCoords, new Point(anglemap.orbX, anglemap.orbY));
-                orbDistance.innerText = anglemap.gopBoard.distanceToAltar(anglemap.orbX, anglemap.orbY, PathMode.ORB);
-            })
-
-            $("#gameCanvas").mousemove(function (e) { updateCoords(coords, anglemap.fromScreenCoords(e.offsetX, e.offsetY)); });
-
-            $("input[name=altar]:radio").change(function () { anglemap.setAltar(parseInt($(this).val(), 10)); });
-            $("input[name=tool]").change(function () {
-                var oldTool = anglemap.currentTool;
-                anglemap.currentTool = +$(this).val();
-                if (anglemap.currentTool != oldTool && anglemap.currentTool >= Tool.LineOfSight)
-                    anglemap.drawGrid();
-            });
-
-            $("#customAltarForm").submit(function (e) {
-                //e.preventDefault();
-                //var gridN = [];
-                //for (var y = centerY; y >= -centerY; --y) {
-                //    gridN[centerY - y] = [];
-                //    for (var x = -centerX; x <= centerX; ++x) {
-                //        gridN[centerY - y][x + centerX] = gopBoard.get(x, y);
-                //    }
-                //}
-                //var spawnsJS = "[";
-                //for (var i = 0; i < altarSpawns[currentAltar].length; i++) {
-                //    spawnsJS += "new Point(" + altarSpawns[currentAltar][i].x + ", " + altarSpawns[currentAltar][i].y + ")";
-                //    if (i < altarSpawns[currentAltar].length - 1)
-                //        spawnsJS += ", ";
-                //}
-                //spawnsJS += "]";
-                //$.post("CustomAltarHandler.ashx", { name: customAltarForm.customAltarNameInput.value, gridJS: JSON.stringify(gridN), spawnsJS: spawnsJS }, function (data) {
-                //    $("#customAltarResult").text(data);
-                //});
-            });
-
-            anglemap.currentTool = Tool.Pointer;
-            @if (Model != null)
-            {
-            <text>
-            AltarData[@Model.Id] = {name: "@Model.Name", grid: @Model.Grid, spawns: @Model.Spawns };
-            setAltar(@Model.Id);
-            </text>
-            }
+        function updateCoords(element, p) {
+            if (isNaN(p.x) || isNaN(p.y))
+                element.innerText = "N/A";
             else
-            {
-                @: setAltar(Altar.Air);
-                        }
+                element.innerText = "(" + p.x + ",\u00A0" + p.y + ")";
+        }
+
+        $("#gameCanvas").mousedown(function (e) {
+            updateCoords(playerCoords, new Point(anglemap.playerX, anglemap.playerY));
+            updateCoords(orbCoords, new Point(anglemap.orbX, anglemap.orbY));
+            orbDistance.innerText = anglemap.gopBoard.distanceToAltar(anglemap.orbX, anglemap.orbY, PathMode.ORB);
+        })
+
+        $("#gameCanvas").mousemove(function (e) { updateCoords(coords, anglemap.fromScreenCoords(e.offsetX, e.offsetY)); });
+
+        $("input[name=altar]:radio").change(function () { anglemap.setAltar(parseInt($(this).val(), 10)); });
+        $("input[name=tool]").change(function () {
+            var oldTool = anglemap.currentTool;
+            anglemap.currentTool = +$(this).val();
+            if (anglemap.currentTool != oldTool && anglemap.currentTool >= Tool.LineOfSight)
+                anglemap.drawGrid();
         });
+
+        $("#customAltarForm").submit(function (e) {
+            //e.preventDefault();
+            //var gridN = [];
+            //for (var y = centerY; y >= -centerY; --y) {
+            //    gridN[centerY - y] = [];
+            //    for (var x = -centerX; x <= centerX; ++x) {
+            //        gridN[centerY - y][x + centerX] = gopBoard.get(x, y);
+            //    }
+            //}
+            //var spawnsJS = "[";
+            //for (var i = 0; i < altarSpawns[currentAltar].length; i++) {
+            //    spawnsJS += "new Point(" + altarSpawns[currentAltar][i].x + ", " + altarSpawns[currentAltar][i].y + ")";
+            //    if (i < altarSpawns[currentAltar].length - 1)
+            //        spawnsJS += ", ";
+            //}
+            //spawnsJS += "]";
+            //$.post("CustomAltarHandler.ashx", { name: customAltarForm.customAltarNameInput.value, gridJS: JSON.stringify(gridN), spawnsJS: spawnsJS }, function (data) {
+            //    $("#customAltarResult").text(data);
+            //});
+        });
+
+        anglemap.currentTool = Tool.Pointer;
+        @if (Model != null)
+        {
+            <text>
+        AltarData[@Model.Id] = {name: "@Model.Name", grid: @Model.Grid, spawns: @Model.Spawns };
+        setAltar(@Model.Id);
+        </text>
+        }
+        else
+        {
+            @: setAltar(Altar.Air);
+        }
     </script>
 }
