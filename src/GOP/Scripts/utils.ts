@@ -2,7 +2,7 @@
     /**
      * Returns a random integer between minValue (inclusive) and maxValue (exclusive).
      */
-    export function getRandomInt(minValue, maxValue) {
+    export function getRandomInt(minValue: number, maxValue: number) {
         return Math.floor(Math.random() * (maxValue - minValue)) + minValue;
     }
 

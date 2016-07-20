@@ -1,0 +1,11 @@
+{
+  "globalDependencies": {
+    "jquery": "registry:dt/jquery#1.10.0+20160704162008",
+    "knockout": "registry:dt/knockout#0.0.0+20160512130947",
+    "qunit": "registry:dt/qunit#1.16.0+20160514172809",
+    "signalr": "registry:dt/signalr#2.2.0+20160509082439",
+    "stats": "registry:dt/stats#0.16.0+20160505160752",
+    "three": "registry:dt/three#0.0.0+20160627210315",
+    "three-orbitcontrols": "registry:dt/three-orbitcontrols#0.0.0+20160704010734"
+  }
+}

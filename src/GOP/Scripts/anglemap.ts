@@ -80,7 +80,7 @@ class Anglemap {
         this.resetGrid();
     }
 
-    stateColors = { 0: "#222222", 1: "black", 2: "#393939", 3: "#111833", 4: "#222222", 5: "#222222", 6: "#222222" };
+    stateColors: { [id: number]: string } = { 0: "#222222", 1: "black", 2: "#393939", 3: "#111833", 4: "#222222", 5: "#222222", 6: "#222222", 7: "#222222", 8: "#222222" };
     highlightColor = "rgba(255, 255, 0, 0.1)";
     playerColor = "#00FFFF";
     orbColor = "yellow";
@@ -111,12 +111,12 @@ class Anglemap {
     invalidatedSquares: Point[] = [];
 
     // Returns whether an array of points contains (x, y).
-    contains(points, x, y) {
+    contains(points: Point[], x: number, y: number) {
         return points.some(p => p.x === x && p.y === y);
     }
 
     // Returns the index of (x, y) in points.
-    indexOf(points, x, y) {
+    indexOf(points: Point[], x: number, y: number) {
         for (let i = 0; i < points.length; ++i) {
             if (points[i].x === x && points[i].y === y) {
                 return i;
@@ -126,18 +126,18 @@ class Anglemap {
     }
 
     // Converts grid coordinates to screen coordinates.
-    toScreenCoords(x, y) {
+    toScreenCoords(x: number, y: number) {
         return new Point((x + this.centerX) * this.cellWidth, (-y + this.centerY) * this.cellHeight);
     }
 
     // Converts screen coordinates to grid coordinates.
-    fromScreenCoords(x, y) {
+    fromScreenCoords(x: number, y: number) {
         return new Point(Math.floor(x / this.cellWidth) - this.centerX, -Math.floor(y / this.cellHeight) + this.centerY);
     }
 
     // Returns where the orb will end up if the player taps the orb.
     // TODO: Finish
-    tapOrb(px, py, ox, oy) {
+    tapOrb(px: number, py: number, ox: number, oy: number) {
         let mabs = Math.abs((py - oy) / (px - ox));
         let dx = px === ox ? 0 : px > ox ? 1 : -1;
         let dy = py === oy ? 0 : py > oy ? 1 : -1;
@@ -160,7 +160,7 @@ class Anglemap {
     }
 
     // Returns the default grid state at the point (x, y).
-    getDefaultGridState(p) {
+    getDefaultGridState(p: Point) {
         return AltarData[this.currentAltar].grid[this.centerY - p.y][p.x + this.centerX];
     }
 
@@ -182,7 +182,7 @@ class Anglemap {
     }
 
     // Fills the square at the point (x, y) with the specified fill style.
-    fillSquare(fillStyle, x, y, invalidate) {
+    fillSquare(fillStyle: string, x: number, y: number, invalidate: boolean) {
         let square = this.toScreenCoords(x, y);
         this.context.fillStyle = fillStyle;
         this.context.fillRect(square.x, square.y, this.cellWidth - 1, this.cellHeight - 1);
@@ -193,24 +193,32 @@ class Anglemap {
 
     // Draws walls at point p, if any.
     drawWalls(p: Point) {
+        let tile = this.gopBoard.get(p);
+        if (tile < Tile.WallW) {
+            return;
+        }
+
         let s = this.toScreenCoords(p.x, p.y);
         this.context.lineWidth = 3;
-        if (this.gopBoard.get(p) === Tile.WallS) {
+        if (tile === Tile.WallS) {
             this.context.beginPath();
             this.context.moveTo(s.x, s.y + this.cellHeight);
             this.context.lineTo(s.x + this.cellWidth, s.y + this.cellHeight);
             this.context.stroke();
-        } else if (this.gopBoard.get(p) === Tile.WallW) {
+        } else if (tile === Tile.WallW) {
             this.context.beginPath();
             this.context.moveTo(s.x, s.y);
             this.context.lineTo(s.x, s.y + this.cellHeight);
             this.context.stroke();
-        } else if (this.gopBoard.get(p) === Tile.WallSW) {
+        } else if (tile === Tile.WallSW) {
             this.context.beginPath();
             this.context.moveTo(s.x, s.y);
             this.context.lineTo(s.x, s.y + this.cellHeight);
             this.context.lineTo(s.x + this.cellWidth, s.y + this.cellHeight);
             this.context.stroke();
+        } else if (tile >= Tile.Minipillar1) {
+            this.context.fillStyle = "black";
+            this.context.fillRect(s.x - 3, s.y + this.cellHeight - 3, 5, 5);
         }
     }
 
@@ -309,14 +317,14 @@ class Anglemap {
         }
     }
 
-    getBestAttractingPositions(x1, y1, x2, y2) {
+    getBestAttractingPositions(x1: number, y1: number, x2: number, y2: number) {
         let p2 = new Point(x2, y2);
         let nodes = [{ x: x1, y: y1, dist: 0 }];
-        let visited = {};
+        let visited: { [id: string]: boolean } = {};
         visited[[x1, y1].toString()] = true;
         let minDist = Infinity;
-        let best = [];
-        let secondBest = [];
+        let best: typeof nodes = [];
+        let secondBest: typeof nodes = [];
 
         while (nodes.length > 0) {
             let curr = nodes.shift();
@@ -351,7 +359,7 @@ class Anglemap {
     }
 
     // Draws the best positions from which to attract an orb.
-    drawBestAttractingPositions(x1, y1, x2, y2) {
+    drawBestAttractingPositions(x1: number, y1: number, x2: number, y2: number) {
         if (x1 === x2 && y1 === y2 || isNaN(x1) || isNaN(x2) || isNaN(y1) || isNaN(y2)) {
             return;
         }
@@ -368,7 +376,7 @@ class Anglemap {
         return "rgb(" + Math.round(r) + "," + Math.round(g) + "," + Math.round(b) + ")";
     }
 
-    drawDistanceColor(x, y, dist) {
+    drawDistanceColor(x: number, y: number, dist: number) {
         let runningDist = Math.floor((dist + 1) / 2);
         let maxDist = 8;
         let t = runningDist / maxDist;
@@ -384,10 +392,10 @@ class Anglemap {
         }
     }
 
-    drawDistanceColorGradient(x, y) {
+    drawDistanceColorGradient(x: number, y: number) {
         let p = new Point(x, y);
         let nodes = [{ state: p, dist: 0 }];
-        let visited = {};
+        let visited: { [id: string]: boolean } = {};
         visited[p.toString()] = true;
 
         while (nodes.length > 0) {

@@ -122,12 +122,12 @@ class GopUI {
     $rootContainer = $('<div style="display: inline-block"/>');
 
     lastTimestamp = 0;
-    animationHandle = null;
-    mousePosition = null;
+    animationHandle: number = null;
+    mousePosition: Point = null;
     canvasFocused = false;
     canvasContextMenuFocused = false;
 
-    onclick = p => true;
+    onclick = (p: Point) => true;
 
     constructor(element: HTMLElement, options: GopUIOptions) {
         this.options = $.extend(true, {}, this.defaults, options);
@@ -515,10 +515,10 @@ class GopUI {
             this.updateDisplay();
         } else {
             let f = () => {
-                if (run !== void 0 && run !== null) {
+                if (run !== undefined && run !== null) {
                     this.player.action.toggleRun = this.player.run !== run;
                 }
-                if (repel !== void 0 && repel !== null) {
+                if (repel !== undefined && repel !== null) {
                     this.player.action.changeWand = this.player.repel !== repel;
                 }
                 // Erase gameplay data after the current tick.
@@ -569,7 +569,7 @@ class GopUI {
 
         this.options.callbacks.tick(force, redraw);
     }
-    
+
     updatePointer() {
         if (this.mousePosition) {
             this.$canvas.css("cursor", this.isMouseOverAnyOrb(this.gopCanvas.fromScreenCoords(this.mousePosition.x, this.mousePosition.y, false)) ? "pointer" : "default");

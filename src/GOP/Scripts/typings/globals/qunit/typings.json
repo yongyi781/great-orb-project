@@ -1,0 +1,8 @@
+{
+  "resolution": "main",
+  "tree": {
+    "src": "https://raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/933f68a564d0cb1a609fff365630593daaf5fa82/qunit/qunit.d.ts",
+    "raw": "registry:dt/qunit#1.16.0+20160514172809",
+    "typings": "https://raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/933f68a564d0cb1a609fff365630593daaf5fa82/qunit/qunit.d.ts"
+  }
+}
