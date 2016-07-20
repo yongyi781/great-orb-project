@@ -569,22 +569,10 @@
         }
 
         // Rotate camera
-        let diff = this.camera.position.clone().sub(this.myPlayerObj.mesh.position);
-        let cameraPlayerDistance = diff.length();
-        let cameraPlayer2DDistance = new THREE.Vector2(diff.x, diff.y).length();
-        // (Hacky) conditions to clamp azimuthal angle between 0 and 90.
-        if (this.upPressed) {
-            this.rotateCamera(0, this.cameraRotateYSpeed * elapsed);
-        }
-        if (this.downPressed) {
-            this.rotateCamera(0, -this.cameraRotateYSpeed * elapsed);
-        }
-        if (this.leftPressed) {
-            this.rotateCamera(-this.cameraRotateXSpeed * elapsed, 0);
-        }
-        if (this.rightPressed) {
-            this.rotateCamera(this.cameraRotateXSpeed * elapsed, 0);
-        }
+        let yFactor = this.upPressed ? 1 : this.downPressed ? -1 : 0;
+        let xFactor = this.rightPressed ? 1 : this.leftPressed ? -1 : 0;
+        this.rotateCamera(xFactor * this.cameraRotateXSpeed * elapsed, yFactor * this.cameraRotateYSpeed * elapsed);
+
         if (this.zoomInPressed) {
             this.camera.translateZ(-this.zoomSpeed * elapsed);
         }
@@ -595,12 +583,8 @@
         // Update cursor
         if (this.mouseVector !== undefined) {
             this.raycaster.setFromCamera(this.mouseVector, this.camera);
-            let intersects = this.raycaster.intersectObjects(this.orbObjects.map(obj => obj.mesh));
-            if (intersects.length > 0) {
-                this.renderer.domElement.style.cursor = "pointer";
-            } else {
-                this.renderer.domElement.style.cursor = "default";
-            }
+            let intersections = this.raycaster.intersectObjects(this.orbObjects.map(obj => obj.mesh));
+            this.renderer.domElement.style.cursor = intersections.length > 0 ? "pointer" : "default";
         } else {
         }
     }
