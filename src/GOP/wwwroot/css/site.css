@@ -39,6 +39,10 @@ table.dataTable tbody th.dt-body-justify, table.dataTable tbody td.dt-body-justi
     text-align: justify;
 }
 
+a:visited {
+    color: #9e67b7;
+}
+
 .container-main {
     padding-bottom: 10px;
 }
@@ -75,9 +79,9 @@ table.dataTable tbody th.dt-body-justify, table.dataTable tbody td.dt-body-justi
     background-color: black;
 }
 
-.chatbox-container .panel-body {
-    padding: 0;
-}
+    .chatbox-container .panel-body {
+        padding: 0;
+    }
 
 .chat-top-panel {
     padding: 10px;
@@ -214,5 +218,5 @@ table.dataTable tbody th.dt-body-justify, table.dataTable tbody td.dt-body-justi
     font-family: Consolas, monospace;
     outline: 0 none;
     padding: 10px;
-    width :100%;
+    width: 100%;
 }
