@@ -3,7 +3,7 @@
     prevLocation = Point.NaN;
     target = Point.NaN;
     deadTime = 0;
-    controllingPlayer = null;
+    controllingPlayer: Player = null;
     controlState = OrbControlState.Free;
     wasTouchedThisTick = false;
 
@@ -24,7 +24,7 @@
     }
 
     step() {
-        function clamp(x, min, max) {
+        function clamp(x: number, min: number, max: number) {
             return x < min ? min : x > max ? max : x;
         }
 

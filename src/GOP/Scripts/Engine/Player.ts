@@ -18,7 +18,7 @@
     isAttracting = false;
     forceAttractOrb: Orb = null;
     holdLength = 0;
-    previousAction = null;
+    previousAction: GameAction = null;
     attractIneffective = false;
 
     constructor(public gs: GameState, public location: Point, public index: number) { }

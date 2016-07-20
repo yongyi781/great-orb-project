@@ -43,7 +43,7 @@
         return <string>c;
     }
 
-    tileColor(x, y) {
+    tileColor(x: number, y: number) {
         let tile = this.board.get(new Point(x, y));
         switch (tile) {
             case Tile.Floor:
@@ -138,29 +138,33 @@
     /**
      * Draws walls at (x, y) according to the board grid state.
      */
-    drawWalls(x: number, y: number) {
-        let p = new Point(x, y);
-        if (this.board.get(p) < Tile.WallW) {
+    drawWalls(p: Point) {
+        let tile = this.board.get(p);
+        if (tile < Tile.WallW) {
             return;
         }
 
-        let s = this.toBgScreenCoords(x, y);
-        this.bgContext.beginPath();
-        if (this.board.get(p) === Tile.WallS) {
+        let s = this.toBgScreenCoords(p.x, p.y);
+        if (tile === Tile.WallS) {
+            this.bgContext.beginPath();
             this.bgContext.moveTo(s.x, s.y + this.cellHeight);
             this.bgContext.lineTo(s.x + this.cellWidth, s.y + this.cellHeight);
-        } else if (this.board.get(p) === Tile.WallW) {
+            this.bgContext.stroke();
+        } else if (tile === Tile.WallW) {
+            this.bgContext.beginPath();
             this.bgContext.moveTo(s.x, s.y);
             this.bgContext.lineTo(s.x, s.y + this.cellHeight);
-        } else if (this.board.get(p) === Tile.WallSW) {
+            this.bgContext.stroke();
+        } else if (tile === Tile.WallSW) {
+            this.bgContext.beginPath();
             this.bgContext.moveTo(s.x, s.y);
             this.bgContext.lineTo(s.x, s.y + this.cellHeight);
             this.bgContext.lineTo(s.x + this.cellWidth, s.y + this.cellHeight);
-        } else if (this.board.get(p) >= Tile.Minipillar1) {
+            this.bgContext.stroke();
+        } else if (tile >= Tile.Minipillar1) {
             this.bgContext.fillStyle = "black";
             this.bgContext.fillRect(s.x - 3, s.y + this.cellHeight - 3, 5, 5);
         }
-        this.bgContext.stroke();
     }
 
     /**
@@ -193,7 +197,7 @@
         this.bgContext.lineWidth = 3;
         for (let x = -this.board.xmax; x <= this.board.xmax; ++x) {
             for (let y = -this.board.ymax; y <= this.board.ymax; ++y) {
-                this.drawWalls(x, y);
+                this.drawWalls(new Point(x, y));
             }
         }
         // Draw altar images!
@@ -243,14 +247,14 @@
         this.fgContext.stroke();
 
         if (!this.isRunning && this.gameState.currentTick > 0) {
-            this.fgContext.fillStyle = "rgba(0, 255, 0, 0.2)";
+            this.fgContext.fillStyle = "rgba(0, 255, 0, 0.1)";
             this.fgContext.moveTo(timerX, timerY);
             this.fgContext.arc(timerX, timerY, radius, 0, 2 * Math.PI);
             this.fgContext.fill();
         } else if (this.gameState.currentTick < timerEnd) {
             // Draw timer inside
             this.fgContext.fillStyle = this.gameState.currentTick >= 0.75 * timerEnd ?
-                "rgba(255, 0, 0, 0.2)" : "rgba(255, 255, 0, 0.2)";
+                "rgba(255, 0, 0, 0.1)" : "rgba(255, 255, 0, 0.1)";
             this.fgContext.beginPath();
             this.fgContext.moveTo(timerX, timerY);
             this.fgContext.arc(timerX, timerY, radius, -Math.PI / 2, -Math.PI / 2 - 2 * Math.PI * (1 - this.gameState.currentTick / (timerEnd)), true);
@@ -272,7 +276,7 @@
         this.fgContext.fillText(this.gameState.score.toString(), timerX, timerY + radius + 24);
         this.fgContext.font = "16px Roboto";
         this.fgContext.fillStyle = "#ccccdd";
-        this.fgContext.fillText(`Estimated: ${this.getEstimatedScore().toString()}`, timerX, timerY + radius + 48);
+        this.fgContext.fillText(`Estimated: ${this.gameState.getEstimatedScore().toString()}`, timerX, timerY + radius + 48);
     }
 
     /**
@@ -329,11 +333,6 @@
         if (this.showTimer) {
             this.drawHUD();
         }
-    }
-
-    getEstimatedScore() {
-        let offset = 3;
-        return this.gameState.currentTick === 0 ? 0 : Math.round(this.gameState.score * (GameState.ticksPerAltar - offset) / (Math.max(1, this.gameState.currentTick - offset)));
     }
 
     private loadImages() {

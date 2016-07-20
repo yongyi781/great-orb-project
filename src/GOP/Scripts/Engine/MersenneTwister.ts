@@ -25,7 +25,7 @@
     }
 
     init_by_array(init_key: number[], key_length: number) {
-        let i, j, k, s;
+        let i: number, j: number, k: number, s: number;
         this.init_genrand(19650218);
         i = 1; j = 0;
         k = (this.N > key_length ? this.N : key_length);
@@ -52,12 +52,12 @@
      * Generates a random number on [0,0xffffffff]-interval
      */
     genrand_int32() {
-        let y;
+        let y: number;
         let mag01 = new Array(0x0, this.MATRIX_A);
         /* mag01[x] = x * MATRIX_A  for x=0,1 */
 
         if (this.mti >= this.N) { /* generate N words at one time */
-            let kk;
+            let kk: number;
 
             if (this.mti === this.N + 1) {  /* if init_genrand() has not been called, */
                 this.init_genrand(5489);    /* a default initial seed is used */

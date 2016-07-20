@@ -28,10 +28,9 @@
             this.altar = altar;
         }
         this.board.loadAltar(this.altar);
-        this.orbs = [];
         this.presetSpawnStack = this.presetSpawns.slice(0);
         for (let i = 0; i < this.numberOfOrbs; ++i) {
-            this.orbs.push(new Orb(this, i));
+            this.orbs[i] = new Orb(this, i);
         }
         this.players.forEach(player => player.freeze());
 
@@ -56,6 +55,10 @@
         });
         // Step players
         this.players.forEach(player => player.step());
+    }
+
+    getEstimatedScore(offset = 3) {
+        return this.currentTick === 0 ? 0 : Math.round(this.score * (GameState.ticksPerAltar - offset) / (Math.max(1, this.currentTick - offset)));
     }
 
     static ticksPerAltar = 199;

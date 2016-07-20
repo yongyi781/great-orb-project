@@ -150,7 +150,7 @@
         }
 
         let q = [p1];
-        let parents = [];
+        let parents: Point[][] = [];
         for (let y = -this.ymax; y <= this.ymax; ++y) {
             parents[y] = [];
         }
@@ -180,7 +180,7 @@
             }
         }
 
-        let path = [];
+        let path: Point[] = [];
         for (let p = best; !p.equals(p1); p = parents[p.y][p.x]) {
             path.push(p);
         }
@@ -197,7 +197,7 @@
         }
 
         let nodes = [{ state: src, dist: 0 }];
-        let visited = {};
+        let visited: { [id: string]: boolean } = {};
         visited[src.toString()] = true;
 
         while (nodes.length > 0) {
@@ -218,7 +218,7 @@
     }
 
     nearestAltarPoint(p: Point, mode: PathMode) {
-        let altarPoints = [];
+        let altarPoints: Point[] = [];
         for (let y = -2; y <= 2; y++) {
             for (let x = -2; x <= 2; x++) {
                 if (!(Math.abs(x) === 2 && Math.abs(y) === 2)) {
@@ -232,7 +232,7 @@
 
     distanceToAltar(p: Point, mode: PathMode) {
         let nodes = [{ state: p, dist: 0 }];
-        let visited = {};
+        let visited: { [id: string]: boolean } = {};
         visited[p.toString()] = true;
 
         while (nodes.length > 0) {
@@ -327,19 +327,19 @@
      */
     static getOrbOffset(diff: Point, toPlayer = false) {
         // Returns the sign of x.
-        function sign(x) {
+        function sign(x: number) {
             return x === 0 ? 0 : x > 0 ? 1 : -1;
         }
 
         // Returns the value that is smaller in absolute value.
-        function absmin(x, y) {
+        function absmin(x: number, y: number) {
             return Math.abs(x) < Math.abs(y) ? x : y;
         }
 
         let m = Math.abs(diff.y / diff.x);
         let dx = sign(diff.x);
         let dy = sign(diff.y);
-        let result;
+        let result: Point;
         if (m > 2) {
             result = new Point(0, 2 * dy);
         } else if (m > 1) {
@@ -359,7 +359,7 @@
      */
     static getLineOfSight(p1: Point, p2: Point): Point[] {
         let distX = p2.x - p1.x, distY = p2.y - p1.y;
-        let result = [];
+        let result: Point[] = [];
         if (distX === 0 && distY === 0) {
             return result;
         } else if (p1.x > p2.x) {

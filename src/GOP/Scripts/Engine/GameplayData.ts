@@ -168,7 +168,7 @@ class GameActionList {
 class GameplayData {
     constructor(public startInfo: GameStartInfo, public actions?: GameActionList) {
         if (this.actions === void 0) {
-            let actionArr = [];
+            let actionArr: GameAction[][] = [];
             for (let i = 0; i < startInfo.players.length; i++) {
                 actionArr.push([]);
             }
