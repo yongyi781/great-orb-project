@@ -9,6 +9,10 @@
 
     constructor(public gs: GameState, public index: number) { }
 
+    freeze() {
+        this.prevLocation = Point.NaN;
+    }
+
     spawn() {
         let spawns = AltarData[this.gs.altar].spawns;
         this.prevLocation = Point.NaN;

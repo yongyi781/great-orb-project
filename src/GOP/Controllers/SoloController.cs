@@ -27,11 +27,7 @@ namespace GOP.Controllers
         {
             DbContext.CacheViewUsers = true;
             DbContext.LoadUsersIntoCache();
-
-            CustomAltar customAltar = null;
-            if (altar != null && altar > Utilities.NumberOfAltars)
-                customAltar = DbContext.CustomAltars.FirstOrDefault(a => a.Id == altar);
-
+            
             var soloGames = GetSoloGames().OrderByDescending(g => g.Id).Take(10);
 
             var isCustomGameType = spawns != null || reach != DefaultReach || ticks != DefaultTicks;
@@ -39,7 +35,6 @@ namespace GOP.Controllers
 
             return View(new SoloViewModel
             {
-                CustomAltar = customAltar,
                 IsCustomGameType = isCustomGameType,
                 Games = isCustomGameType ? null : soloGames,
                 GopControls = currentUser?.GopControls

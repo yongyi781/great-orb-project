@@ -131,6 +131,11 @@ class GopUI {
 
     constructor(element: HTMLElement, options: GopUIOptions) {
         this.options = $.extend(true, {}, this.defaults, options);
+
+        if (!(this.options.game.altar in AltarData)) {
+            this.options.game.altar = Altar.Air;
+        }
+
         this.gameState = new GameState(new GopBoard(53, 53, this.options.game.reachDistance),
             this.options.game.startLocations,
             this.options.game.presetSpawns,
@@ -359,7 +364,7 @@ class GopUI {
             if (seed !== void 0) {
                 this.gameState.seed = seed;
             }
-            if (altar !== void 0) {
+            if (altar in AltarData) {
                 this.gameState.altar = altar;
             }
             this.gameplayData = new GameplayData(new GameStartInfo(this.gameState.seed, this.gameState.altar,
@@ -612,8 +617,8 @@ class GopUI {
         if (this.isGameRunning) {
             this.gopCanvas.tickProgress += (timestamp - this.lastTimestamp) / this.options.client.tickInterval;
             if (this.gopCanvas.tickProgress >= 1) {
-                // Don't skip ticks
                 this.tick();
+                // Don't skip ticks
                 this.gopCanvas.tickProgress -= Math.floor(this.gopCanvas.tickProgress);
             }
         } else {

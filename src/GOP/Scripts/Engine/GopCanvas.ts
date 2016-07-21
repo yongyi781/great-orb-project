@@ -34,7 +34,7 @@
 
     groundColor() {
         let c = AltarData[this.gameState.altar].groundColor;
-        if (c === void 0) {
+        if (c === undefined || c === null) {
             return GopCanvas.defaultGroundColor;
         }
         if (c instanceof Array) {
@@ -53,7 +53,7 @@
             case Tile.Minipillar1:
             case Tile.Minipillar2:
                 let pattern = AltarData[this.gameState.altar].groundPattern;
-                if (pattern !== void 0) {
+                if (pattern !== undefined && pattern !== null) {
                     return AltarData[this.gameState.altar].groundColor[pattern[this.board.ymax - y][x + this.board.xmax]];
                 }
                 return this.groundColor();

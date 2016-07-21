@@ -71,6 +71,10 @@ class GameActionList {
      * Pushes a new list of actions onto the list, one for each player.
      */
     push(actions: GameAction[]) {
+        if (actions.length !== this.numPlayers()) {
+            throw new Error("Action size mismatch.");
+        }
+
         for (let i = 0; i < this.rawActions.length; i++) {
             this.rawActions[i].push(actions[i]);
         }
@@ -180,9 +184,6 @@ class GameplayData {
      * Pushes a list of new actions onto the list, one for each player.
      */
     pushActions(newActions: GameAction[]) {
-        if (newActions.length !== this.actions.numPlayers()) {
-            throw new Error("Action size mismatch.");
-        }
         this.actions.push(newActions);
     }
 

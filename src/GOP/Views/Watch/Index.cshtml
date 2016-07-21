@@ -38,7 +38,7 @@
     <script src="~/js/gopui.js"></script>
     <script src="~/js/utils.js"></script>
     <script>
-        var gopui;
+        var options, gopui;
 
         function selectAltarButton(altar) {
             $("input[name=altar][value=" + altar + "]:radio").parent().button("toggle");
@@ -56,11 +56,17 @@
             updateSeedAltarDisplay();
         }
 
+        function initializeGopUI() {
+            gopui = new GopUI($("#game")[0], options);
+            updateSeedAltarDisplay();
+        }
+
         $(function () {
-            var options = {
+            options = {
                 game: {
                     code: "@Model.Game.Code",
                     numberOfOrbs: @Model.Game.NumberOfOrbs,
+                    altar: @Model.Game.Altar,
                     reachDistance: Utils.getQueryAsNumber("reach"),
                     ticksPerAltar: Utils.getQueryAsNumber("ticks"),
                     startLocations: Utils.getQueryAsPointArray("start"),
@@ -81,23 +87,14 @@
                 }
             };
 
-            @if (Model.CustomAltar != null)
-            {
-            <text>
-            AltarData[@Model.CustomAltar.Id] = {
-                name: "@Model.CustomAltar.Name",
-                grid: @Model.CustomAltar.Grid,
-                spawns: @Model.CustomAltar.Spawns,
-                groundColor: @Html.Raw(Model.CustomAltar.GroundColor ?? "undefined"),
-                waterColor: @Html.Raw(Model.CustomAltar.WaterColor ?? "undefined"),
-                groundPattern: @Html.Raw(Model.CustomAltar.GroundPattern ?? "undefined") };
-            options.game.altar = Utils.getQueryAsNumber("altar") || @Model.CustomAltar.Id;
-            </text>
+            if (options.game.altar !== undefined && !(options.game.altar in AltarData)) {
+                Utils.loadCustomAltar(options.game.altar).then(function (data) {
+                    AltarData[options.game.altar] = data;
+                    initializeGopUI();
+                });
+            } else {
+                initializeGopUI();
             }
-
-            gopui = new GopUI($("#game")[0], options);
-
-            updateSeedAltarDisplay();
         })
     </script>
 }

@@ -18,7 +18,6 @@ namespace GOP.ViewModels
 
     public class SoloViewModel
     {
-        public CustomAltar CustomAltar { get; set; }
         public IEnumerable<SoloGameView> Games { get; set; }
         public bool IsCustomGameType { get; set; }
         public string GopControls { get; set; }

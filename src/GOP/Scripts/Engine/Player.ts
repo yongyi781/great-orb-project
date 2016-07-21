@@ -40,6 +40,7 @@
         this.delayAttractFromMoving = false;
         this.delayAttractFromPrototick = false;
         this.hasMovedThisTick = false;
+        this.action = GameAction.idle();
     }
 
     // Used in both moving and attracting.

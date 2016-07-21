@@ -23,7 +23,7 @@
             </div>
         </div>
         <div class="col-xs-6 col-md-7" data-toggle="buttons">
-            <div class="btn-group">
+            <div id="altarsBtnGroup" class="btn-group">
                 <label class="btn btn-default"><input type="radio" name="altar" value="0">None</label>
                 <label class="btn btn-default"><input type="radio" name="altar" value="1">Air</label>
                 <label class="btn btn-default"><input type="radio" name="altar" value="2">Mind</label>
@@ -31,10 +31,6 @@
                 <label class="btn btn-default"><input type="radio" name="altar" value="4">Earth</label>
                 <label class="btn btn-default"><input type="radio" name="altar" value="5">Fire</label>
                 <label class="btn btn-default"><input type="radio" name="altar" value="6">Body</label>
-                @if (Model.CustomAltar != null)
-                {
-                    <label class="btn btn-default"><input type="radio" name="altar" value="@Model.CustomAltar.Id">@Model.CustomAltar.Name</label>
-                }
             </div>
         </div>
     </div>
@@ -64,6 +60,8 @@
     </table>
 }
 <!-- Auxiliary elements -->
+<input id="gopControls" type="hidden" value="@Model.GopControls" />
+<input id="isCustom" type="hidden" value="@Model.IsCustomGameType" />
 <div id="shortcutsModal" class="modal fade">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -188,7 +186,7 @@
     <script src="~/js/gopui.js"></script>
     <script src="~/js/utils.js"></script>
     <script>
-        var gopui, options, games, table, isCustom = @(Model.IsCustomGameType ? "true" : "false"), isUpdatingSeedAltarDisplay = false;
+        var gopui, options, games, table, isCustom = Utils.parseBoolean($("#isCustom").val()), isUpdatingSeedAltarDisplay = false;
 
         function selectAltarButton(altar) {
             $("input[name=altar][value=" + altar + "]:radio").parent().button("toggle");
@@ -214,105 +212,25 @@
             if (options.game.altar !== undefined) {
                 args.push("altar=" + options.game.altar);
             }
+            if (options.game.reachDistance !== undefined) {
+                args.push("reach=" + options.game.reachDistance);
+            }
+            if (options.game.ticksPerAltar !== undefined) {
+                args.push("ticks=" + options.game.ticksPerAltar);
+            }
             if (options.game.presetSpawns instanceof Array && options.game.presetSpawns.length > 0) {
                 args.push("spawns=" + JSON.stringify(options.game.presetSpawns.map(function (p) { return [p.x, p.y] })));
             }
             args.push("code=" + gopui.$gameCodeText.text().replace(/ /g, "+"));
 
             var shareLinkElement = $("#shareLink")[0];
-            $("#shareLink").val("http://@(Context.Request.Host)/Solo?" + args.join("&"));
+            $("#shareLink").val("http://" + window.location.hostname + "/Solo?" + args.join("&"));
             if ($("#shareLink").is(":focus")) {
-                $("#shareLink").select();            
+                $("#shareLink").select();
             }
         }
 
-        $(function () {
-            options = {
-                game: {
-                    seed: Utils.getQueryAsNumber("seed"),
-                    altar: Utils.getQueryAsNumber("altar"),
-                    code: Utils.getQueryAsString("code"),
-                    numberOfOrbs: Utils.getQueryAsNumber("numorbs"),
-                    reachDistance: Utils.getQueryAsNumber("reach"),
-                    ticksPerAltar: Utils.getQueryAsNumber("ticks"),
-                    startLocations: Utils.getQueryAsPointArray("start"),
-                    presetSpawns: Utils.getQueryAsPointArray("spawns"),
-                    suppressRandomSpawns: Utils.getQueryAsBoolean("norandom")
-                },
-                client: {
-                    visibilityRadius: Utils.getQueryAsNumber("visibility"),
-                    latency: Utils.getQueryAsNumber("latency"),
-                    tickInterval: Utils.getQueryAsNumber("tickinterval") || 450,
-                    altarAndStartLocationForced: Utils.getQueryAsBoolean("forcestart")
-                },
-                interface: {
-                    showRestart: false,
-                    showSave: !isCustom,
-                    plusMinusTicksAdvance: Utils.getQueryAsNumber("advance"),
-                    showScore: Utils.getQueryAsBoolean("showscore")
-                },
-                callbacks: {
-                    tick: function (force, redraw) {
-                        gopui.$saveButton.text("Save").prop("disabled",
-                            gopui.gameState.currentTick < GameState.ticksPerAltar);
-                        if (redraw) {
-                            updateShareLink();
-                        }
-                    }
-                }
-            };
-
-            if (options.game.seed === void 0) {
-                var smin = Utils.getQueryAsNumber("smin") || 0;
-                var smax = Utils.getQueryAsNumber("smax") || @GOP.Controllers.SoloController.DefaultMaxRandomSeed;
-                options.game.seed = Utils.getRandomInt(smin, smax);
-            }
-
-            if (options.game.numberOfOrbs !== void 0) {
-                options.game.numberOfOrbs = Math.min(@GOP.Controllers.SoloController.MaxOrbs, options.game.numberOfOrbs);
-            }
-
-            @if (Model.GopControls != null)
-            {
-                @: options.client.gopControls = JSON.parse('@Html.Raw(Model.GopControls)');
-            }
-
-            @if (Model.CustomAltar != null)
-            {
-            <text>
-            AltarData[@Model.CustomAltar.Id] = {
-                name: "@Model.CustomAltar.Name",
-                grid: @Model.CustomAltar.Grid,
-                spawns: @Model.CustomAltar.Spawns,
-                groundColor: @Html.Raw(Model.CustomAltar.GroundColor ?? "undefined"),
-                waterColor: @Html.Raw(Model.CustomAltar.WaterColor ?? "undefined"),
-                groundPattern: @Html.Raw(Model.CustomAltar.GroundPattern ?? "undefined") };
-            options.game.altar = Utils.getQueryAsNumber("altar") || @Model.CustomAltar.Id;
-            </text>
-            }
-
-            $("#restartButton").click(function () {
-                restartGame(undefined, parseInt($("#seedInput").val(), 10));
-            });
-
-            $("input[name=altar]:radio").change(function (e) {
-                if (!isUpdatingSeedAltarDisplay) {
-                    if (gopui.isGameRunning) {
-                        $("#confirmChangeAltarModal").modal().one("click", "#yes", function () {
-                            restartGame(undefined, undefined, parseInt($(e.currentTarget).val(), 10));
-                        });
-                    } else {
-                        restartGame(undefined, undefined, parseInt($(e.currentTarget).val(), 10));
-                    }
-                }
-            });
-
-            $("#shareLink").click(function () { $(this).select(); });
-
-            $("#gamesTable").on("click", "tbody > tr", function () {
-                window.open("/Watch/Solo/" + $(this).children("td:first").text());
-            });
-
+        function initializeGopUI() {
             gopui = new GopUI($("#game")[0], options);
 
             gopui.$saveButton.click(function () {
@@ -344,9 +262,93 @@
                 }
             });
 
-            Utils.bindEnterKeyToButton($("#seedInput"), $("#restartButton"));
-
             updateSeedAltarDisplay();
+        }
+
+        $(function () {
+            options = {
+                game: {
+                    seed: Utils.getQueryAsNumber("seed"),
+                    altar: Utils.getQueryAsNumber("altar"),
+                    code: Utils.getQueryAsString("code"),
+                    numberOfOrbs: Utils.getQueryAsNumber("numorbs"),
+                    reachDistance: Utils.getQueryAsNumber("reach"),
+                    ticksPerAltar: Utils.getQueryAsNumber("ticks"),
+                    startLocations: Utils.getQueryAsPointArray("start"),
+                    presetSpawns: Utils.getQueryAsPointArray("spawns"),
+                    suppressRandomSpawns: Utils.getQueryAsBoolean("norandom")
+                },
+                client: {
+                    visibilityRadius: Utils.getQueryAsNumber("visibility"),
+                    latency: Utils.getQueryAsNumber("latency"),
+                    tickInterval: Utils.getQueryAsNumber("tickinterval") || 450,
+                    altarAndStartLocationForced: Utils.getQueryAsBoolean("forcestart"),
+                    gopControls: JSON.parse($("#gopControls").val() || null) || undefined
+                },
+                interface: {
+                    showRestart: false,
+                    showSave: !isCustom,
+                    plusMinusTicksAdvance: Utils.getQueryAsNumber("advance"),
+                    showScore: Utils.getQueryAsBoolean("showscore")
+                },
+                callbacks: {
+                    tick: function (force, redraw) {
+                        gopui.$saveButton.text("Save").prop("disabled",
+                            gopui.gameState.currentTick < GameState.ticksPerAltar);
+                        if (redraw) {
+                            updateShareLink();
+                        }
+                    }
+                }
+            };
+
+            if (options.game.seed === void 0) {
+                var smin = Utils.getQueryAsNumber("smin") || 0;
+                var smax = Utils.getQueryAsNumber("smax") || @GOP.Controllers.SoloController.DefaultMaxRandomSeed;
+                options.game.seed = Utils.getRandomInt(smin, smax);
+            }
+
+            if (options.game.numberOfOrbs !== void 0) {
+                options.game.numberOfOrbs = Math.min(@GOP.Controllers.SoloController.MaxOrbs, options.game.numberOfOrbs);
+            }
+
+            if (options.game.altar !== undefined && options.game.altar >= 0 && !(options.game.altar in AltarData)) {
+                Utils.loadCustomAltar(options.game.altar).then(function (data) {
+                    console.log("Yeah");
+                    AltarData[options.game.altar] = data;
+                    var $radio = $('<input type="radio" name="altar">').val(options.game.altar);
+                    $("#altarsBtnGroup").append($('<label class="btn btn-default"/>').append($radio, data.name));
+                    initializeGopUI();
+                }).fail(function () {
+                    initializeGopUI();
+                });
+            } else {
+                initializeGopUI();
+            }
+
+            $("#restartButton").click(function () {
+                restartGame(undefined, parseInt($("#seedInput").val(), 10));
+            });
+
+            $("#altarsBtnGroup").on("change", "input[name=altar]:radio", function (e) {
+                if (!isUpdatingSeedAltarDisplay) {
+                    if (gopui.isGameRunning) {
+                        $("#confirmChangeAltarModal").modal().one("click", "#yes", function () {
+                            restartGame(undefined, undefined, parseInt($(e.currentTarget).val(), 10));
+                        });
+                    } else {
+                        restartGame(undefined, undefined, parseInt($(e.currentTarget).val(), 10));
+                    }
+                }
+            });
+
+            $("#shareLink").click(function () { $(this).select(); });
+
+            $("#gamesTable").on("click", "tbody > tr", function () {
+                window.open("/Watch/Solo/" + $(this).children("td:first").text());
+            });
+
+            Utils.bindEnterKeyToButton($("#seedInput"), $("#restartButton"));
 
             games = @Json.Serialize(Model.Games);
             if (games !== null)

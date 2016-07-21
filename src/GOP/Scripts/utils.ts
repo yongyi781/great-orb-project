@@ -27,6 +27,7 @@
 
     /**
      * Converts a normal array to an array of points. For example, [2, 3] becomes an array consisting of (2,3), and [[3,4],[4,4]] becomes an array of two points.
+     * @param arr The array.
      */
     export function toPointArray(arr: any[]) {
         if (arr instanceof Array) {
@@ -43,6 +44,8 @@
 
     /**
      * Gets query string parameter by name.
+     * @param name The name of the parameter.
+     * @param defaultValue The default value in case the parameter is not present.
      */
     export function getQueryAsString(name: string, defaultValue?: string) {
         name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
@@ -53,14 +56,28 @@
 
     /**
      * Gets query string parameter by name, as a number.
+     * @param name The name of the parameter.
+     * @param defaultValue The default value in case the parameter is not present.
      */
     export function getQueryAsNumber(name: string, defaultValue?: number) {
+        let queryString = getQueryAsString(name);
+        return queryString === void 0 ? defaultValue : +queryString;
+    }
+
+    /**
+     * Gets query string parameter by name, as an integer.
+     * @param name The name of the parameter.
+     * @param defaultValue The default value in case the parameter is not present.
+     */
+    export function getQueryAsInteger(name: string, defaultValue?: number) {
         let queryString = getQueryAsString(name);
         return queryString === void 0 ? defaultValue : parseInt(queryString, 10);
     }
 
     /**
-     * Gets query string parameter by name, as a number.
+     * Gets query string parameter by name, as a boolean.
+     * @param name The name of the parameter.
+     * @param defaultValue The default value in case the parameter is not present.
      */
     export function getQueryAsBoolean(name: string, defaultValue?: boolean) {
         let queryString = getQueryAsString(name);
@@ -69,6 +86,8 @@
 
     /**
      * Gets query string parameter by name, as a list of points.
+     * @param name The name of the parameter.
+     * @param defaultValue The default value in case the parameter is not present.
      */
     export function getQueryAsPointArray(name: string, defaultValue?: string) {
         let queryString = getQueryAsString(name);
@@ -77,6 +96,8 @@
 
     /**
      * Binds the enter key for an input control to a button.
+     * @param input The input control.
+     * @param button The button to click.
      */
     export function bindEnterKeyToButton(input: JQuery, button: JQuery) {
         input.keydown(e => {
@@ -96,6 +117,23 @@
             processData: false,
             success: success,
             error: error
+        });
+    }
+
+    /**
+     * Loads a custom altar and returns a promise containing the AltarData entry.
+     * @param altar The altar ID.
+     */
+    export function loadCustomAltar(altar: number) {
+        return $.getJSON("/api/altars/" + altar).then(data => {
+            return {
+                name: data.name,
+                grid: JSON.parse(data.grid),
+                spawns: parsePointArray(data.spawns),
+                groundColor: JSON.parse(data.groundColor),
+                waterColor: JSON.parse(data.waterColor),
+                groundPattern: JSON.parse(data.groundPattern)
+            };
         });
     }
 }
