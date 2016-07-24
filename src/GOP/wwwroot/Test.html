@@ -2,14 +2,26 @@
 <html>
 <head>
 	<title>Simple Test Page</title>
-	<style>
-		p
-		{
-			background-color: blue;
-		}
-	</style>
+    <style>
+        body {
+            margin: 0;
+        }
+        #container {
+            border: 1px solid blue;
+            padding: -10px;
+        }
+
+        #inner {
+            border: 1px solid red;
+            margin: 0;
+            vertical-align: bottom;
+        }
+    </style>
 </head>
 <body>
-	<p style="padding: 10px; display: block">Hello<p style="display: block">Bye</p></p>
+    <div id="container">
+        <canvas id="inner" width="100" height="100"></canvas>
+    </div>
+    <p>Hello world!</p>
 </body>
 </html>

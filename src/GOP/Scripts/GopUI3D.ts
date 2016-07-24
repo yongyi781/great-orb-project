@@ -8,25 +8,31 @@
     orbRadius = 0.6;
     orbZ = this.orbRadius + 0.15;
     tickLength = 0.5;   // in seconds
-    cameraRotateXSpeed = Math.PI;
-    cameraRotateYSpeed = Math.PI / 2;
+    cameraRotateXSpeed = 0.8 * Math.PI;
+    cameraRotateYSpeed = 0.5 * Math.PI;
     mouseRotateSensitivity = 0.008;
     zoomSpeed = 10;
     mouseWheelZoomFactor = 0.0002;
     timerRadius = 40;
+    orbVisibilityRadius = 15;
+    playerColors = ["#08f", "#871450", "#148718", "#630D0D"];
 
     runRepelIndicator: HTMLDivElement;
     timerCanvas: HTMLCanvasElement;
     timerContext: CanvasRenderingContext2D;
     scoreIndicator: HTMLDivElement;
 
-    menu: HTMLDivElement;
+    contextMenu: HTMLDivElement;
+    escMenu: EscMenu;
 
     renderer = new THREE.WebGLRenderer();
-    camera: THREE.PerspectiveCamera;
+    camera: FollowCamera;
     scene = new THREE.Scene();
     textureLoader = new THREE.TextureLoader();
     raycaster = new THREE.Raycaster();
+
+    gridTexture: THREE.Texture;
+    barrierTexture: THREE.Texture;
 
     ground: THREE.Mesh;
     playerObjects: PlayerObject[] = [];
@@ -37,7 +43,7 @@
     attractDots: AttractDot[] = [];
 
     clock = new THREE.Clock();
-    tickProgress = 0;
+    tickProgress = 1;
     lastMousePosition: Point;
     mouseVector: THREE.Vector2;
     stats: Stats;
@@ -50,21 +56,15 @@
     zoomOutPressed = false;
     middleMouseClicked = false;
 
-    grid: Tile[][];
-    player: Player;
-    orbLocations = [
-        new Point(7, 2),
-        new Point(5, -1),
-        new Point(-5, 1)
-    ];
+    game: Game;
 
     constructor(public container: HTMLDivElement,
         public gameState: GameState,
         public playerIndex: number,
         public visibilityRadius = 15,
         public showTimer = true) {
+        this.game = new Game(gameState, playerIndex);
         this.radius = Math.floor(gameState.board.numRows / 2);
-        this.player = gameState.players[playerIndex];
     }
 
     static getDrawLocation(obj: GopObject, tickProgress: number) {
@@ -75,9 +75,11 @@
         this.renderer.setClearColor(this.clearColor);
         this.renderer.shadowMap.enabled = true;
         this.renderer.setPixelRatio(window.devicePixelRatio);
+        this.renderer.domElement.tabIndex = 1;
+        this.renderer.domElement.style.outline = "none";
         this.container.appendChild(this.renderer.domElement);
 
-        this.camera = new THREE.PerspectiveCamera(60, 2, 0.1, 1000);
+        this.camera = new FollowCamera(60, 2, 0.1, 1000);
         this.camera.up.set(0, 0, 1);
         this.camera.position.set(0, -9, 14);
 
@@ -99,22 +101,41 @@
         this.light.shadow.bias = 0.0003;
 
         this.scene.add(this.light);
-        this.scene.add(new THREE.AmbientLight(0xccccff, 1.2));
+        this.scene.add(new THREE.AmbientLight(0xddeeff));
 
+        this.initTextures();
         this.initAltar();
         this.initPlayersAndOrbs();
         this.initHUD();
         this.initControls();
 
         // Init context menu
-        this.menu = document.createElement("div");
-        this.menu.hidden = true;
-        this.menu.style.position = "absolute";
-        this.menu.addEventListener("contextmenu", e => { e.preventDefault(); });
-        this.container.appendChild(this.menu);
+        this.contextMenu = document.createElement("div");
+        this.contextMenu.hidden = true;
+        this.contextMenu.style.position = "absolute";
+        this.contextMenu.addEventListener("contextmenu", e => { e.preventDefault(); });
+        this.contextMenu.addEventListener("mousedown", e => { e.preventDefault(); });
+        this.container.appendChild(this.contextMenu);
+
+        // Init esc menu
+        this.escMenu = new EscMenu(this.container);
 
         this.onWindowResize();
         return this;
+    }
+
+    initTextures() {
+        const groundSize = 2 * this.radius + 1;
+        this.gridTexture = this.textureLoader.load("/textures/grid.png");
+        this.gridTexture.wrapS = THREE.RepeatWrapping;
+        this.gridTexture.wrapT = THREE.RepeatWrapping;
+        this.gridTexture.repeat.set(groundSize, groundSize);
+
+        this.barrierTexture = this.textureLoader.load("/textures/wilo.png");
+        this.barrierTexture.mapping = THREE.SphericalReflectionMapping;
+        //wiloTexture.wrapS = THREE.RepeatWrapping;
+        //wiloTexture.wrapT = THREE.RepeatWrapping;
+        //wiloTexture.repeat.set(groundSize, groundSize);
     }
 
     initAltar() {
@@ -122,7 +143,7 @@
             this.getGroundColor(),
             0x222222,
             0x777777,
-            AltarData[this.gameState.altar].waterColor,
+            AltarData[this.gameState.altar].waterColor || 0x002244,
             0x888888,
             0x888888,
             0x888888,
@@ -142,22 +163,14 @@
         }
 
         this.altarObjects = new THREE.Group();
-        this.grid = AltarData[this.gameState.altar].grid;
 
         this.ground = new THREE.Mesh(
             new THREE.PlaneGeometry(groundSize, groundSize),
             new THREE.MeshPhongMaterial({
-                color: <string>tileColors[Tile.Floor]
+                color: <string>tileColors[Tile.Floor],
+                map: this.gridTexture
             })
         );
-
-        this.textureLoader.load("/images/grid.png", (texture) => {
-            texture.wrapS = THREE.RepeatWrapping;
-            texture.wrapT = THREE.RepeatWrapping;
-            texture.repeat.set(groundSize, groundSize);
-            (<THREE.MeshPhongMaterial>this.ground.material).map = texture;
-            this.ground.material.needsUpdate = true;
-        });
 
         this.ground.receiveShadow = true;
         this.altarObjects.add(this.ground);
@@ -168,7 +181,7 @@
         }
         for (let y = -this.radius; y <= this.radius; y++) {
             for (let x = -this.radius; x <= this.radius; x++) {
-                let tile = this.get(new Point(x, y));
+                let tile = this.gameState.board.get(new Point(x, y));
                 if (tile === Tile.Barrier) {
                     let mesh = new THREE.Mesh(new THREE.BoxGeometry(1, 1, this.barrierHeight));
                     mesh.position.set(x, y, this.barrierHeight / 2);
@@ -203,10 +216,14 @@
 
         for (let i = 0; i < geometries.length; i++) {
             if (geometries[i].vertices.length > 0) {
-                let mesh = new THREE.Mesh(geometries[i], new THREE.MeshPhongMaterial({ color: tileColors[i + 1] }));
+                let tile: Tile = i + 1;
+                let mesh = new THREE.Mesh(geometries[i], new THREE.MeshPhongMaterial({ color: tileColors[tile] }));
                 mesh.castShadow = true;
-                if (i + 1 === Tile.Water) {
+                if (tile === Tile.Water) {
                     mesh.receiveShadow = true;
+                } else if (tile === Tile.Barrier) {
+                    (<THREE.MeshPhongMaterial>mesh.material).map = this.barrierTexture;
+                    mesh.material.needsUpdate = true;
                 }
                 this.altarObjects.add(mesh);
             }
@@ -219,7 +236,7 @@
         for (let playerObj of this.playerObjects) {
             this.scene.remove(playerObj.mesh);
         }
-        this.playerObjects = this.gameState.players.map(player => new PlayerObject(player, this.playerHeight, 0x00ccff));
+        this.playerObjects = this.gameState.players.map((player, i) => new PlayerObject(player, this.playerHeight, this.playerColors[i]));
         for (let playerObj of this.playerObjects) {
             this.scene.add(playerObj.mesh);
         }
@@ -233,8 +250,8 @@
             this.scene.add(orbObj.mesh);
         }
 
-        this.myPlayerObj = this.playerObjects[this.player.index];
-        this.camera.lookAt(this.myPlayerObj.mesh.position);
+        this.myPlayerObj = this.playerObjects[this.game.playerIndex];
+        this.camera.followTarget = this.myPlayerObj.mesh;
     }
 
     initControls() {
@@ -249,9 +266,20 @@
         });
 
         $("#altar").change(e => {
-            this.gameState.reset(+$(e.currentTarget).val());
-            this.initAltar();
-            this.initPlayersAndOrbs();
+            let altar = +$(e.currentTarget).val();
+            if (!(altar in AltarData)) {
+                Utils.loadCustomAltar(altar).done(data => {
+                    AltarData[altar] = data;
+                    this.restart(+$(e.currentTarget).val());
+                    this.initAltar();
+                }).fail(() => {
+                    this.restart(0);
+                    this.initAltar();
+                });
+            } else {
+                this.restart(+$(e.currentTarget).val());
+                this.initAltar();
+            }
         });
 
         this.renderer.domElement.addEventListener("mousedown", this.onMouseDown.bind(this));
@@ -259,10 +287,10 @@
         this.renderer.domElement.addEventListener("mousemove", this.onMouseMove.bind(this));
         this.renderer.domElement.addEventListener("mousewheel", this.onMouseWheel.bind(this));
         this.renderer.domElement.addEventListener("contextmenu", e => e.preventDefault());
-        window.addEventListener("keydown", this.onKeyDown.bind(this));
-        window.addEventListener("keyup", this.onKeyUp.bind(this));
+        this.renderer.domElement.addEventListener("keydown", this.onKeyDown.bind(this));
+        this.renderer.domElement.addEventListener("keyup", this.onKeyUp.bind(this));
 
-        window.addEventListener("blur", e => {
+        this.renderer.domElement.addEventListener("blur", e => {
             // Cancel all camera movements
             this.leftPressed = this.rightPressed = this.upPressed = this.downPressed = this.zoomInPressed = this.zoomOutPressed = this.middleMouseClicked = false;
         });
@@ -314,6 +342,9 @@
 
     getGroundColor() {
         let groundColor = AltarData[this.gameState.altar].groundColor;
+        if (groundColor === null) {
+            return "#848899";
+        }
         if (groundColor instanceof Array) {
             return groundColor[0];
         }
@@ -332,35 +363,14 @@
         return this.raycaster.intersectObjects(this.orbObjects.map(obj => obj.mesh).concat(this.ground));
     }
 
-    get(p: Point) {
-        return this.grid[this.radius - p.y][p.x + this.radius];
-    }
-
+    /**
+     * Starts the 3D GOP rendering. Note that this doesn't start the game itself.
+     * The player must click to start the game.
+     */
     start() {
-        requestAnimationFrame(this.animate.bind(this));
         this.clock.start();
-        this.drawHUD();
-    }
-
-    setPlayerAction(action: GameAction) {
-        // Don't touch run and repel
-        action.toggleRun = this.player.action.toggleRun;
-        action.changeWand = this.player.action.changeWand;
-        this.player.action = action;
-
-        // Look at orb?
-        //if (action.type === ActionType.Attract) {
-        //    this.myPlayerObj.mesh.lookAt(this.orbObjects[action.orbIndex].mesh.position);
-        //}
-    }
-
-    setPlayerRunAndRepel(run?: boolean, repel?: boolean) {
-        if (run !== undefined && run !== null) {
-            this.player.action.toggleRun = this.player.run !== run;
-        }
-        if (repel !== undefined && repel !== null) {
-            this.player.action.changeWand = this.player.repel !== repel;
-        }
+        this.updateHud();
+        this.animate();
     }
 
     get width() {
@@ -371,18 +381,18 @@
         return this.renderer.domElement.height;
     }
 
-    drawHUD() {
+    updateHud() {
         this.drawRunRepelIndicators();
         this.drawTimer();
         this.drawScore();
     }
 
     drawRunRepelIndicators() {
-        let runColor = this.player.run ? "#ddeedd" : "#ccbbbb";
-        let runHtml = `<span style="color: ${runColor}">Run ${this.player.run ? "on" : "off"}</span>`;
+        let runColor = this.game.player.run ? "#ddeedd" : "#ccbbbb";
+        let runHtml = `<span style="color: ${runColor}">Run ${this.game.player.run ? "on" : "off"}</span>`;
 
-        let repelColor = this.player.repel ? "#ddeedd" : "#ccbbbb";
-        let repelHtml = `<span style="color: ${repelColor}">Repel ${this.player.repel ? "on" : "off"}</span>`;
+        let repelColor = this.game.player.repel ? "#ddeedd" : "#ccbbbb";
+        let repelHtml = `<span style="color: ${repelColor}">Repel ${this.game.player.repel ? "on" : "off"}</span>`;
         this.runRepelIndicator.innerHTML = `${runHtml}<br/>${repelHtml}`;
     }
 
@@ -400,8 +410,8 @@
         this.timerContext.arc(timerX, timerY, radius, 0, 2 * Math.PI);
         this.timerContext.stroke();
 
-        if (/*!this.isRunningthis.gameState.currentTick > 0*/ this.gameState.currentTick >= 199) {
-            this.timerContext.fillStyle = "rgba(0, 255, 0, 0.4)";
+        if (!this.game.isStarted || this.game.isFinished) {
+            this.timerContext.fillStyle = !this.game.isStarted ? "rgba(0, 255, 255, 0.4)" : "rgba(0, 255, 0, 0.4)";
             this.timerContext.moveTo(timerX, timerY);
             this.timerContext.arc(timerX, timerY, radius, 0, 2 * Math.PI);
             this.timerContext.fill();
@@ -449,10 +459,10 @@
                     isOrb = true;
                     let $menuItem = $(`<li class="context-menu-item">Attract <span style="color: yellow">Orb ${GameAction.orbIndexToChar(orbObj.orb.index)}</span></li>`)
                         .mousedown(eInner => {
+                            eInner.preventDefault();
                             if (eInner.button === 0) {
-                                eInner.preventDefault();
-                                this.menu.hidden = true;
-                                this.setPlayerAction(GameAction.attract(orbObj.orb.index, false, false, true));
+                                this.contextMenu.hidden = true;
+                                this.game.setPlayerAction(GameAction.attract(orbObj.orb.index, false, false, true));
                             }
                         });
                     $menuItems.append($menuItem);
@@ -463,36 +473,88 @@
                 let p = new Point(Math.round(intersection.point.x), Math.round(intersection.point.y));
                 let $menuItem = $(`<li class="context-menu-item">Walk to ${p}</li>`)
                     .mousedown(eInner => {
+                        eInner.preventDefault();
                         if (eInner.button === 0) {
-                            eInner.preventDefault();
-                            this.menu.hidden = true;
-                            this.setPlayerAction(GameAction.move(p));
+                            this.contextMenu.hidden = true;
+                            this.game.setPlayerAction(GameAction.move(p));
                         }
                     });
                 $menuItems.append($menuItem);
             }
         }
 
-        $(this.menu)
+        $(this.contextMenu)
             .empty()
             .append($menuItems);
-        this.menu.hidden = false;
-        $(this.menu)
+        this.contextMenu.hidden = false;
+        $(this.contextMenu)
             .css({
-                left: Math.min(this.width - this.menu.clientWidth, e.offsetX - 25),
+                left: Math.min(this.width - this.contextMenu.clientWidth, e.offsetX - 25),
                 top: e.offsetY
             });
     }
 
-    /**
-     * Called when the game state should be advanced a tick.
-     */
-    tick() {
-        this.gameState.step();
+    restart(altar?: Altar, resetGameplayData = true) {
+        this.game.restart(altar, resetGameplayData);
 
-        for (let player of this.gameState.players) {
-            player.action = player.action.copy(true);
+        if (resetGameplayData) {
+            // Reset tick progress
+            this.tickProgress = 1;
+        } else {
+            // Give a whole tick for multiplayer situations
+            this.tickProgress = 0;
         }
+
+        for (let attractDot of this.attractDots) {
+            this.scene.remove(attractDot.mesh);
+        }
+
+        this.updateHud();
+    }
+
+    setGameplayDataFromCode(code: string) {
+        this.game.restartFromCode(code);
+        this.initAltar();
+        this.initPlayersAndOrbs();
+    }
+
+    /**
+     * Rewinds the game a set amount of ticks.
+     */
+    rewind(ticks = 7) {
+        if (this.game.isStarted) {
+            this.game.isFinished = false;
+            let tickToLoad = this.gameState.currentTick - ticks;
+            this.restart(undefined, false);
+            this.game.isStarted = true;
+            for (let i = 0; i < tickToLoad; i++) {
+                this.tick(false);
+            }
+            this.updateHud();
+        }
+    }
+
+    fastForward(ticks = 7) {
+        for (let i = 0; i < ticks; i++) {
+            this.tick(false);
+        }
+        this.updateHud();
+    }
+
+    updateOrbsVisibility() {
+        for (let orb of this.gameState.orbs) {
+            this.orbObjects[orb.index].mesh.visible =
+                Point.walkingDistance(orb.location, this.game.player.location) <= this.orbVisibilityRadius;
+        }
+    }
+
+    /**
+     * Called when the game state should advance a tick.
+     */
+    tick(updateHud = true) {
+        this.game.tick();
+
+        this.updateOrbsVisibility();
 
         // Every tick, remove old attract dots
         // and add a new attract dot for each player that's attracting or repelling.
@@ -514,27 +576,14 @@
             }
         }
 
-        // Draw HUD stuff
-        this.drawHUD();
-    }
+        if (updateHud) {
+            this.updateHud();
+        }
 
-    /**
-     * Rotates the camera around the player by angles of theta and phi.
-     * @param theta The horizontal angle.
-     * @param phi The vertical angle.
-     */
-    rotateCamera(theta: number, phi: number) {
-        let diff = this.camera.position.clone().sub(this.myPlayerObj.mesh.position);
-        let cameraPlayerDistance = diff.length();
-        let cameraPlayer2DDistance = new THREE.Vector2(diff.x, diff.y).length();
-
-        // Don't allow camera's vertical angle to go outside [0, 90] degrees.
-        this.camera.translateY(Math.max(-diff.z, Math.min(cameraPlayer2DDistance - 0.1 * cameraPlayerDistance, cameraPlayerDistance * phi)));
-        this.camera.translateX(theta * cameraPlayer2DDistance);
-
-        this.camera.lookAt(this.myPlayerObj.mesh.position);
-        // Preserve distance
-        this.camera.translateZ(cameraPlayerDistance - this.camera.position.distanceTo(this.myPlayerObj.mesh.position));
+        if (this.gameState.currentTick >= GameState.ticksPerAltar) {
+            this.game.isFinished = true;
+            this.updateHud();
+        }
     }
 
     /**
@@ -542,13 +591,13 @@
      * @param elapsed The time elapsed since last update, in seconds.
      */
     update(elapsed: number) {
-        this.tickProgress += elapsed / this.tickLength;
-        if (this.tickProgress >= 1) {
-            this.tickProgress %= 1;
-            this.tick();
+        if (this.game.isStarted && !this.game.isPaused && !this.game.isFinished) {
+            this.tickProgress += elapsed / this.tickLength;
+            if (this.tickProgress >= 1) {
+                this.tickProgress %= 1;
+                this.tick();
+            }
         }
-
-        let oldPlayerDrawLocation = this.myPlayerObj.mesh.position.clone();
 
         for (let playerObj of this.playerObjects) {
             playerObj.update(this.tickProgress);
@@ -558,20 +607,19 @@
             orbObj.update(this.tickProgress);
         }
 
-        let playerDeltaX = this.myPlayerObj.mesh.position.x - oldPlayerDrawLocation.x;
-        let playerDeltaY = this.myPlayerObj.mesh.position.y - oldPlayerDrawLocation.y;
-        this.camera.position.x += playerDeltaX;
-        this.camera.position.y += playerDeltaY;
+        this.camera.update(elapsed);
 
         // Update attract dots
         for (let attractDot of this.attractDots) {
             attractDot.update(this.tickProgress);
         }
 
-        // Rotate camera
+        // Rotate cameraRotateXSpeed
         let yFactor = this.upPressed ? 1 : this.downPressed ? -1 : 0;
         let xFactor = this.rightPressed ? 1 : this.leftPressed ? -1 : 0;
-        this.rotateCamera(xFactor * this.cameraRotateXSpeed * elapsed, yFactor * this.cameraRotateYSpeed * elapsed);
+        if (xFactor !== 0 || yFactor !== 0) {
+            this.camera.rotateAroundTarget(xFactor * this.cameraRotateXSpeed * elapsed, yFactor * this.cameraRotateYSpeed * elapsed);
+        }
 
         if (this.zoomInPressed) {
             this.camera.translateZ(-this.zoomSpeed * elapsed);
@@ -585,7 +633,6 @@
             this.raycaster.setFromCamera(this.mouseVector, this.camera);
             let intersections = this.raycaster.intersectObjects(this.orbObjects.map(obj => obj.mesh));
             this.renderer.domElement.style.cursor = intersections.length > 0 ? "pointer" : "default";
-        } else {
         }
     }
 
@@ -597,7 +644,7 @@
         this.renderer.render(this.scene, this.camera);
     }
 
-    animate(time: number) {
+    animate() {
         requestAnimationFrame(this.animate.bind(this));
 
         let elapsed = this.clock.getDelta();
@@ -607,18 +654,21 @@
     }
 
     onKeyDown(e: KeyboardEvent) {
-        let preventDefault = true;
+        if (e.key[0] !== "F") {
+            // Let F keys through for now
+            e.preventDefault();
+        }
         switch (e.key) {
-            case "w": case "ArrowUp":
+            case "w":
                 this.upPressed = true;
                 break;
-            case "s": case "ArrowDown":
+            case "s":
                 this.downPressed = true;
                 break;
-            case "a": case "ArrowLeft":
+            case "a":
                 this.leftPressed = true;
                 break;
-            case "d": case "ArrowRight":
+            case "d":
                 this.rightPressed = true;
                 break;
             case "PageUp":
@@ -628,35 +678,69 @@
                 this.zoomOutPressed = true;
                 break;
             case "r":
-                this.setPlayerRunAndRepel(!this.player.run, null);
+                this.game.setPlayerRunAndRepel(!this.game.player.run, null);
+                this.updateHud();
                 break;
             case "q":
-                this.setPlayerRunAndRepel(null, true);
+                this.game.setPlayerRunAndRepel(null, true);
+                this.updateHud();
                 break;
             case "z":
-                this.setPlayerRunAndRepel(null, false);
-            default:
-                preventDefault = false;
+                this.game.setPlayerRunAndRepel(null, false);
+                this.updateHud();
                 break;
-        }
-        if (preventDefault) {
-            e.preventDefault();
+            case "R":
+                this.restart();
+                break;
+            case "ArrowLeft":
+            case "Left":    // "Left" and "Right" are for Microsoft Edge compatibility >.<...
+                this.rewind();
+                break;
+            case "ArrowRight":
+            case "Right":
+                this.fastForward();
+                break;
+            case "Escape":
+                // TODO: Account for puzzles
+                if (this.game.isPaused) {
+                    this.game.resume();
+                } else {
+                    this.game.pause();
+                }
+                this.escMenu.visible = this.game.isPaused;
+                break;
+            case "1":
+            case "2":
+            case "3":
+            case "4":
+            case "5":
+            case "6":
+                let index = +e.key - 1;
+                if (index < this.gameState.players.length) {
+                    this.game.playerIndex = index;
+                    this.camera.followTarget = this.playerObjects[index].mesh;
+                    this.updateHud();
+                    this.updateOrbsVisibility();
+                }
+                break;
+            default:
+                break;
         }
     }
 
     onKeyUp(e: KeyboardEvent) {
-        let preventDefault = true;
+        e.preventDefault();
         switch (e.key) {
-            case "w": case "ArrowUp":
+            case "w":
                 this.upPressed = false;
                 break;
-            case "s": case "ArrowDown":
+            case "s":
                 this.downPressed = false;
                 break;
-            case "a": case "ArrowLeft":
+            case "a":
                 this.leftPressed = false;
                 break;
-            case "d": case "ArrowRight":
+            case "d":
                 this.rightPressed = false;
                 break;
             case "PageUp":
@@ -666,17 +750,17 @@
                 this.zoomOutPressed = false;
                 break;
             default:
-                preventDefault = false;
                 break;
-        }
-        if (preventDefault) {
-            e.preventDefault();
         }
     }
 
     onMouseDown(e: MouseEvent) {
+        $(e.currentTarget).focus();
+
         if (e.button === 0) {
             e.preventDefault();
+
+            this.contextMenu.hidden = true;
 
             this.mouseVector = this.mouseEventToRaycastVector(e);
             let intersections = this.clickableObjectsUnderLocation(this.mouseVector);
@@ -691,19 +775,19 @@
                 }
                 if (clickedOrbIndex !== -1) {
                     // Orb clicked
-                    $("#status").text("Deaded orb " + clickedOrbIndex);
-                    this.setPlayerAction(GameAction.attract(clickedOrbIndex, false, false, true));
+                    this.game.setPlayerAction(GameAction.attract(clickedOrbIndex, false, false, true));
                 } else {
                     // Ground clicked
                     let p = new Point(Math.round(first.point.x), Math.round(first.point.y));
-                    $("#status").text("Dead squared " + p.toString());
-                    if (p.equals(this.player.location) || (GopBoard.isInAltar(p) && GopBoard.isPlayerAdjacentToAltar(this.player.location))) {
-                        this.setPlayerAction(GameAction.idle());
+                    if (p.equals(this.game.player.location) || (GopBoard.isInAltar(p) && GopBoard.isPlayerAdjacentToAltar(
+                        this.game.player.location))) {
+                        this.game.setPlayerAction(GameAction.idle());
                     } else if (GopBoard.isInAltar(p)) {
                         // Find closest square
-                        this.setPlayerAction(GameAction.move(this.gameState.board.nearestAltarPoint(this.player.location, PathMode.Player)));
+                        this.game.setPlayerAction(GameAction.move(
+                            this.gameState.board.nearestAltarPoint(this.game.player.location, PathMode.Player)));
                     } else {
-                        this.setPlayerAction(GameAction.move(p));
+                        this.game.setPlayerAction(GameAction.move(p));
                     }
                 }
             }
@@ -725,19 +809,18 @@
         this.mouseVector = this.mouseEventToRaycastVector(e);
 
         // Hide context menu if mouse is too far
-        if (!this.menu.hidden) {
+        if (!this.contextMenu.hidden) {
             let menuMargin = 20;
-            if (e.offsetX < this.menu.offsetLeft - menuMargin || e.offsetX > this.menu.offsetLeft + this.menu.offsetWidth + menuMargin ||
-                e.offsetY < this.menu.offsetTop - menuMargin || e.offsetY > this.menu.offsetTop + this.menu.offsetHeight + menuMargin) {
-
-                this.menu.hidden = true;
+            if (e.offsetX < this.contextMenu.offsetLeft - menuMargin || e.offsetX > this.contextMenu.offsetLeft + this.contextMenu.offsetWidth + menuMargin ||
+                e.offsetY < this.contextMenu.offsetTop - menuMargin || e.offsetY > this.contextMenu.offsetTop + this.contextMenu.offsetHeight + menuMargin) {
+                this.contextMenu.hidden = true;
             }
         }
 
         // Rotate camera
         if (this.middleMouseClicked && this.lastMousePosition !== undefined) {
             let delta = new Point(e.x, e.y).subtract(this.lastMousePosition);
-            this.rotateCamera(-this.mouseRotateSensitivity * delta.x, this.mouseRotateSensitivity * delta.y);
+            this.camera.rotateAroundTarget(-this.mouseRotateSensitivity * delta.x, this.mouseRotateSensitivity * delta.y);
         }
 
         this.lastMousePosition = new Point(e.x, e.y);
@@ -747,14 +830,223 @@
         // Logarithmic
         e.preventDefault();
 
-        let dist = this.camera.position.distanceTo(this.myPlayerObj.mesh.position);
-        this.camera.translateZ(-this.mouseWheelZoomFactor * dist * e.wheelDelta);
+        this.camera.zoomTowardTarget(-this.mouseWheelZoomFactor * e.wheelDelta);
     }
 
     onWindowResize() {
-        this.camera.aspect = $(window).width() / ($(window).height() - 80);
-        this.renderer.setSize($(window).width(), $(window).height() - 80);
+        this.camera.aspect = $(window).width() / ($(window).height() - 40);
+        this.renderer.setSize($(window).width(), $(window).height() - 40);
         this.camera.updateProjectionMatrix();
+    }
+}
+
+/**
+ * A class to hold game logic, including starting, pausing, restarting, and setting player actions.
+ */
+class Game {
+    gameState: GameState;
+    gameplayData: GameplayData;
+    playerIndex: number;
+
+    isStarted = false;
+    isPaused = false;
+    isFinished = false;
+
+    constructor(gameState: GameState, playerIndex: number) {
+        this.gameState = gameState;
+        this.playerIndex = playerIndex;
+        this.resetGameplayData();
+    }
+
+    get player() {
+        if (this.playerIndex in this.gameState.players) {
+            return this.gameState.players[this.playerIndex];
+        }
+        return null;
+    }
+
+    resetGameplayData() {
+        this.gameplayData = new GameplayData(new GameStartInfo(this.gameState.seed, this.gameState.altar,
+            this.gameState.players.map(player => new PlayerStartInfo(player.location, player.run, player.repel))));
+    }
+
+    start() {
+        this.isStarted = true;
+    }
+
+    pause() {
+        this.isPaused = true;
+    }
+
+    resume() {
+        this.isPaused = false;
+    }
+
+    restart(altar?: Altar, resetGameplayData = true) {
+        this.isStarted = false;
+        this.isFinished = false;
+        this.gameState.reset(altar);
+
+        if (resetGameplayData) {
+            this.resetGameplayData();
+        } else {
+            // Load player information from start info.
+            for (let player of this.gameState.players) {
+                let startPlayer = this.gameplayData.startInfo.players[player.index];
+                player.location = startPlayer.location;
+                player.run = startPlayer.run;
+                player.repel = startPlayer.repel;
+            }
+        }
+    }
+
+    restartFromCode(code: string) {
+        this.gameplayData = GameplayData.parse(code);
+        let startInfo = this.gameplayData.startInfo;
+        this.gameState.altar = startInfo.altar;
+        this.gameState.seed = startInfo.seed;
+        this.gameState.players = startInfo.players.map((value, index) => {
+            let player = new Player(this.gameState, value.location, index);
+            player.run = value.run;
+            player.repel = value.repel;
+            return player;
+        });
+        this.restart(undefined, false);
+    }
+
+    tick() {
+        if (!this.isStarted || this.isFinished) {
+            return;
+        }
+
+        for (let player of this.gameState.players) {
+            let loadedActions = this.gameplayData.actions.getForPlayer(player.index);
+            if (loadedActions.length > this.gameState.currentTick) {
+                // Autoplay from game code
+                player.action = loadedActions[this.gameState.currentTick];
+            } else {
+                // Insert current player's action
+                this.gameplayData.actions.pushForPlayer(player.index, player.action.copy());
+            }
+        }
+
+        // Step and record action
+        this.gameState.step();
+
+        for (let player of this.gameState.players) {
+            player.action = player.action.copy(true);
+        }
+    }
+
+    /**
+     * Sets the player action for the next tick. Sets only the action type and target, not run and repel variables of the action.
+     * @param action The action to set.
+     */
+    setPlayerAction(action: GameAction) {
+        // Don't touch run and repel player settings.
+        action.toggleRun = this.player.action.toggleRun;
+        action.changeWand = this.player.action.changeWand;
+        this.player.action = action;
+
+        // Start game on first action
+        if (!this.isStarted) {
+            this.start();
+        }
+
+        // Erase gameplay data after current tick.
+        this.gameplayData.actions.sliceForPlayer(this.playerIndex, this.gameState.currentTick);
+    }
+
+    setPlayerRunAndRepel(run?: boolean, repel?: boolean) {
+        if (this.isStarted) {
+            if (run !== undefined && run !== null) {
+                this.player.action.toggleRun = this.player.run !== run;
+            }
+            if (repel !== undefined && repel !== null) {
+                this.player.action.changeWand = this.player.repel !== repel;
+            }
+            // Erase gameplay data after the current tick.
+            this.gameplayData.actions.sliceForPlayer(this.player.index, this.gameState.currentTick);
+        } else {
+            // Modify start info instead
+            let startPlayer = this.gameplayData.startInfo.players[this.player.index];
+            this.player.run = startPlayer.run = run;
+            this.player.repel = startPlayer.repel = repel;
+        }
+    }
+}
+
+class FollowCamera extends THREE.PerspectiveCamera {
+    private oldTargetPosition = new THREE.Vector3();
+    private easeTargetPosition = new THREE.Vector3();
+    easeFactor = 0.085;
+
+    constructor(fov?: number, aspect?: number, near?: number, far?: number,
+        public followTarget?: THREE.Object3D) {
+        super(fov, aspect, near, far);
+        this.updateTargetPosition();
+    }
+
+    updateTargetPosition() {
+        if (this.followTarget !== undefined) {
+            this.easeTargetPosition.copy(this.followTarget.position);
+            this.oldTargetPosition.copy(this.followTarget.position);
+        }
+    }
+
+    /**
+     * Rotates the camera around the player by angles of theta and phi.
+     * @param theta The horizontal angle.
+     * @param phi The vertical angle.
+     */
+    rotateAroundTarget(theta: number, phi: number) {
+        if (this.followTarget === undefined) {
+            return;
+        }
+
+        let diff = this.position.clone().sub(this.easeTargetPosition);
+        let distance = diff.length();
+        let distance2D = new THREE.Vector2(diff.x, diff.y).length();
+
+        // Don't allow camera's vertical angle to go outside [0, 90] degrees.
+        this.translateY(Math.max(-diff.z, Math.min(distance2D - 0.1 * distance, distance * phi)));
+        this.translateX(theta * distance2D);
+
+        this.lookAt(this.easeTargetPosition);
+        // Preserve distance
+        this.translateZ(distance - this.position.distanceTo(this.easeTargetPosition));
+    }
+
+    /**
+     * Moves the camera toward the target.
+     * @param factor The amount to zoom by, between 0 and 1.
+     */
+    zoomTowardTarget(factor: number) {
+        if (this.followTarget === undefined) {
+            return;
+        }
+
+        let dist = this.position.distanceTo(this.easeTargetPosition);
+        this.translateZ(dist * factor);
+    }
+
+    /**
+     * Updates the camera in the scene.
+     * @param elapsed The amount of time elapsed since last update.
+     */
+    update(elapsed: number) {
+        if (this.followTarget === undefined) {
+            return;
+        }
+
+        // Ease in
+        this.easeTargetPosition.lerp(this.followTarget.position, this.easeFactor);
+
+        this.position.x += this.easeTargetPosition.x - this.oldTargetPosition.x;
+        this.position.y += this.easeTargetPosition.y - this.oldTargetPosition.y;
+
+        this.oldTargetPosition.copy(this.easeTargetPosition.clone());
+        this.lookAt(this.easeTargetPosition);
     }
 }
 
@@ -823,5 +1115,39 @@ class AttractDot {
 
     update(tickProgress: number) {
         this.mesh.position.copy(this.endObject.position.clone().lerp(this.startObject.position, tickProgress));
+    }
+}
+
+/**
+ * A class to hold the Esc menu and its controls.
+ */
+class EscMenu {
+    overlayContainer: HTMLDivElement;
+    menu: HTMLDivElement;
+    enabled = true;
+
+    constructor(public container: HTMLDivElement) {
+        this.overlayContainer = document.createElement("div");
+        this.overlayContainer.hidden = true;
+        this.overlayContainer.style.position = "absolute";
+        this.overlayContainer.style.left = "0";
+        this.overlayContainer.style.top = "0";
+        this.overlayContainer.style.width = "100%";
+        this.overlayContainer.style.height = "100%";
+        this.overlayContainer.style.backgroundColor = "rgba(0, 0, 0, 0.5)";
+        this.overlayContainer.style.pointerEvents = "none";
+        container.appendChild(this.overlayContainer);
+
+        this.menu = document.createElement("div");
+        this.menu.textContent = "Hello world!";
+        this.overlayContainer.appendChild(this.menu);
+    }
+
+    get visible() { return !this.overlayContainer.hidden; }
+
+    set visible(value) {
+        if (this.enabled) {
+            this.overlayContainer.hidden = !value;
+        }
     }
 }

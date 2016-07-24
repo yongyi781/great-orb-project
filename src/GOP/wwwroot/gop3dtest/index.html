@@ -8,23 +8,28 @@
 </head>
 <body>
     <div id="controls" class="controls">
-        <label for="altar">Altar: </label><input type="number" min="1" max="6" id="altar" value="1" />
+        <label for="altar">Altar: </label><input type="number" min="0" max="100" id="altar" value="1" />
         <label for="fieldOfView">Field of view: </label><input type="number" size="4" id="fieldOfView" value="60" />
-        <span id="status2"></span>
-        <span id="status"></span>
     </div>
     <div id="container" style="position: relative"></div>
 
-    <script src="../lib/jquery/dist/jquery.slim.min.js"></script>
-    <script src="../lib/threejs/three.js"></script>
-    <script src="../lib/threejs/OrbitControls.js"></script>
+    <script src="../lib/jquery/dist/jquery.min.js"></script>
+    <script src="../lib/threejs/three.min.js"></script>
     <script src="../lib/stats.js/build/stats.min.js"></script>
     <script src="../js/gop.min.js"></script>
     <script src="../js/GopUI3D.js"></script>
+    <script src="../js/utils.js"></script>
     <script>
-        let gs = new GameState(new GopBoard(53, 53, 10), [new Point(0, -2)]);
-        let gopui = new GopUI3D($("#container")[0], gs, 0);
+        var gs = new GameState(new GopBoard(53, 53, 10), [new Point(2, 0), new Point(-2, 0)]);
+        var gopui = new GopUI3D($("#container")[0], gs, 0);
         gopui.init().start();
+        gopui.renderer.domElement.focus();
+
+        var code = Utils.getQueryAsString("code");
+        if (code !== undefined) {
+            gopui.setGameplayDataFromCode(code);
+            gopui.game.start();
+        }
     </script>
 </body>
 </html>

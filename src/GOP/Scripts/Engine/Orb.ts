@@ -9,8 +9,13 @@
 
     constructor(public gs: GameState, public index: number) { }
 
-    freeze() {
+    reset() {
         this.prevLocation = Point.NaN;
+        this.target = Point.NaN;
+        this.deadTime = 0;
+        this.controllingPlayer = null;
+        this.controlState = OrbControlState.Free;
+        this.wasTouchedThisTick = false;
     }
 
     spawn() {

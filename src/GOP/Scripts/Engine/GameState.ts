@@ -35,7 +35,7 @@
         for (let player of this.players)
             player.freeze();
         for (let orb of this.orbs)
-            orb.freeze();
+            orb.reset();
 
         // Limit to the range [0,2147483647]
         this.seed = (this.seed >>> 0) & 0x7fffffff;
