@@ -39,6 +39,11 @@ table.dataTable tbody th.dt-body-justify, table.dataTable tbody td.dt-body-justi
     text-align: justify;
 }
 
+/* To get rid of the ghost bottom margin */
+canvas {
+    display: block;
+}
+
 a:visited {
     color: #9e67b7;
 }
