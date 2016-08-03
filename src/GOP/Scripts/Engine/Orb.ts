@@ -1,13 +1,13 @@
-﻿class Orb implements GopObject {
-    location = Point.NaN;
-    prevLocation = Point.NaN;
+﻿class Orb extends GopObject {
     target = Point.NaN;
     deadTime = 0;
     controllingPlayer: Player = null;
     controlState = OrbControlState.Free;
     wasTouchedThisTick = false;
 
-    constructor(public gs: GameState, public index: number) { }
+    constructor(public gs: GameState, public index: number) {
+        super(Point.NaN);
+    }
 
     reset() {
         this.prevLocation = Point.NaN;
@@ -18,12 +18,12 @@
         this.wasTouchedThisTick = false;
     }
 
-    spawn() {
+    spawn(forceSpawn = false) {
         let spawns = AltarData[this.gs.altar].spawns;
         this.prevLocation = Point.NaN;
         if (this.gs.presetSpawnStack && this.gs.presetSpawnStack.length > 0) {
             this.location = this.gs.presetSpawnStack.shift();
-        } else if (this.gs.random) {
+        } else if (forceSpawn || this.gs.respawnOrbs) {
             this.location = spawns[this.gs.random.nextInt(spawns.length)];
         } else {
             this.location = Point.NaN;
@@ -53,7 +53,7 @@
                         player.action = GameAction.idle(player.action.toggleRun);
                         player.stopAttracting();
                     }
-                }, this);
+                });
             }
             if (this.deadTime >= 2) {
                 // Respawn and increment score

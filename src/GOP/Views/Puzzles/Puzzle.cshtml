@@ -97,21 +97,23 @@
             {
                 @: options.client.gopControls = JSON.parse('@Html.Raw(Model.GopControls)');
             }
+            
+            Utils.loadAltar(options.game.altar).done(function () {
+                gopui = new GopUI($("#game")[0], options);
 
-            gopui = new GopUI($("#game")[0], options);
-
-            gopui.$saveButton.click(function () {
-                gopui.$saveButton.text("Saving...").prop("disabled", true);
-                $.post("/api/puzzles/@puzzle.Id", {
-                    score: gopui.gameState.scoredTicks[gopui.gameState.scoredTicks.length - 1],
-                    code: gopui.gameplayData.toString()
-                }, function (data) {
-                    gopui.$saveButton.text("Saved");
-                    data.timestamp = new Date(s.timestamp);
-                    table.row.add(data);
-                    table.draw();
+                gopui.$saveButton.click(function () {
+                    gopui.$saveButton.text("Saving...").prop("disabled", true);
+                    $.post("/api/puzzles/@puzzle.Id", {
+                        score: gopui.gameState.scoredTicks[gopui.gameState.scoredTicks.length - 1],
+                        code: gopui.gameplayData.toString()
+                    }, function (data) {
+                        gopui.$saveButton.text("Saved");
+                        data.timestamp = new Date(s.timestamp);
+                        table.row.add(data);
+                        table.draw();
+                    });
+                    gopui.$saveButton.button("saved");
                 });
-                gopui.$saveButton.button("saved");
             });
 
             $("#submissionsTable").on("click", "tbody > tr", function () {

@@ -12,19 +12,31 @@ namespace GOP
 {
     public class MultiplayerManager
     {
+        public const int TicksPerAltar = 10;
+        public readonly Point[] DefaultStartingLocations =
+        {
+            new Point(2, 0),
+            new Point(-2, 0),
+            new Point(0,-2),
+            new Point(0, 2),
+            new Point(2, -2)
+        };
+
         private readonly Timer timer;
         private readonly object playersLock = new object();
-        private const int CountdownTime = 5;
+        private const int CountdownLength = 5;
         private const string WaitlistGroup = "Waitlist";
 
         private readonly List<Player> players = new List<Player>();
 
-        public MultiplayerManager()
+        public MultiplayerManager(ApplicationDbContext dbContext, IHubContext<MultiplayerHub> hubContext)
         {
+            DbContext = dbContext;
+            HubContext = hubContext;
             timer = new Timer(Tick, null, Timeout.Infinite, 600);
         }
 
-        [FromServices]
+        public ApplicationDbContext DbContext { get; set; }
         public IHubContext<MultiplayerHub> HubContext { get; set; }
 
         public IHubConnectionContext<dynamic> Clients { get { return HubContext.Clients; } }
@@ -32,7 +44,7 @@ namespace GOP
 
         public bool IsGameRunning { get; set; }
         public bool HasSaved { get; set; }
-        public int CurrentTick { get; set; } = -CountdownTime;
+        public int CurrentTick { get; set; } = -CountdownLength;
         public int Altar { get; set; } = 1;
         public int Seed { get; set; } = 5489;
 
@@ -41,7 +53,7 @@ namespace GOP
             var httpContext = context.Request.HttpContext;
             if (IsGameRunning)
             {
-                Clients.Client(context.ConnectionId).RejectPlayer(players);
+                Clients.Client(context.ConnectionId).Reject(players);
                 Groups.Add(context.ConnectionId, WaitlistGroup);
             }
             else
@@ -53,12 +65,13 @@ namespace GOP
                     {
                         ConnectionId = context.ConnectionId,
                         IpAddress = httpContext.Connection.RemoteIpAddress.ToString(),
-                        Username = "Change me",
+                        Username = DbContext.GetUsername(GopUser.GetCurrentUser(httpContext)),
                         Run = true,
-                        IsWatching = true
+                        IsWatching = true,
+                        StartLocation = DefaultStartingLocations[Math.Min(DefaultStartingLocations.Length - 1, players.Count)]
                     });
                 }
-                Clients.Client(context.ConnectionId).SetGameParams(new { altar = Altar, seed = Seed });
+                Clients.Client(context.ConnectionId).SetGameParams(Altar, Seed);
                 Clients.All.UpdatePlayers(players, true);
                 for (int i = 0; i < players.Count; ++i)
                 {
@@ -90,11 +103,11 @@ namespace GOP
         {
             var player = GetPlayer(context);
             if (player != null)
-                player.Started = true;
-            if (players.Where(p => !p.IsWatching).All(p => p.Started))
+                player.StartRequested = true;
+            if (players.Where(p => !p.IsWatching).All(p => p.StartRequested))
             {
                 timer.Change(0, 600);
-                Clients.All.Start();
+                Clients.All.SetState(RunningState.Started);
                 IsGameRunning = true;
             }
             Clients.All.UpdatePlayers(players, false);
@@ -109,22 +122,22 @@ namespace GOP
                 {
                     foreach (var player in players)
                     {
-                        player.Started = false;
+                        player.StartRequested = false;
                     }
-                    Clients.All.Stop();
+                    Clients.All.SetState(RunningState.Ended);
                     Clients.All.UpdatePlayers(players, false);
                 }
                 else
                 {
                     // Game is still "running"
-                    Clients.All.GameEnded();
+                    Clients.All.SetState(RunningState.Ended);
                 }
             }
             else
             {
                 var player = GetPlayer(context);
                 if (player != null)
-                    player.Started = false;
+                    player.StartRequested = false;
                 Clients.All.UpdatePlayers(players, false);
             }
         }
@@ -153,16 +166,19 @@ namespace GOP
 
         public void SetPlayerLocation(HubCallerContext context, int x, int y)
         {
-            var index = players.FindIndex(p => p.ConnectionId == context.ConnectionId);
-            if (index != -1)
-                Clients.All.SetPlayerStartLocation(index, x, y);
+            var player = players.Find(p => p.ConnectionId == context.ConnectionId);
+            if (player != null)
+            {
+                player.StartLocation = new Point(x, y);
+                Clients.All.UpdatePlayers(players, false);
+            }
         }
 
         public void SetGameParams(HubCallerContext context, int altar, int seed)
         {
             Altar = altar;
             Seed = seed;
-            Clients.All.SetGameParams(new { altar, seed });
+            Clients.All.SetGameParams(altar, seed);
         }
 
         public void SetWatching(HubCallerContext context, bool watching)
@@ -232,29 +248,43 @@ namespace GOP
         private void Tick(object state)
         {
             ++CurrentTick;
+            var playerClients = Clients.Clients(players.Select(p => p.ConnectionId).ToList());
             if (CurrentTick <= 0)
             {
-                Clients.Clients(players.Select(p => p.ConnectionId).ToList()).Countdown(CurrentTick);
+                playerClients.SetCountdown(-CurrentTick);
+            }
+            else if (CurrentTick >= TicksPerAltar)
+            {
+                // Game is over
+                StopGame(true);
+                playerClients.SetState(RunningState.Ended);
             }
             else
             {
-                Clients.Clients(players.Select(p => p.ConnectionId).ToList()).Tick(players);
-                foreach (var p in players)
-                {
-                    p.Action = null;
-                }
+                playerClients.Tick(players, CurrentTick);
+            }
+
+            foreach (var p in players)
+            {
+                p.Action = null;
             }
         }
 
         private void StopGame(bool setGameRunningToFalse)
         {
             timer.Change(Timeout.Infinite, 600);
-            CurrentTick = -CountdownTime;
+            CurrentTick = -CountdownLength;
+            Clients.All.SetState(RunningState.Ended);
             if (setGameRunningToFalse)
             {
                 Clients.Group(WaitlistGroup).NotifyRejoin();
                 IsGameRunning = false;
                 HasSaved = false;
+                foreach (var p in players)
+                {
+                    p.StartRequested = false;
+                    Clients.All.UpdatePlayers();
+                }
             }
         }
 
@@ -262,6 +292,8 @@ namespace GOP
         {
             return char.IsLetter(action[action.Length - 1]);
         }
+
+        public enum RunningState { NotStarted, Waiting, Countdown, Started, Ended }
 
         public class Player
         {
@@ -272,8 +304,8 @@ namespace GOP
             [JsonProperty("username")]
             public string Username { get; set; }
 
-            [JsonProperty("started")]
-            public bool Started { get; set; }
+            [JsonProperty("startRequested")]
+            public bool StartRequested { get; set; }
 
             [JsonProperty("action")]
             public string Action { get; set; }
@@ -283,6 +315,18 @@ namespace GOP
             public bool Repel { get; set; }
             [JsonProperty("isWatching")]
             public bool IsWatching { get; set; }
-        };
+            [JsonProperty("startLocation")]
+            public Point StartLocation { get; set; }
+        }
+
+        public struct Point
+        {
+            public Point(int x, int y) { X = x; Y = y; }
+
+            [JsonProperty("x")]
+            public int X { get; set; }
+            [JsonProperty("y")]
+            public int Y { get; set; }
+        }
     }
 }

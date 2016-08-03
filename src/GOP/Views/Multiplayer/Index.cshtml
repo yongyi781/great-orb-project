@@ -32,7 +32,8 @@
 </table>
 
 @section scripts {
-    <script src="~/js/gop.js"></script>
+    <script src="~/js/gop.min.js"></script>
+    <script src="~/js/utils.js"></script>
     <script>
         var games, table;
 
@@ -47,7 +48,6 @@
             games.forEach(function (game) {
                 game.timestamp = new Date(game.timestamp);
             });
-
             $.fn.dataTable.ext.search.push(
                 function(settings, data, dataIndex) {
                     var username = $("#userSearch").val().toLowerCase();
@@ -65,49 +65,51 @@
                 }
             );
 
-            table = $("#gamesTable").DataTable({
-                data: games,
-                deferRender: true,
-                columns: [
-                    { data: "id" },
-                    {
-                        data: "timestamp",
-                        render: function (data, type, row) {
-                            if (type === "display")
-                                return data.toLocaleString();
-                            return data;
-                        }
-                    },
-                    {
-                         data: "numberOfPlayers",
-                         render: function (data, type, row) {
-                            if (type === "display" && data in GameModes)
-                                return GameModes[data];
-                            return data;
-                         }
-                    },
-                    { data: "usernames" },
-                    { data: "numberOfOrbs" },
-                    { data: "seed" },
-                    {
-                        data: "altar",
-                        render: function (data, type, row) {
-                            if (type === "display") {
-                                if (AltarData[data] !== void 0) {
-                                    // Capitalize name
-                                    var name = AltarData[data].name;
-                                    return name[0].toUpperCase() + name.slice(1);
-                                }
-                                return data + " (custom)";
+            Utils.loadAltarNames().always(function () {
+                table = $("#gamesTable").DataTable({
+                    data: games,
+                    deferRender: true,
+                    columns: [
+                        { data: "id" },
+                        {
+                            data: "timestamp",
+                            render: function (data, type, row) {
+                                if (type === "display")
+                                    return data.toLocaleString();
+                                return data;
                             }
-                            return data;
-                        }
-                    },
-                    { data: "score" }
-                ]
-            });
+                        },
+                        {
+                            data: "numberOfPlayers",
+                            render: function (data, type, row) {
+                                if (type === "display" && data in GameModes)
+                                    return GameModes[data];
+                                return data;
+                            }
+                        },
+                        { data: "usernames" },
+                        { data: "numberOfOrbs" },
+                        { data: "seed" },
+                        {
+                            data: "altar",
+                            render: function (data, type, row) {
+                                if (type === "display") {
+                                    if (AltarData[data] !== void 0) {
+                                        // Capitalize name
+                                        var name = AltarData[data].name;
+                                        return name[0].toUpperCase() + name.slice(1);
+                                    }
+                                    return data + " (custom)";
+                                }
+                                return data;
+                            }
+                        },
+                        { data: "score" }
+                    ]
+                });
 
-            $("#searchDiv > input").on("input", function() { table.draw(); });
+                $("#searchDiv > input").on("input", function() { table.draw(); });
+            });
         });
     </script>
 }

@@ -28,35 +28,35 @@
 
 @section scripts {
     <script src="~/js/gop.min.js"></script>
+    <script src="~/js/utils.js"></script>
     <script>
         $("#gamesTable").on("click", "tbody > tr", function () {
             window.open("/Watch/Solo/" + $(this).children("td:first").text());
         });
 
         var games = @Json.Serialize(Model.Games);
-        if (games !== null)
-        {
-            games.forEach(function (game) {
-                game.timestamp = new Date(game.timestamp);
-            });
+        games.forEach(function (game) {
+            game.timestamp = new Date(game.timestamp);
+        });
 
-            $.fn.dataTable.ext.search.push(
-                function(settings, data, dataIndex) {
-                    var username = $("#userSearch").val().toLowerCase();
-                    var numOrbs = parseInt($("#numOrbsSearch").val(), 10);
-                    var seed = parseInt($("#seedSearch").val(), 10);
-                    var altar = parseInt($("#altarSearch").val(), 10);
-                    var dataUsername = data[2].toLowerCase();
-                    var dataNumOrbs = parseInt(data[3], 10);
-                    var dataSeed = parseInt(data[4], 10);
-                    var dataAltar = parseInt(data[5], 10);
-                    return dataUsername.indexOf(username) > -1 &&
-                        (isNaN(numOrbs) || dataNumOrbs == numOrbs) &&
-                        (isNaN(seed) || dataSeed === seed) &&
-                        (isNaN(altar) || dataAltar === altar);
-                }
-            );
+        $.fn.dataTable.ext.search.push(
+            function(settings, data, dataIndex) {
+                var username = $("#userSearch").val().toLowerCase();
+                var numOrbs = parseInt($("#numOrbsSearch").val(), 10);
+                var seed = parseInt($("#seedSearch").val(), 10);
+                var altar = parseInt($("#altarSearch").val(), 10);
+                var dataUsername = data[2].toLowerCase();
+                var dataNumOrbs = parseInt(data[3], 10);
+                var dataSeed = parseInt(data[4], 10);
+                var dataAltar = parseInt(data[5], 10);
+                return dataUsername.indexOf(username) > -1 &&
+                    (isNaN(numOrbs) || dataNumOrbs == numOrbs) &&
+                    (isNaN(seed) || dataSeed === seed) &&
+                    (isNaN(altar) || dataAltar === altar);
+            }
+        );
 
+        Utils.loadAltarNames().always(function () {
             table = $("#gamesTable").DataTable({
                 data: games,
                 deferRender: true,
@@ -93,6 +93,6 @@
             });
 
             $("#searchDiv > input").on("input", function() { table.draw(); });
-        }
+        })
     </script>
 }

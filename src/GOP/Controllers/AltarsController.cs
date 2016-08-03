@@ -1,5 +1,6 @@
 ﻿using GOP.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -22,9 +23,25 @@ namespace GOP.Controllers
         }
 
         [HttpGet("api/[controller]")]
-        public IEnumerable<CustomAltar> Get()
+        public IEnumerable<CustomAltar> Get(int? min, int? max)
         {
-            return DbContext.CustomAltars;
+            IQueryable<CustomAltar> query = DbContext.CustomAltars.AsNoTracking();
+            if (min != null)
+                query = query.Where(altar => altar.Id >= min);
+            if (max != null)
+                query = query.Where(altar => altar.Id <= max);
+            return query;
+        }
+
+        [HttpGet("api/[controller]/names")]
+        public IEnumerable<object> Names(int? min, int? max)
+        {
+            IQueryable<CustomAltar> query = DbContext.CustomAltars.AsNoTracking();
+            if (min != null)
+                query = query.Where(altar => altar.Id >= min);
+            if (max != null)
+                query = query.Where(altar => altar.Id <= max);
+            return query.Select(altar => new { altar.Id, altar.Name });
         }
 
         [HttpGet("api/[controller]/{id}")]

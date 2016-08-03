@@ -448,18 +448,19 @@ class Anglemap {
 
     // Loads the default grid state.
     resetGrid() {
+        this.gopBoard.loadAltar(this.currentAltar);
         for (let y = -this.centerY; y <= this.centerY; y++) {
             for (let x = -this.centerX; x <= this.centerX; x++) {
-                let p = new Point(x, y);
-                this.gopBoard.set(p, this.getDefaultGridState(p));
-                this.invalidatedSquares.push(p);
+                this.invalidatedSquares.push(new Point(x, y));
             }
         }
         this.drawGrid();
     }
 
     setAltar(altar: Altar) {
-        this.currentAltar = altar;
-        this.resetGrid();
+        Utils.loadAltar(altar).fail(() => { altar = Altar.None; }).done(() => {
+            this.currentAltar = altar;
+            this.resetGrid();
+        });
     }
 }

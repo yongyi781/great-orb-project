@@ -34,7 +34,7 @@
 
     groundColor() {
         let c = AltarData[this.gameState.altar].groundColor;
-        if (c === undefined || c === null) {
+        if (c == null) {
             return GopCanvas.defaultGroundColor;
         }
         if (c instanceof Array) {
@@ -77,7 +77,7 @@
     }
 
     getDrawLocation(obj: GopObject) {
-        return Point.lerp(obj.prevLocation, obj.location, this.tickProgress);
+        return obj.getDrawLocation(this.tickProgress);
     }
 
     /**
@@ -175,8 +175,9 @@
         this.bgContext.fillRect(0, 0, this.bgCanvas.width, this.bgCanvas.height);
         for (let y = -this.board.ymax; y <= this.board.ymax; y++) {
             for (let x = -this.board.xmax; x <= this.board.xmax; x++) {
-                if (this.tileColor(x, y) !== this.groundColor()) {
-                    this.bgFillSquare(this.bgContext, this.tileColor(x, y), x, y, 0);
+                let color = this.tileColor(x, y);
+                if (color !== this.groundColor()) {
+                    this.bgFillSquare(this.bgContext, color, x, y, 0);
                 }
             }
         }
@@ -283,7 +284,7 @@
      * Paints the GOP canvas.
      */
     paint() {
-        let center = this.player === undefined ? Point.zero : this.getDrawLocation(this.player);
+        let center = this.player == null ? Point.zero : this.getDrawLocation(this.player);
 
         if (this.rotationAngle !== 0) {
             // Rotate by rotationAngle
@@ -336,9 +337,10 @@
     }
 
     private loadImages() {
+        const altarNames = ["air", "mind", "water", "earth", "fire", "body"];
         this.orbImage = this.loadImage(this.orbImageSrc);
         for (let i = 0; i < GopCanvas.numAltars; ++i) {
-            this.altarImages[i] = this.loadImage(this.alterOverlayImagePath + AltarData[i + 1].name + ".png");
+            this.altarImages[i] = this.loadImage(this.alterOverlayImagePath + altarNames[i] + ".png");
         }
     }
 

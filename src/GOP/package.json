@@ -1,6 +1,6 @@
 {
   "name": "gop",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "devDependencies": {
     "gulp": "*",
     "gulp-concat": "*",

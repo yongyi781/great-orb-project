@@ -5,12 +5,9 @@
     <title>GOP</title>
     <link rel="stylesheet" href="/lib/bootswatch/cyborg/bootstrap.css" />
     <link rel="stylesheet" href="../css/site.css" />
+    <link rel="stylesheet" href="../css/gop3d.css" />
 </head>
 <body>
-    <div id="controls" class="controls">
-        <label for="altar">Altar: </label><input type="number" min="0" max="100" id="altar" value="1" />
-        <label for="fieldOfView">Field of view: </label><input type="number" size="4" id="fieldOfView" value="60" />
-    </div>
     <div id="container" style="position: relative"></div>
 
     <script src="../lib/jquery/dist/jquery.min.js"></script>
@@ -20,16 +17,34 @@
     <script src="../js/GopUI3D.js"></script>
     <script src="../js/utils.js"></script>
     <script>
-        var gs = new GameState(new GopBoard(53, 53, 10), [new Point(2, 0), new Point(-2, 0)]);
-        var gopui = new GopUI3D($("#container")[0], gs, 0);
-        gopui.init().start();
-        gopui.renderer.domElement.focus();
+        var numberOfOrbs = Utils.getQueryAsInteger("numorbs", GameState.defaults.numberOfOrbs);
+        var altar = Utils.getQueryAsInteger("altar", GameState.defaults.altar);
+        var seed = Utils.getQueryAsInteger("seed", Utils.getRandomInt(0, 200));
+        var playerLocations = Utils.getQueryAsPointArray("start", [new Point(2, 0)]);
+        var spawns = Utils.getQueryAsPointArray("spawns", []);
+        var reachDist = Utils.getQueryAsInteger("reach", GopBoard.defaults.reachDistance);
+        var respawnOrbs = Utils.getQueryAsBoolean("respawn", true);
+        var gs, gopui, code;
 
-        var code = Utils.getQueryAsString("code");
-        if (code !== undefined) {
-            gopui.setGameplayDataFromCode(code);
-            gopui.game.start();
-        }
+        GameState.ticksPerAltar = Utils.getQueryAsInteger("ticks", GameState.defaults.ticksPerAltar);
+
+        Utils.loadAltar(altar).fail(function () { altar = 0; }).always(function () {
+            gs = new GameState(new GopBoard(53, 53, reachDist), playerLocations, spawns, numberOfOrbs, seed, altar, respawnOrbs);
+
+            gopui = new GopUI3D($("#container")[0], gs, 0);
+            gopui.init();
+            
+            var altarLoaded = $.Deferred().resolve().promise();
+
+            code = Utils.getQueryAsString("code");
+            if (code !== undefined) {
+                altarLoaded = gopui.restartFromCode(code);
+            }
+            altarLoaded.always(function () {
+                gopui.start();
+                gopui.renderer.domElement.focus();
+            });
+        });
     </script>
 </body>
 </html>

@@ -1,10 +1,7 @@
 ﻿using GOP.Models;
-using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
-using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -57,6 +54,7 @@ namespace GOP
             services.AddMvc();
             services.AddSingleton<Random>();
             services.AddSingleton<KickCounter>();
+            services.AddSingleton<MultiplayerManager>();
         }
 
         // Configure is called after ConfigureServices is called.
@@ -80,8 +78,6 @@ namespace GOP
                 app.UseStatusCodePages();
             }
 
-            app.UseStaticFiles(new StaticFileOptions { ServeUnknownFileTypes = true });
-
             // Add cookie-based authentication to the request pipeline.
             app.UseIdentity();
             app.UseFacebookAuthentication(new FacebookOptions
@@ -89,6 +85,11 @@ namespace GOP
                 AppId = Configuration["Authentication:Facebook:AppId"],
                 AppSecret = Configuration["Authentication:Facebook:AppSecret"]
             });
+
+            app.UseMiddleware<RequestLoggerMiddleware>();
+
+            app.UseStaticFiles(new StaticFileOptions { ServeUnknownFileTypes = true });
+
             app.UseWebSockets();
             app.UseSignalR();
 

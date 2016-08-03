@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Random Sentences</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" />
+    <style>
+        #sentence {
+            font-size: 18px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Random Sentences (words weighted by frequency)</h1>
+        <div class="form-group form-inline">
+            <label for="pattern">Pattern:</label> <input type="text" id="pattern" class="form-control" value="a j n vp a n t v a n" />
+            <button id="generate" class="btn btn-primary" disabled>Loading words...</button>
+        </div>
+        <div id="sentence"></div>
+        <div>
+            <h3>Pattern Help</h3>
+            <ul id="help"></ul>
+        </div>
+    </div>
+    <script src="https://code.jquery.com/jquery-3.1.0.min.js"></script>
+    <script>
+        var words = {};
+
+        function readCsv(allText) {
+            var allTextLines = allText.split(/\r\n|\n/);
+            var headers = allTextLines[0].split(',');
+            var lines = [];
+
+            for (var i = 1; i < allTextLines.length; i++) {
+                var data = allTextLines[i].split(',');
+                if (data.length == headers.length) {
+                    var tarr = {};
+                    for (var j = 0; j < headers.length; j++) {
+                        tarr[headers[j]] = isNaN(data[j]) ? data[j] : +data[j];
+                    }
+                    lines.push(tarr);
+                }
+            }
+
+            return lines;
+        }
+
+        function chooseRandom(arr) {
+            var total = arr.reduce(function (prev, curr) { return prev + curr.Frequency; }, 0);
+            var num = Math.floor(Math.random() * total);
+            for (var i = 0; i < arr.length; i++) {
+                num -= arr[i].Frequency;
+                if (num <= 0) {
+                    return arr[i];
+                }
+            }
+            return arr[0];
+        }
+
+        // grammatically predictable rules
+        // From https://gist.github.com/letsgetrandy/1e05a68ea74ba6736eb5
+        function getPastTense(verb) {
+            var exceptions = {
+                "are": "were",
+                "be": "was",
+                "bring": "brought",
+                "come": "came",
+                "do": "did",
+                "eat": "ate",
+                "go": "went",
+                "have": "had",
+                "inherit": "inherited",
+                "is": "was",
+                "mean": "meant",
+                "run": "ran",
+                "say": "said",
+                "see": "saw",
+                "sit": "sat",
+                "speak": "spoke",
+                "sing": "sang",
+                "take": "took",
+                "visit": "visited",
+            }
+
+            if (exceptions[verb]) {
+                return exceptions[verb];
+            }
+            if ((/e$/i).test(verb)) {
+                return verb + 'd';
+            }
+            if ((/[aeiou]c$/i).test(verb)) {
+                return verb + 'ked';
+            }
+            // for american english only
+            if ((/el$/i).test(verb)) {
+                return verb + 'ed';
+            }
+            if ((/[aeio][aeiou][dlmnprst]$/).test(verb)) {
+                return verb + 'ed';
+            }
+            if ((/[aeiou][bdglmnprst]$/i).test(verb)) {
+                return verb.replace(/(.+[aeiou])([bdglmnprst])/, '$1$2$2ed');
+            }
+            return verb + 'ed';
+        }
+
+        function populateHelp() {
+            $("#help").empty();
+            for (var p in words) {
+                var text = "<strong>" + p + "</strong>" + " (" + words[p].length + "): ";
+                var examples = words[p].slice(0, 5).map(function (w) { return w.Word; }).join(", ");
+                $("#help").append($("<li/>").html(text + examples));
+            }
+            $("#help").append("<li><strong>vp</strong>: Past tense verbs</li>");
+        }
+
+        $("#generate").click(function (e) {
+            var ss = $("#pattern").val().split(" ");
+            var choices = ss.map(function (p) {
+                if (p === "vp" && "v" in words) {
+                    return getPastTense(chooseRandom(words[p[0]]).Word);
+                }
+                if (!(p in words)) {
+                    return p;
+                }
+                return chooseRandom(words[p]).Word;
+            });
+            for (var i = 0; i < choices.length - 1; i++) {
+                if (choices[i] === "a" && "aeiouAEIOU".indexOf(choices[i + 1][0]) !== -1) {
+                    choices[i] = "an";
+                }
+            }
+            var sentence = choices.join(" ") + ".";
+            sentence = sentence[0].toUpperCase() + sentence.substring(1);
+            $("#sentence").text(sentence);
+        });
+
+        $("#pattern").keypress(function (e) {
+            if (e.key === "Enter") {
+                e.preventDefault();
+                $("#generate").click();
+            }
+        });
+
+        $.get("words.csv", function (data) {
+            readCsv(data).forEach(function (item) {
+                var pos = item["Part of speech"];
+                if (words[pos] == null) {
+                    words[pos] = [];
+                }
+                words[pos].push(item);
+            });
+
+            $("#generate").attr("disabled", false).text("Generate");
+            populateHelp();
+        });
+    </script>
+</body>
+</html>

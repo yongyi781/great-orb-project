@@ -1,4 +1,15 @@
 ﻿class GameState {
+    static defaults = {
+        ticksPerAltar: 199,
+        numberOfOrbs: 3,
+        seed: 5489,
+        altar: Altar.Air,
+        playerLocations: [new Point(0, -2)],
+        respawnOrbs: true
+    };
+    
+    static ticksPerAltar = GameState.defaults.ticksPerAltar;
+
     players: Player[] = [];
     orbs: Orb[] = [];
     random = new MersenneTwister();
@@ -8,18 +19,33 @@
     presetSpawnStack: Point[];
 
     constructor(public board: GopBoard,
-        public playerLocations: Point[],
+        public playerLocations?: Point[],
         public presetSpawns: Point[] = [],
-        public numberOfOrbs = 3,
-        public seed = 5489,
-        public altar = Altar.Air) {
+        public numberOfOrbs = GameState.defaults.numberOfOrbs,
+        public seed = GameState.defaults.seed,
+        public altar = GameState.defaults.altar,
+        public respawnOrbs = GameState.defaults.respawnOrbs) {
         for (let i = 0; i < this.numberOfOrbs; ++i) {
             this.orbs[i] = new Orb(this, i);
+        }
+
+        if (playerLocations == null || playerLocations.length === 0) {
+            playerLocations = GameState.defaults.playerLocations;
         }
         for (let i = 0; i < playerLocations.length; i++) {
             this.players.push(new Player(this, playerLocations[i], i));
         }
         this.reset(altar);
+    }
+
+    /** 
+     * If respawnOrbs is set to true, then returns true iff the timer is over.
+     * Otherwise, returns true iff there are no orbs left.
+     */
+    get isFinished() {
+        return this.respawnOrbs ?
+            this.currentTick >= GameState.ticksPerAltar :
+            this.orbs.every(orb => orb.isDead);
     }
 
     addPlayer(location: Point) {
@@ -46,7 +72,7 @@
         this.score = 0;
         this.currentTick = 0;
 
-        this.orbs.forEach(orb => orb.spawn());
+        this.orbs.forEach(orb => orb.spawn(true));
     }
 
     step() {
@@ -63,6 +89,4 @@
     getEstimatedScore(offset = 3) {
         return this.currentTick === 0 ? 0 : Math.round(this.score * (GameState.ticksPerAltar - offset) / (Math.max(1, this.currentTick - offset)));
     }
-
-    static ticksPerAltar = 199;
 }

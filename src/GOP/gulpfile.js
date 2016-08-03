@@ -1,4 +1,4 @@
-/// <binding AfterBuild='default' />
+/// <binding />
 var gulp = require("gulp"),
     rimraf = require("rimraf"),
     concat = require("gulp-concat"),
@@ -9,11 +9,12 @@ var gulp = require("gulp"),
 var paths = {
     webroot: "./wwwroot/",
     emulatorScripts: [
-        "./wwwroot/js/polyfills.js",
+        //"./wwwroot/js/polyfills.js",
         "./wwwroot/js/Engine/Enums.js",
         "./wwwroot/js/Engine/Point.js",
         "./wwwroot/js/Engine/MersenneTwister.js",
         "./wwwroot/js/Engine/AltarData.js",
+        "./wwwroot/js/Engine/GopObject.js",
         "./wwwroot/js/Engine/GameAction.js",
         "./wwwroot/js/Engine/GopBoard.js",
         "./wwwroot/js/Engine/Orb.js",

@@ -1,6 +1,5 @@
-﻿class Player implements GopObject {
+﻿class Player extends GopObject {
     // For painting
-    prevLocation = Point.NaN;
     action = GameAction.idle();
     run = true;
     repel = false;
@@ -21,7 +20,9 @@
     previousAction: GameAction = null;
     attractIneffective = false;
 
-    constructor(public gs: GameState, public location: Point, public index: number) { }
+    constructor(public gs: GameState, location: Point, public index: number) {
+        super(location);
+     }
 
     stopAttracting() {
         this.currentOrb = null;
@@ -131,7 +132,7 @@
                 this.forceAttractOrb = null;
                 break;
             default:
-                console.log("Deobfuscated is a noob!");
+                console.warn("Deobfuscated is a noob!");
                 break;
         }
 

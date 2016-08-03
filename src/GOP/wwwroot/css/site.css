@@ -14,7 +14,6 @@ footer {
     font-size: 8pt;
 }
 
-
 footer, .push {
     height: 20px;
 }
@@ -46,6 +45,10 @@ canvas {
 
 a:visited {
     color: #9e67b7;
+}
+
+label > input {
+    font-weight: initial;
 }
 
 .container-main {
@@ -215,7 +218,7 @@ a:visited {
     display: inline-block;
 }
 
-.share-link {
+.for-copying {
     background-color: #040404;
     border: 0;
     border-radius: 5px;

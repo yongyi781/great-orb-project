@@ -225,7 +225,7 @@ class GopUI {
         this.gopCanvas = new GopCanvas(this.canvas, this.gameState, this.options.client.visibilityRadius, 0);
 
         if (this.options.game.suppressRandomSpawns) {
-            this.gameState.random = null;
+            this.gameState.respawnOrbs = false;
         }
         GameState.ticksPerAltar = this.options.game.ticksPerAltar;
 
@@ -261,10 +261,12 @@ class GopUI {
                         break;
                     case 8:     // Backspace
                     case 37:    // Left arrow
+                    case 189: case 109:   // Minus
                         e.preventDefault();
                         this.$minusTicksButton.click();
                         break;
                     case 39:    // Right arrow
+                    case 187: case 107:   // Equals (plus)
                         e.preventDefault();
                         this.$plusTicksButton.click();
                         break;

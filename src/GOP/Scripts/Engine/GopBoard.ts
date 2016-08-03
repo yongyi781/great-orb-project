@@ -1,9 +1,14 @@
 ﻿class GopBoard {
+    static defaults = {
+        reachDistance: 10
+    };
+
     grid: Tile[][] = [];
     xmax = Math.floor(this.numRows / 2);
     ymax = Math.floor(this.numColumns / 2);
 
-    constructor(public numRows: number, public numColumns: number, public reachDistance = 10) {
+    constructor(public numRows: number, public numColumns: number,
+        public reachDistance = GopBoard.defaults.reachDistance) {
         this.clear();
     }
 
@@ -34,14 +39,11 @@
     }
 
     /**
-     * Loads an altar by index into the GOP board.
+     * Loads an altar into the GOP board.
      */
     loadAltar(altar: Altar) {
-        this.clear();
         for (let y = 0; y < this.numRows; ++y) {
-            for (let x = 0; x < this.numColumns; ++x) {
-                this.grid[y][x] = AltarData[altar].grid[this.numRows - y - 1][x];
-            }
+            this.grid[y] = AltarData[altar].grid[this.numRows - y - 1].slice();
         }
     }
 
@@ -231,6 +233,10 @@
     }
 
     distanceToAltar(p: Point, mode: PathMode) {
+        if (Point.isNaN(p)) {
+            return NaN;
+        }
+
         let nodes = [{ state: p, dist: 0 }];
         let visited: { [id: string]: boolean } = {};
         visited[p.toString()] = true;

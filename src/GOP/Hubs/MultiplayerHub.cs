@@ -1,12 +1,18 @@
 ﻿using Microsoft.AspNetCore.SignalR;
+using System;
 using System.Threading.Tasks;
 
 namespace GOP.Hubs
 {
     public class MultiplayerHub : Hub
     {
+        public MultiplayerHub(MultiplayerManager manager)
+        {
+            MultiplayerManager = manager;
+        }
+
         public MultiplayerManager MultiplayerManager { get; set; }
-        
+
         public override Task OnConnected()
         {
             AddPlayer();
@@ -70,14 +76,16 @@ namespace GOP.Hubs
             MultiplayerManager.SendSaveRequest(Context, code, score);
         }
 
-        public void SendMinusTicks()
+        public void Rewind(int ticks)
         {
-            Clients.All.ReceiveMinusTicks();
+            MultiplayerManager.CurrentTick = Math.Max(0, MultiplayerManager.CurrentTick - ticks);
+            Clients.All.RewindTo(MultiplayerManager.CurrentTick);
         }
 
-        public void SendPlusTicks()
+        public void FastForward(int ticks)
         {
-            Clients.All.ReceivePlusTicks();
+            MultiplayerManager.CurrentTick = Math.Min(MultiplayerManager.TicksPerAltar, MultiplayerManager.CurrentTick + ticks);
+            Clients.All.FastForwardTo(MultiplayerManager.CurrentTick);
         }
     }
 }

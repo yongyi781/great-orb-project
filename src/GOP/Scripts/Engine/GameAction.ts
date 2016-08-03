@@ -79,7 +79,7 @@
             }
         }
 
-        if (str === null || str === undefined || str === "-") {
+        if (str == null || str === "-") {
             return GameAction.idle(toggleRun, changeWand);
         }
 

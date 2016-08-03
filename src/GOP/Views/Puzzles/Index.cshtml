@@ -37,10 +37,9 @@
     <script src="~/js/utils.js"></script>
     <script>
         var data;
-
-        $(function () {
-            var maxPoints = @GOP.Controllers.PuzzlesController.MaxScorePerPuzzle;
-
+        var maxPoints = @GOP.Controllers.PuzzlesController.MaxScorePerPuzzle;
+        
+        Utils.loadAltars(1, 6).done(function () {
             $("canvas[data-altar]").each(function () {
                 new GopCanvas(this,
                     new GameState(

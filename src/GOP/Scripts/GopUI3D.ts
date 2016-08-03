@@ -1,21 +1,32 @@
 ﻿class GopUI3D {
-    radius: number;
-    clearColor = 0x1E90FF;
-    barrierHeight = 1;
+    playerColors = ["#08f", "#871450", "#148718", "#630D0D"];
+    skyColor = "dodgerblue";
+    orbColor = "#dddd00";
+    barrierColor = "#666666";
+    rockColor = "#888888";
+    orbSize = 0.65;
+    orbOpacity = 0.75;
+    useOrbLights = false;
+    barrierHeight = 1.5;
     rockHeight = 0.4;
     waterHeight = 0.06;
     playerHeight = 1.5;
-    orbRadius = 0.6;
-    orbZ = this.orbRadius + 0.15;
     tickLength = 0.5;   // in seconds
     cameraRotateXSpeed = 0.8 * Math.PI;
     cameraRotateYSpeed = 0.5 * Math.PI;
-    mouseRotateSensitivity = 0.008;
+    mouseRotateSensitivity = 0.006;
     zoomSpeed = 10;
     mouseWheelZoomFactor = 0.0002;
     timerRadius = 40;
     orbVisibilityRadius = 15;
-    playerColors = ["#08f", "#871450", "#148718", "#630D0D"];
+    allowPlayerSwitching = true;
+    autoTick = true;
+
+    keybinds = {
+        run: "r",
+        repel: "q",
+        attract: "z"
+    };
 
     runRepelIndicator: HTMLDivElement;
     timerCanvas: HTMLCanvasElement;
@@ -23,22 +34,27 @@
     scoreIndicator: HTMLDivElement;
 
     contextMenu: HTMLDivElement;
-    escMenu: EscMenu;
+    optionsMenu: OptionsMenu;
+    infoBox: InfoBox;
 
     renderer = new THREE.WebGLRenderer();
-    camera: FollowCamera;
+    camera = new FollowCamera(60, 1, 0.1, 20000);
     scene = new THREE.Scene();
     textureLoader = new THREE.TextureLoader();
     raycaster = new THREE.Raycaster();
 
     gridTexture: THREE.Texture;
-    barrierTexture: THREE.Texture;
+    marbleTexture: THREE.Texture;
+    waterTexture: THREE.Texture;
+    skyboxTextures: THREE.Texture[];
 
+    skybox: THREE.Mesh;
     ground: THREE.Mesh;
     playerObjects: PlayerObject[] = [];
-    myPlayerObj: PlayerObject;
     orbObjects: OrbObject[] = [];
-    light: THREE.DirectionalLight;
+    light = new THREE.DirectionalLight(0xffffff, 0.3);
+    altarLight = new THREE.PointLight(0xffffff, 1.5, 15, 2);
+    ambientLight = new THREE.AmbientLight(0xffffff, 0.9);
     altarObjects = new THREE.Group();
     attractDots: AttractDot[] = [];
 
@@ -57,57 +73,107 @@
     middleMouseClicked = false;
 
     game: Game;
+    displayedAltar: Altar;
+
+    private isInitialized = false;
+    private mUseHighDetail = false;
 
     constructor(public container: HTMLDivElement,
-        public gameState: GameState,
-        public playerIndex: number,
-        public visibilityRadius = 15,
-        public showTimer = true) {
+        gameState: GameState,
+        playerIndex: number) {
         this.game = new Game(gameState, playerIndex);
-        this.radius = Math.floor(gameState.board.numRows / 2);
     }
 
-    static getDrawLocation(obj: GopObject, tickProgress: number) {
-        return Point.lerp(obj.prevLocation, obj.location, tickProgress);
+    get gameState() {
+        return this.game.gameState;
+    }
+
+    /** Gets the number of tiles to a side of the grid. */
+    get size() {
+        return this.gameState.board.numRows;
+    }
+
+    /** Gets the maximum absolute values of the x- and y-coordinates of the grid. */
+    get radius() {
+        return Math.floor(this.gameState.board.numRows / 2);
+    }
+
+    get orbHeight() {
+        return this.orbSize + 0.15;
+    }
+
+    get playerIndex() {
+        return this.game.playerIndex;
+    }
+
+    set playerIndex(value) {
+        if (this.playerIndex !== value) {
+            this.game.playerIndex = value;
+            this.camera.followTarget = this.playerObjects[value].mesh;
+        }
+    }
+
+    get width() {
+        return this.renderer.domElement.width;
+    }
+
+    get height() {
+        return this.renderer.domElement.height;
+    }
+
+    get useShadows() { return this.renderer.shadowMap.enabled; }
+    set useShadows(value) {
+        if (this.renderer.shadowMap.enabled !== value) {
+            this.renderer.shadowMap.enabled = value;
+            this.initAltarGraphics();
+        }
     }
 
     init() {
-        this.renderer.setClearColor(this.clearColor);
+        this.renderer.setClearColor(this.skyColor);
         this.renderer.shadowMap.enabled = true;
-        this.renderer.setPixelRatio(window.devicePixelRatio);
+        this.renderer.setPixelRatio(devicePixelRatio);
         this.renderer.domElement.tabIndex = 1;
         this.renderer.domElement.style.outline = "none";
         this.container.appendChild(this.renderer.domElement);
 
-        this.camera = new FollowCamera(60, 2, 0.1, 1000);
         this.camera.up.set(0, 0, 1);
         this.camera.position.set(0, -9, 14);
 
-        //this.scene.fog = new THREE.FogExp2(0x7799e0, 0.01);
+        //this.scene.fog = new THREE.FogExp2(this.skyColor, 0.01);
 
-        this.light = new THREE.DirectionalLight(0xffff99, .3);
         this.light.position.set(-6, -12, 20);
         this.light.castShadow = true;
-        let d = 20;
-        (<THREE.OrthographicCamera>this.light.shadow.camera).left = -d;
-        (<THREE.OrthographicCamera>this.light.shadow.camera).right = d;
-        (<THREE.OrthographicCamera>this.light.shadow.camera).top = d;
-        (<THREE.OrthographicCamera>this.light.shadow.camera).bottom = -d;
-        (<THREE.OrthographicCamera>this.light.shadow.camera).near = 2;
-        (<THREE.OrthographicCamera>this.light.shadow.camera).far = 50;
+        const d = 21;
+        this.light.shadow.radius = 0.5;
+        (this.light.shadow.camera as THREE.OrthographicCamera).left = -d;
+        (this.light.shadow.camera as THREE.OrthographicCamera).right = d;
+        (this.light.shadow.camera as THREE.OrthographicCamera).top = d;
+        (this.light.shadow.camera as THREE.OrthographicCamera).bottom = -d;
+        (this.light.shadow.camera as THREE.OrthographicCamera).near = 5;
+        (this.light.shadow.camera as THREE.OrthographicCamera).far = 50;
 
         this.light.shadow.mapSize.x = 1024;
         this.light.shadow.mapSize.y = 1024;
-        this.light.shadow.bias = 0.0003;
 
+        this.altarLight.position.set(0, 0, 1.5);
+        // Adding altar light is up to user options, so we won't add it here.
+        // This is because point lights get very bad performance on some browsers.
+
+        this.scene.add(this.ambientLight);
         this.scene.add(this.light);
-        this.scene.add(new THREE.AmbientLight(0xddeeff));
 
         this.initTextures();
-        this.initAltar();
-        this.initPlayersAndOrbs();
-        this.initHUD();
+        this.initSkybox();
+        this.initAltarGraphics();
+        this.initPlayerGraphics();
+        this.initOrbGraphics();
+        this.initHud();
         this.initControls();
+
+        // Init info box
+        this.infoBox = new InfoBox(this, true);
+        this.infoBox.init();
 
         // Init context menu
         this.contextMenu = document.createElement("div");
@@ -118,39 +184,58 @@
         this.container.appendChild(this.contextMenu);
 
         // Init esc menu
-        this.escMenu = new EscMenu(this.container);
+        this.optionsMenu = new OptionsMenu(this);
+        this.optionsMenu.init();
+        this.optionsMenu.initOptionsFromLocalStorage();
 
         this.onWindowResize();
+        this.isInitialized = true;
         return this;
     }
 
     initTextures() {
-        const groundSize = 2 * this.radius + 1;
-        this.gridTexture = this.textureLoader.load("/textures/grid.png");
+        this.gridTexture = this.textureLoader.load("/images/textures/grid.png");
         this.gridTexture.wrapS = THREE.RepeatWrapping;
         this.gridTexture.wrapT = THREE.RepeatWrapping;
-        this.gridTexture.repeat.set(groundSize, groundSize);
+        this.gridTexture.anisotropy = this.renderer.getMaxAnisotropy();
+        this.gridTexture.repeat.set(this.size, this.size);
 
-        this.barrierTexture = this.textureLoader.load("/textures/wilo.png");
-        this.barrierTexture.mapping = THREE.SphericalReflectionMapping;
-        //wiloTexture.wrapS = THREE.RepeatWrapping;
-        //wiloTexture.wrapT = THREE.RepeatWrapping;
-        //wiloTexture.repeat.set(groundSize, groundSize);
+        this.marbleTexture = this.textureLoader.load("/images/textures/marble.jpg");
+        this.marbleTexture.anisotropy = this.renderer.getMaxAnisotropy();
+
+        this.waterTexture = this.textureLoader.load("/images/textures/water2.jpg");
+        this.waterTexture.anisotropy = this.renderer.getMaxAnisotropy();
+
+        const skyboxImagePrefix = "/images/textures/skyboxes/sea2/sea_";
+        const skyboxSuffixes = ["rt", "lf", "up", "dn", "ft", "bk"];
+        this.skyboxTextures = skyboxSuffixes.map(suffix => this.textureLoader.load(skyboxImagePrefix + suffix + ".png"));
     }
 
-    initAltar() {
+    initSkybox() {
+        let materialArray = this.skyboxTextures.map(texture => new THREE.MeshBasicMaterial({
+            map: texture,
+            side: THREE.BackSide,
+            fog: false
+        }));
+
+        this.skybox = new THREE.Mesh(
+            new THREE.CubeGeometry(10000, 10000, 10000),
+            new THREE.MeshFaceMaterial(materialArray));
+        this.skybox.rotation.x = Math.PI / 2;
+        this.scene.add(this.skybox);
+    }
+
+    initAltarGraphics() {
+        this.displayedAltar = this.gameState.altar;
+
         const tileColors = [
             this.getGroundColor(),
-            0x222222,
-            0x777777,
-            AltarData[this.gameState.altar].waterColor || 0x002244,
-            0x888888,
-            0x888888,
-            0x888888,
-            0x222222,
-            0x222222
+            this.barrierColor,
+            this.rockColor,
+            AltarData[this.gameState.altar].waterColor || 0x446688,
+            0x999999
         ];
-        const groundSize = 2 * this.radius + 1;
+
         const wallWidth = 0.08;
 
         let groundColor = AltarData[this.gameState.altar].groundColor;
@@ -165,49 +250,64 @@
         this.altarObjects = new THREE.Group();
 
         this.ground = new THREE.Mesh(
-            new THREE.PlaneGeometry(groundSize, groundSize),
+            new THREE.PlaneBufferGeometry(this.size, this.size),
             new THREE.MeshPhongMaterial({
-                color: <string>tileColors[Tile.Floor],
-                map: this.gridTexture
+                color: tileColors[Tile.Floor],
+                map: this.generateGroundTexture()
             })
         );
-
         this.ground.receiveShadow = true;
+        this.ground.matrixAutoUpdate = false;
         this.altarObjects.add(this.ground);
 
         let geometries: THREE.Geometry[] = [];
         for (let i = 0; i <= Tile.Minipillar1; i++) {
             geometries.push(new THREE.Geometry());
         }
+
+        let barrierGeom = new THREE.BoxGeometry(1, 1, this.barrierHeight);
+        // Remove bottom face, since you never see it.
+        barrierGeom.faces.splice(10, 2);
+        let rockGeom = new THREE.BoxGeometry(1, 1, this.rockHeight);
+        rockGeom.faces.splice(10, 2);
+        let waterGeom = new THREE.BoxGeometry(1, 1, this.waterHeight);
+        waterGeom.faces.splice(10, 2);
+        let wallWGeom = new THREE.BoxGeometry(wallWidth, 1, this.barrierHeight);
+        wallWGeom.faces.splice(10, 2);
+        let wallSGeom = new THREE.BoxGeometry(1, wallWidth, this.barrierHeight);
+        wallSGeom.faces.splice(10, 2);
+        let wallSWGeom = new THREE.BoxGeometry(wallWidth, wallWidth, this.barrierHeight);
+        wallSWGeom.faces.splice(10, 2);
+
         for (let y = -this.radius; y <= this.radius; y++) {
             for (let x = -this.radius; x <= this.radius; x++) {
                 let tile = this.gameState.board.get(new Point(x, y));
                 if (tile === Tile.Barrier) {
-                    let mesh = new THREE.Mesh(new THREE.BoxGeometry(1, 1, this.barrierHeight));
+                    let mesh = new THREE.Mesh(barrierGeom);
                     mesh.position.set(x, y, this.barrierHeight / 2);
                     geometries[0].mergeMesh(mesh);
                 } else if (tile === Tile.Rock) {
-                    let mesh = new THREE.Mesh(new THREE.BoxGeometry(1, 1, this.rockHeight));
+                    let mesh = new THREE.Mesh(rockGeom);
                     mesh.position.set(x, y, this.rockHeight / 2);
                     geometries[1].mergeMesh(mesh);
                 } else if (tile === Tile.Water) {
-                    let mesh = new THREE.Mesh(new THREE.BoxGeometry(1, 1, this.waterHeight));
+                    let mesh = new THREE.Mesh(waterGeom);
                     mesh.position.set(x, y, this.waterHeight / 2);
                     geometries[2].mergeMesh(mesh);
                 }
                 // Walls
                 if (tile === Tile.WallW || tile === Tile.WallSW) {
-                    let mesh = new THREE.Mesh(new THREE.BoxGeometry(wallWidth, 1, this.barrierHeight));
+                    let mesh = new THREE.Mesh(wallWGeom);
                     mesh.position.set(x - 0.5, y, this.barrierHeight / 2);
                     geometries[3].mergeMesh(mesh);
                 }
                 if (tile === Tile.WallS || tile === Tile.WallSW) {
-                    let mesh = new THREE.Mesh(new THREE.BoxGeometry(1, wallWidth, this.barrierHeight));
+                    let mesh = new THREE.Mesh(wallSGeom);
                     mesh.position.set(x, y - 0.5, this.barrierHeight / 2);
                     geometries[3].mergeMesh(mesh);
                 }
                 if (tile === Tile.Minipillar1 || tile === Tile.Minipillar2) {
-                    let mesh = new THREE.Mesh(new THREE.BoxGeometry(wallWidth, wallWidth, this.barrierHeight));
+                    let mesh = new THREE.Mesh(wallSWGeom);
                     mesh.position.set(x - 0.5, y - 0.5, this.barrierHeight / 2);
                     geometries[3].mergeMesh(mesh);
                 }
@@ -216,13 +316,20 @@
 
         for (let i = 0; i < geometries.length; i++) {
             if (geometries[i].vertices.length > 0) {
+                geometries[i].mergeVertices();
                 let tile: Tile = i + 1;
-                let mesh = new THREE.Mesh(geometries[i], new THREE.MeshPhongMaterial({ color: tileColors[tile] }));
+                let mesh = new THREE.Mesh(geometries[i], new THREE.MeshLambertMaterial({ color: tileColors[tile] }));
+                mesh.matrixAutoUpdate = false;
                 mesh.castShadow = true;
                 if (tile === Tile.Water) {
-                    mesh.receiveShadow = true;
-                } else if (tile === Tile.Barrier) {
-                    (<THREE.MeshPhongMaterial>mesh.material).map = this.barrierTexture;
+                    // Performance consideration
+                    if (geometries[i].vertices.length < 1000) {
+                        mesh.receiveShadow = true;
+                    }
+                    (mesh.material as THREE.MeshLambertMaterial).map = this.waterTexture;
+                    mesh.material.needsUpdate = true;
+                } else if (i === 0 || i === 1 || i === 3) {
+                    (mesh.material as THREE.MeshLambertMaterial).map = this.marbleTexture;
                     mesh.material.needsUpdate = true;
                 }
                 this.altarObjects.add(mesh);
@@ -231,7 +338,7 @@
         this.scene.add(this.altarObjects);
     }
 
-    initPlayersAndOrbs() {
+    initPlayerGraphics() {
         // Remove current players
         for (let playerObj of this.playerObjects) {
             this.scene.remove(playerObj.mesh);
@@ -241,17 +348,29 @@
             this.scene.add(playerObj.mesh);
         }
 
+        if (this.game.playerIndex < this.playerObjects.length) {
+            this.camera.followTarget = this.playerObjects[this.game.playerIndex].mesh;
+        }
+    }
+
+    /** Initializes the orbs in the scene. */
+    initOrbGraphics() {
         // Remove current orbs
         for (let orbObj of this.orbObjects) {
             this.scene.remove(orbObj.mesh);
-        }
-        this.orbObjects = this.gameState.orbs.map(orb => new OrbObject(orb, this.orbRadius, this.orbZ, 0xcccc00));
-        for (let orbObj of this.orbObjects) {
-            this.scene.add(orbObj.mesh);
+            this.scene.remove(orbObj.light);
         }
 
-        this.myPlayerObj = this.playerObjects[this.game.playerIndex];
-        this.camera.followTarget = this.myPlayerObj.mesh;
+        this.orbObjects = this.gameState.orbs.map(orb => new OrbObject(
+            orb, this.orbSize, this.orbHeight, this.orbColor,
+            this.orbOpacity));
+        for (let orbObj of this.orbObjects) {
+            this.scene.add(orbObj.mesh);
+            // If there are too many orbs, then we can't have that many lights.
+            if (this.useOrbLights && this.gameState.orbs.length <= 10) {
+                this.scene.add(orbObj.light);
+            }
+        }
     }
 
     initControls() {
@@ -259,28 +378,6 @@
         this.stats.dom.style.position = "absolute";
         this.stats.dom.style.top = "0px";
         this.container.appendChild(this.stats.dom);
-
-        $("#fieldOfView").change(e => {
-            this.camera.fov = +$(e.currentTarget).val();
-            this.camera.updateProjectionMatrix();
-        });
-
-        $("#altar").change(e => {
-            let altar = +$(e.currentTarget).val();
-            if (!(altar in AltarData)) {
-                Utils.loadCustomAltar(altar).done(data => {
-                    AltarData[altar] = data;
-                    this.restart(+$(e.currentTarget).val());
-                    this.initAltar();
-                }).fail(() => {
-                    this.restart(0);
-                    this.initAltar();
-                });
-            } else {
-                this.restart(+$(e.currentTarget).val());
-                this.initAltar();
-            }
-        });
 
         this.renderer.domElement.addEventListener("mousedown", this.onMouseDown.bind(this));
         this.renderer.domElement.addEventListener("mouseup", this.onMouseUp.bind(this));
@@ -298,8 +395,8 @@
         $(window).resize(this.onWindowResize.bind(this));
     }
 
-    initHUD() {
-        this.runRepelIndicator = <HTMLDivElement>$("<div/>").css({
+    initHud() {
+        this.runRepelIndicator = $("<div/>").css({
             position: "absolute",
             fontSize: 20,
             right: 0,
@@ -310,20 +407,20 @@
             backgroundColor: "rgba(0, 0, 0, 0.2)",
             color: "white",
             textAlign: "center"
-        })[0];
+        })[0] as HTMLDivElement;
         this.container.appendChild(this.runRepelIndicator);
 
-        this.timerCanvas = <HTMLCanvasElement>$("<canvas/>").css({
+        this.timerCanvas = $("<canvas/>").css({
             position: "absolute",
             right: 40,
             pointerEvents: "none"
-        })[0];
+        })[0] as HTMLCanvasElement;
         this.timerCanvas.width = 2 * this.timerRadius + 2;
         this.timerCanvas.height = 2 * this.timerRadius + 2;
         this.container.appendChild(this.timerCanvas);
         this.timerContext = this.timerCanvas.getContext("2d");
 
-        this.scoreIndicator = <HTMLDivElement>$("<div/>").css({
+        this.scoreIndicator = $("<div/>").css({
             position: "absolute",
             font: "24px Roboto",
             right: 0,
@@ -334,7 +431,7 @@
             pointerEvents: "none",
             color: "white",
             textAlign: "center"
-        })[0];
+        })[0] as HTMLDivElement;
         this.container.appendChild(this.scoreIndicator);
 
         this.timerCanvas.style.bottom = this.scoreIndicator.clientHeight + "px";
@@ -342,13 +439,13 @@
 
     getGroundColor() {
         let groundColor = AltarData[this.gameState.altar].groundColor;
-        if (groundColor === null) {
-            return "#848899";
+        if (!groundColor) {
+            return "#545566";
         }
         if (groundColor instanceof Array) {
             return groundColor[0];
         }
-        return <string>groundColor;
+        return groundColor as string;
     }
 
     mouseEventToRaycastVector(e: MouseEvent) {
@@ -363,28 +460,82 @@
         return this.raycaster.intersectObjects(this.orbObjects.map(obj => obj.mesh).concat(this.ground));
     }
 
+    generateGroundTexture() {
+        let groundColors = AltarData[this.gameState.altar].groundColor;
+        let groundPattern = AltarData[this.gameState.altar].groundPattern;
+        if (!groundPattern || !(groundColors instanceof Array)) {
+            return this.gridTexture;
+        }
+
+        let lightGroundColors = (groundColors as string[]).map(cStr => {
+            let c = new THREE.Color(cStr);
+            let {h, s, l} = c.getHSL();
+            c.setHSL(h, s, 1.3 * l);
+            return "#" + c.getHexString();
+        });
+
+        let canvas = document.createElement("canvas");
+        let size = 2048;
+        let scale = size / this.size;
+        let roundedScale = Math.round(scale);
+        canvas.width = size;
+        canvas.height = size;
+        let context = canvas.getContext("2d");
+        context.fillStyle = lightGroundColors[0];
+        context.fillRect(0, 0, canvas.width, canvas.height);
+        for (let y = -this.radius; y <= this.radius; y++) {
+            for (let x = -this.radius; x <= this.radius; x++) {
+                let nx = this.radius + x;
+                let ny = this.radius - y;
+                let color = lightGroundColors[groundPattern[ny][nx]];
+                if (color !== lightGroundColors[0]) {
+                    context.fillStyle = color;
+                    context.fillRect(Math.round(scale * nx), Math.round(scale * ny), roundedScale, roundedScale);
+                }
+            }
+        }
+        // Draw gridlines
+        context.lineWidth = 1;
+        context.strokeStyle = "#666";
+        context.beginPath();
+        for (let x = 1; x <= this.size; x++) {
+            context.moveTo(Math.floor(x * scale) + 0.5, 0);
+            context.lineTo(Math.floor(x * scale) + 0.5, canvas.height);
+        }
+        for (let y = 0; y < this.size; y++) {
+            context.moveTo(0, Math.floor(y * scale) + 0.5);
+            context.lineTo(canvas.width, Math.floor(y * scale) + 0.5);
+        }
+        context.stroke();
+
+        let texture = new THREE.Texture(canvas);
+        texture.magFilter = THREE.NearestFilter;
+        texture.minFilter = THREE.LinearMipMapLinearFilter;
+        texture.anisotropy = this.renderer.getMaxAnisotropy();
+        texture.needsUpdate = true;
+        return texture;
+    }
+
+    setAltarAndSeed(altar: number, seed: number) {
+        this.gameState.altar = altar;
+        this.gameState.seed = seed;
+    }
+
     /**
      * Starts the 3D GOP rendering. Note that this doesn't start the game itself.
      * The player must click to start the game.
      */
     start() {
         this.clock.start();
-        this.updateHud();
+        this.updateDisplay();
         this.animate();
-    }
-
-    get width() {
-        return this.renderer.domElement.width;
-    }
-
-    get height() {
-        return this.renderer.domElement.height;
     }
 
     updateHud() {
         this.drawRunRepelIndicators();
         this.drawTimer();
         this.drawScore();
+        this.infoBox.update();
     }
 
     drawRunRepelIndicators() {
@@ -441,61 +592,8 @@
 <span style="color: #ccc; font-size: 16px">Estimated: ${this.gameState.getEstimatedScore()}</span>`;
     }
 
-    showContextMenu(e: MouseEvent) {
-        // Create context menu
-        let $menuItems = $('<ul class="context-menu"/>');
-
-        this.mouseVector = this.mouseEventToRaycastVector(e);
-        let intersections = this.clickableObjectsUnderLocation(this.mouseVector);
-        if (intersections.length === 0) {
-            // Nothing!
-            return;
-        }
-
-        for (let intersection of intersections) {
-            let isOrb = false;
-            for (let orbObj of this.orbObjects) {
-                if (intersection.object === orbObj.mesh) {
-                    isOrb = true;
-                    let $menuItem = $(`<li class="context-menu-item">Attract <span style="color: yellow">Orb ${GameAction.orbIndexToChar(orbObj.orb.index)}</span></li>`)
-                        .mousedown(eInner => {
-                            eInner.preventDefault();
-                            if (eInner.button === 0) {
-                                this.contextMenu.hidden = true;
-                                this.game.setPlayerAction(GameAction.attract(orbObj.orb.index, false, false, true));
-                            }
-                        });
-                    $menuItems.append($menuItem);
-                    break;
-                }
-            }
-            if (!isOrb && intersection.object === this.ground) {
-                let p = new Point(Math.round(intersection.point.x), Math.round(intersection.point.y));
-                let $menuItem = $(`<li class="context-menu-item">Walk to ${p}</li>`)
-                    .mousedown(eInner => {
-                        eInner.preventDefault();
-                        if (eInner.button === 0) {
-                            this.contextMenu.hidden = true;
-                            this.game.setPlayerAction(GameAction.move(p));
-                        }
-                    });
-                $menuItems.append($menuItem);
-            }
-        }
-
-        $(this.contextMenu)
-            .empty()
-            .append($menuItems);
-        this.contextMenu.hidden = false;
-        $(this.contextMenu)
-            .css({
-                left: Math.min(this.width - this.contextMenu.clientWidth, e.offsetX - 25),
-                top: e.offsetY
-            });
-    }
-
-    restart(altar?: Altar, resetGameplayData = true) {
-        this.game.restart(altar, resetGameplayData);
+    restart(resetGameplayData = true) {
+        this.game.restart(resetGameplayData);
 
         if (resetGameplayData) {
             // Reset tick progress
@@ -505,57 +603,60 @@
             this.tickProgress = 0;
         }
 
-        for (let attractDot of this.attractDots) {
-            this.scene.remove(attractDot.mesh);
+        if (this.displayedAltar !== this.gameState.altar) {
+            this.initAltarGraphics();
         }
 
-        this.updateHud();
+        if (this.isInitialized) {
+            this.updateDisplay();
+        }
     }
 
-    setGameplayDataFromCode(code: string) {
-        this.game.restartFromCode(code);
-        this.initAltar();
-        this.initPlayersAndOrbs();
+    restartFromCode(code: string) {
+        return this.game.restartFromCode(code).always(() => {
+            this.initAltarGraphics();
+            this.initPlayerGraphics();
+            this.initOrbGraphics();
+        });
     }
 
     /**
      * Rewinds the game a set amount of ticks.
      */
     rewind(ticks = 7) {
-        if (this.game.isStarted) {
-            this.game.isFinished = false;
-            let tickToLoad = this.gameState.currentTick - ticks;
-            this.restart(undefined, false);
-            this.game.isStarted = true;
-            for (let i = 0; i < tickToLoad; i++) {
-                this.tick(false);
-            }
-            this.updateHud();
+        if (!this.game.isStarted) {
+            return;
         }
+
+        let tickToLoad = this.gameState.currentTick - ticks;
+        this.restart(false);
+        this.game.start();
+        for (let i = 0; i < tickToLoad; i++) {
+            this.game.tick();
+        }
+        this.updateDisplay();
     }
 
     fastForward(ticks = 7) {
-        for (let i = 0; i < ticks; i++) {
-            this.tick(false);
+        if (!this.game.isStarted) {
+            this.game.start();
         }
-        this.updateHud();
+
+        for (let i = 0; i < ticks; i++) {
+            this.game.tick();
+        }
+        this.updateDisplay();
     }
 
     updateOrbsVisibility() {
         for (let orb of this.gameState.orbs) {
-            this.orbObjects[orb.index].mesh.visible =
-                Point.walkingDistance(orb.location, this.game.player.location) <= this.orbVisibilityRadius;
+            if (orb.index < this.orbObjects.length) {
+                this.orbObjects[orb.index].mesh.visible = Point.walkingDistance(orb.location, this.game.player.location) <= this.orbVisibilityRadius;
+            }
         }
     }
 
-    /**
-     * Called when the game state should advance a tick.
-     */
-    tick(updateHud = true) {
-        this.game.tick();
-
-        this.updateOrbsVisibility();
-
+    updateAttractDots() {
         // Every tick, remove old attract dots
         // and add a new attract dot for each player that's attracting or repelling.
         for (let attractDot of this.attractDots) {
@@ -566,24 +667,36 @@
             if (playerObj.player.isAttracting && playerObj.player.currentOrb !== null) {
                 let orbObj = this.orbObjects[playerObj.player.currentOrb.index];
                 let attractDot: AttractDot;
+                let orbColor = new THREE.Color(this.orbColor);
+                let {h, s, } = orbColor.getHSL();
+                orbColor.setHSL(h, s, 0.75);
                 if (playerObj.player.repel) {
-                    attractDot = new AttractDot(orbObj.mesh, playerObj.mesh);
+                    attractDot = new AttractDot(orbObj.mesh, playerObj.mesh, orbColor.getHex());
                 } else {
-                    attractDot = new AttractDot(playerObj.mesh, orbObj.mesh);
+                    attractDot = new AttractDot(playerObj.mesh, orbObj.mesh, orbColor.getHex());
                 }
                 this.attractDots.push(attractDot);
                 this.scene.add(attractDot.mesh);
             }
         }
+    }
 
-        if (updateHud) {
-            this.updateHud();
+    updateDisplay() {
+        if (this.game.isFinished) {
+            this.tickProgress = 0;
         }
+        this.updateOrbsVisibility();
+        this.updateAttractDots();
+        this.updateHud();
+    }
 
-        if (this.gameState.currentTick >= GameState.ticksPerAltar) {
-            this.game.isFinished = true;
-            this.updateHud();
-        }
+    /**
+     * Called when the game state should advance a tick.
+     */
+    tick() {
+        this.game.tick();
+        this.updateDisplay();
+        this.infoBox.tick();
     }
 
     /**
@@ -593,9 +706,12 @@
     update(elapsed: number) {
         if (this.game.isStarted && !this.game.isPaused && !this.game.isFinished) {
             this.tickProgress += elapsed / this.tickLength;
-            if (this.tickProgress >= 1) {
-                this.tickProgress %= 1;
-                this.tick();
+
+            if (this.autoTick) {
+                if (this.tickProgress >= 1) {
+                    this.tickProgress %= 1;
+                    this.tick();
+                }
             }
         }
 
@@ -614,6 +730,9 @@
             attractDot.update(this.tickProgress);
         }
 
+        // Rotate skybox!
+        this.skybox.rotation.y += Math.PI * elapsed / 150;
+
         // Rotate cameraRotateXSpeed
         let yFactor = this.upPressed ? 1 : this.downPressed ? -1 : 0;
         let xFactor = this.rightPressed ? 1 : this.leftPressed ? -1 : 0;
@@ -622,10 +741,10 @@
         }
 
         if (this.zoomInPressed) {
-            this.camera.translateZ(-this.zoomSpeed * elapsed);
+            this.camera.zoomTowardTarget(-this.zoomSpeed * elapsed * 0.1);
         }
         if (this.zoomOutPressed) {
-            this.camera.translateZ(this.zoomSpeed * elapsed);
+            this.camera.zoomTowardTarget(this.zoomSpeed * elapsed * 0.1);
         }
 
         // Update cursor
@@ -654,21 +773,40 @@
     }
 
     onKeyDown(e: KeyboardEvent) {
+        // console.log(e.key);
         if (e.key[0] !== "F") {
             // Let F keys through for now
             e.preventDefault();
         }
         switch (e.key) {
-            case "w":
+            case this.keybinds.run:
+                if (!this.game.isPaused) {
+                    this.game.setPlayerRunAndRepel(!this.game.player.run, null);
+                    this.updateHud();
+                }
+                break;
+            case this.keybinds.repel:
+                if (!this.game.isPaused) {
+                    this.game.setPlayerRunAndRepel(null, true);
+                    this.updateHud();
+                }
+                break;
+            case this.keybinds.attract:
+                if (!this.game.isPaused) {
+                    this.game.setPlayerRunAndRepel(null, false);
+                    this.updateHud();
+                }
+                break;
+            case "w": case "W": case "ArrowUp": case "Up":
                 this.upPressed = true;
                 break;
-            case "s":
+            case "s": case "S": case "ArrowDown": case "Down":
                 this.downPressed = true;
                 break;
-            case "a":
+            case "a": case "A": case "ArrowLeft": case "Left":
                 this.leftPressed = true;
                 break;
-            case "d":
+            case "d": case "D": case "ArrowRight": case "Right":
                 this.rightPressed = true;
                 break;
             case "PageUp":
@@ -677,50 +815,32 @@
             case "PageDown":
                 this.zoomOutPressed = true;
                 break;
-            case "r":
-                this.game.setPlayerRunAndRepel(!this.game.player.run, null);
-                this.updateHud();
-                break;
-            case "q":
-                this.game.setPlayerRunAndRepel(null, true);
-                this.updateHud();
-                break;
-            case "z":
-                this.game.setPlayerRunAndRepel(null, false);
-                this.updateHud();
-                break;
             case "R":
                 this.restart();
                 break;
-            case "ArrowLeft":
-            case "Left":    // "Left" and "Right" are for Microsoft Edge compatibility >.<...
+            case "-":
                 this.rewind();
                 break;
-            case "ArrowRight":
-            case "Right":
+            case "=": case "+":
                 this.fastForward();
                 break;
-            case "Escape":
+            case "Escape": case "Esc":
                 // TODO: Account for puzzles
                 if (this.game.isPaused) {
                     this.game.resume();
                 } else {
                     this.game.pause();
                 }
-                this.escMenu.visible = this.game.isPaused;
+                this.optionsMenu.visible = this.game.isPaused;
                 break;
-            case "1":
-            case "2":
-            case "3":
-            case "4":
-            case "5":
-            case "6":
-                let index = +e.key - 1;
-                if (index < this.gameState.players.length) {
-                    this.game.playerIndex = index;
-                    this.camera.followTarget = this.playerObjects[index].mesh;
-                    this.updateHud();
-                    this.updateOrbsVisibility();
+            case "1": case "2": case "3": case "4": case "5": case "6":
+                if (this.allowPlayerSwitching) {
+                    let index = +e.key - 1;
+                    if (index < this.gameState.players.length) {
+                        this.playerIndex = index;
+                        this.updateHud();
+                        this.updateOrbsVisibility();
+                    }
                 }
                 break;
             default:
@@ -731,16 +851,16 @@
     onKeyUp(e: KeyboardEvent) {
         e.preventDefault();
         switch (e.key) {
-            case "w":
+            case "w": case "W": case "ArrowUp": case "Up":
                 this.upPressed = false;
                 break;
-            case "s":
+            case "s": case "S": case "ArrowDown": case "Down":
                 this.downPressed = false;
                 break;
-            case "a":
+            case "a": case "A": case "ArrowLeft": case "Left":
                 this.leftPressed = false;
                 break;
-            case "d":
+            case "d": case "D": case "ArrowRight": case "Right":
                 this.rightPressed = false;
                 break;
             case "PageUp":
@@ -758,6 +878,11 @@
         $(e.currentTarget).focus();
 
         if (e.button === 0) {
+            if (this.game.isPaused) {
+                // If player actions are set while paused, the user will be confused!
+                return;
+            }
+
             e.preventDefault();
 
             this.contextMenu.hidden = true;
@@ -767,7 +892,7 @@
             if (intersections.length > 0) {
                 let first = intersections[0];
                 let clickedOrbIndex = -1;
-                for (let i = 0; i < 3; i++) {
+                for (let i = 0; i < this.orbObjects.length; i++) {
                     if (this.orbObjects[i].mesh === first.object) {
                         clickedOrbIndex = i;
                         break;
@@ -834,9 +959,62 @@
     }
 
     onWindowResize() {
-        this.camera.aspect = $(window).width() / ($(window).height() - 40);
-        this.renderer.setSize($(window).width(), $(window).height() - 40);
+        this.renderer.setSize(window.innerWidth, window.innerHeight);
+        this.camera.aspect = window.innerWidth / (window.innerHeight);
         this.camera.updateProjectionMatrix();
+    }
+
+    private showContextMenu(e: MouseEvent) {
+        // Create context menu
+        let $menuItems = $('<ul class="context-menu"/>');
+
+        this.mouseVector = this.mouseEventToRaycastVector(e);
+        let intersections = this.clickableObjectsUnderLocation(this.mouseVector);
+        if (intersections.length === 0) {
+            // Nothing!
+            return;
+        }
+
+        for (let intersection of intersections) {
+            let isOrb = false;
+            for (let orbObj of this.orbObjects) {
+                if (intersection.object === orbObj.mesh) {
+                    isOrb = true;
+                    let $menuItem = $(`<li class="context-menu-item">Attract <span style="color: yellow">Orb ${GameAction.orbIndexToChar(orbObj.orb.index)}</span></li>`)
+                        .mousedown(eInner => {
+                            eInner.preventDefault();
+                            if (eInner.button === 0) {
+                                this.contextMenu.hidden = true;
+                                this.game.setPlayerAction(GameAction.attract(orbObj.orb.index, false, false, true));
+                            }
+                        });
+                    $menuItems.append($menuItem);
+                    break;
+                }
+            }
+            if (!isOrb && intersection.object === this.ground) {
+                let p = new Point(Math.round(intersection.point.x), Math.round(intersection.point.y));
+                let $menuItem = $(`<li class="context-menu-item">Walk to ${p}</li>`)
+                    .mousedown(eInner => {
+                        eInner.preventDefault();
+                        if (eInner.button === 0) {
+                            this.contextMenu.hidden = true;
+                            this.game.setPlayerAction(GameAction.move(p));
+                        }
+                    });
+                $menuItems.append($menuItem);
+            }
+        }
+
+        $(this.contextMenu)
+            .empty()
+            .append($menuItems);
+        this.contextMenu.hidden = false;
+        $(this.contextMenu)
+            .css({
+                left: Math.min(this.width - this.contextMenu.clientWidth, e.offsetX - 25),
+                top: e.offsetY
+            });
     }
 }
 
@@ -850,7 +1028,6 @@ class Game {
 
     isStarted = false;
     isPaused = false;
-    isFinished = false;
 
     constructor(gameState: GameState, playerIndex: number) {
         this.gameState = gameState;
@@ -863,6 +1040,19 @@ class Game {
             return this.gameState.players[this.playerIndex];
         }
         return null;
+    }
+
+    /**
+     * Indicates whether the underlying game state is in a finished state.
+     */
+    get isFinished() {
+        return this.gameState.isFinished;
+    }
+
+    get isCustom() {
+        return this.gameState.presetSpawns.length > 0 ||
+            this.gameState.board.reachDistance !== GopBoard.defaults.reachDistance ||
+            GameState.ticksPerAltar !== GameState.defaults.ticksPerAltar;
     }
 
     resetGameplayData() {
@@ -882,10 +1072,9 @@ class Game {
         this.isPaused = false;
     }
 
-    restart(altar?: Altar, resetGameplayData = true) {
+    restart(resetGameplayData = true) {
         this.isStarted = false;
-        this.isFinished = false;
-        this.gameState.reset(altar);
+        this.gameState.reset();
 
         if (resetGameplayData) {
             this.resetGameplayData();
@@ -900,6 +1089,9 @@ class Game {
         }
     }
 
+    /**
+     * Restarts the game from a code. Returns a promise since the altar might be a custom altar.
+     */
     restartFromCode(code: string) {
         this.gameplayData = GameplayData.parse(code);
         let startInfo = this.gameplayData.startInfo;
@@ -911,7 +1103,13 @@ class Game {
             player.repel = value.repel;
             return player;
         });
-        this.restart(undefined, false);
+
+        return Utils.loadAltar(this.gameState.altar).fail(() => {
+            this.gameState.altar = Altar.None;
+        }).always(() => {
+            this.restart(false);
+            this.start();
+        });
     }
 
     tick() {
@@ -979,7 +1177,8 @@ class Game {
 class FollowCamera extends THREE.PerspectiveCamera {
     private oldTargetPosition = new THREE.Vector3();
     private easeTargetPosition = new THREE.Vector3();
-    easeFactor = 0.085;
+    easeFactor = 0.06;
+    maxZoom = 200;
 
     constructor(fov?: number, aspect?: number, near?: number, far?: number,
         public followTarget?: THREE.Object3D) {
@@ -1000,7 +1199,7 @@ class FollowCamera extends THREE.PerspectiveCamera {
      * @param phi The vertical angle.
      */
     rotateAroundTarget(theta: number, phi: number) {
-        if (this.followTarget === undefined) {
+        if (!this.followTarget) {
             return;
         }
 
@@ -1022,12 +1221,12 @@ class FollowCamera extends THREE.PerspectiveCamera {
      * @param factor The amount to zoom by, between 0 and 1.
      */
     zoomTowardTarget(factor: number) {
-        if (this.followTarget === undefined) {
+        if (this.followTarget == null) {
             return;
         }
 
         let dist = this.position.distanceTo(this.easeTargetPosition);
-        this.translateZ(dist * factor);
+        this.translateZ(Math.min(this.maxZoom - dist, dist * factor));
     }
 
     /**
@@ -1035,7 +1234,7 @@ class FollowCamera extends THREE.PerspectiveCamera {
      * @param elapsed The amount of time elapsed since last update.
      */
     update(elapsed: number) {
-        if (this.followTarget === undefined) {
+        if (this.followTarget == null) {
             return;
         }
 
@@ -1065,7 +1264,7 @@ class PlayerObject {
     }
 
     update(tickProgress: number) {
-        let drawLocation = GopUI3D.getDrawLocation(this.player, tickProgress);
+        let drawLocation = this.player.getDrawLocation(tickProgress);
         this.mesh.position.x = drawLocation.x;
         this.mesh.position.y = drawLocation.y;
     }
@@ -1073,42 +1272,69 @@ class PlayerObject {
 
 class OrbObject {
     mesh: THREE.Mesh;
+    circle: THREE.Mesh;
+    light: THREE.PointLight;
 
     constructor(
         public orb: Orb,
         radius: number,
         z: number,
-        color: number | string) {
+        color: number | string,
+        opacity: number) {
         this.mesh = new THREE.Mesh(
-            new THREE.SphereGeometry(radius, 32, 16),
+            new THREE.SphereBufferGeometry(radius, 32, 16),
             new THREE.MeshPhongMaterial({
                 color,
-                shininess: 70
+                specular: 0x606060,
+                shininess: 60,
+                transparent: opacity < 1,
+                opacity
             }));
         this.mesh.position.set(orb.location.x, orb.location.y, z);
-        this.mesh.castShadow = true;
+        // this.mesh.castShadow = true;
+
+        this.circle = new THREE.Mesh(
+            new THREE.CircleGeometry(0.5, 16),
+            new THREE.MeshBasicMaterial({
+                color,
+                transparent: true,
+                opacity: 0.2
+            })
+        );
+        this.circle.position.z = -z + 0.1;
+        this.mesh.add(this.circle);
+
+        let c = new THREE.Color(color as string);
+        let {h, s, l} = c.getHSL();
+        c.setHSL(h, s, Math.max(0.5, l));
+        this.light = new THREE.PointLight(c.getHex(), 1, 15, 2);
     }
 
     update(tickProgress: number) {
-        let drawLocation = GopUI3D.getDrawLocation(this.orb, tickProgress);
+        let drawLocation = this.orb.getDrawLocation(tickProgress);
         this.mesh.position.x = drawLocation.x;
         this.mesh.position.y = drawLocation.y;
+        if (this.light !== undefined) {
+            this.light.position.copy(this.mesh.position);
+        }
     }
 }
 
 class AttractDot {
-    mesh = new THREE.Mesh(
-        new THREE.SphereGeometry(0.1, 8, 8),
-        new THREE.MeshPhongMaterial({
-            color: 0xffff00,
-            transparent: true,
-            opacity: 0.5
-        })
-    );
+    mesh: THREE.Mesh;
 
     constructor(
         public startObject: THREE.Object3D,
-        public endObject: THREE.Object3D) {
+        public endObject: THREE.Object3D,
+        color: number | string) {
+        this.mesh = new THREE.Mesh(
+            new THREE.SphereGeometry(0.1, 8, 8),
+            new THREE.MeshLambertMaterial({
+                color,
+                transparent: true,
+                opacity: 0.5
+            })
+        );
         this.mesh.position.copy(startObject.position);
         this.mesh.castShadow = true;
     }
@@ -1118,36 +1344,420 @@ class AttractDot {
     }
 }
 
-/**
- * A class to hold the Esc menu and its controls.
- */
-class EscMenu {
+interface Option {
+    name: string;
+    inputElement: HTMLInputElement;
+    useLocalStorage: boolean;
+    get: () => any;
+    set: (value: any) => void;
+}
+
+/** A class to hold the Esc menu and its controls. */
+class OptionsMenu {
     overlayContainer: HTMLDivElement;
-    menu: HTMLDivElement;
+    mainMenu: HTMLDivElement;
+    header: HTMLHeadingElement;
+
+    options: Option[] = [];
+    scoredTicksElement: HTMLInputElement;
+    shareLinkElement: HTMLInputElement;
     enabled = true;
 
-    constructor(public container: HTMLDivElement) {
-        this.overlayContainer = document.createElement("div");
-        this.overlayContainer.hidden = true;
-        this.overlayContainer.style.position = "absolute";
-        this.overlayContainer.style.left = "0";
-        this.overlayContainer.style.top = "0";
-        this.overlayContainer.style.width = "100%";
-        this.overlayContainer.style.height = "100%";
-        this.overlayContainer.style.backgroundColor = "rgba(0, 0, 0, 0.5)";
-        this.overlayContainer.style.pointerEvents = "none";
-        container.appendChild(this.overlayContainer);
-
-        this.menu = document.createElement("div");
-        this.menu.textContent = "Hello world!";
-        this.overlayContainer.appendChild(this.menu);
-    }
+    constructor(public parent: GopUI3D) { }
 
     get visible() { return !this.overlayContainer.hidden; }
 
     set visible(value) {
         if (this.enabled) {
             this.overlayContainer.hidden = !value;
+            if (value) {
+                this.update();
+            }
+        }
+    }
+
+    private get game() { return this.parent.game; }
+
+    private get gameState() { return this.parent.game.gameState; }
+
+    private get gameplayData() { return this.parent.game.gameplayData; }
+
+    init() {
+        this.overlayContainer = document.createElement("div");
+        this.overlayContainer.hidden = true;
+        this.overlayContainer.classList.add("overlay-container");
+        this.parent.container.appendChild(this.overlayContainer);
+
+        this.mainMenu = document.createElement("div");
+        this.mainMenu.classList.add("main-menu");
+        this.mainMenu.tabIndex = 1;
+        this.mainMenu.addEventListener("contextmenu", e => {
+            if (e.target === this.mainMenu) {
+                e.preventDefault();
+            }
+        });
+        this.mainMenu.addEventListener("keydown", this.onKeyDown.bind(this));
+        this.overlayContainer.appendChild(this.mainMenu);
+
+        this.header = document.createElement("h3");
+        this.header.textContent = "Options";
+        this.mainMenu.appendChild(this.header);
+
+        let altarOption = this.addOption("altar", "Altar",
+            () => this.gameState.altar, undefined, { inputStyleWidth: "100px" }, false);
+
+        let seedOption = this.addOption("seed", "Seed",
+            () => this.gameState.seed, undefined, undefined, false);
+
+        let $restart = $('<button class="btn btn-warning">Restart</button>')
+            .click(e => {
+                let altar = +altarOption.inputElement.value;
+                let seed = +seedOption.inputElement.value;
+                this.parent.setAltarAndSeed(altar, seed);
+
+                Utils.loadAltar(altar).fail(() => {
+                    altar = Altar.None;
+                }).always(() => {
+                    this.parent.restart();
+                });
+            });
+        this.mainMenu.appendChild($restart[0]);
+
+        this.addSeparator();
+
+        this.addOption("fov", "Field of view:",
+            () => this.parent.camera.fov,
+            (value: number) => {
+                this.parent.camera.fov = value;
+                this.parent.camera.updateProjectionMatrix();
+            },
+            { min: 0, max: 360, step: 1, fullLabelWidth: true });
+
+        this.addOption("orbSize", "Orb size:",
+            () => this.parent.orbSize,
+            (value: number) => {
+                this.parent.orbSize = value;
+                this.parent.initOrbGraphics();
+            },
+            { min: 0, max: 53, step: 0.05, fullLabelWidth: true });
+
+        this.addOption("orbColor", "Orb color:",
+            () => this.parent.orbColor,
+            (value: string) => {
+                this.parent.orbColor = value;
+                this.parent.initOrbGraphics();
+            },
+            { fullLabelWidth: true });
+
+        this.addOption("orbOpacity", "Orb opacity:",
+            () => this.parent.orbOpacity,
+            (value: number) => {
+                this.parent.orbOpacity = value;
+                this.parent.initOrbGraphics();
+            },
+            { min: 0, max: 1, step: 0.05, fullLabelWidth: true });
+
+        this.addOption("useShadows", "Shadows",
+            () => this.parent.useShadows,
+            (value: boolean) => { this.parent.useShadows = value; });
+
+        this.addOption("useOrbLights", "Orb lights",
+            () => this.parent.useOrbLights,
+            (value: boolean) => {
+                this.parent.useOrbLights = value;
+                this.parent.initOrbGraphics();
+            });
+
+        this.addOption("useAltarLight", "Altar light",
+            () => this.parent.scene.children.indexOf(this.parent.altarLight) !== -1,
+            (value: boolean) => {
+                if (value) {
+                    this.parent.scene.add(this.parent.altarLight);
+                } else {
+                    this.parent.scene.remove(this.parent.altarLight);
+                }
+            });
+
+        this.addSeparator();
+
+        this.addOption("runKey", "Run key:",
+            () => this.parent.keybinds.run,
+            (value: string) => {
+                this.parent.keybinds.run = value;
+            }, { inputStyleWidth: "100px" });
+
+        this.addOption("repelKey", "Repel key:",
+            () => this.parent.keybinds.repel,
+            (value: string) => {
+                this.parent.keybinds.repel = value;
+            }, { inputStyleWidth: "100px" });
+
+        this.addOption("attractKey", "Attract key:",
+            () => this.parent.keybinds.attract,
+            (value: string) => {
+                this.parent.keybinds.attract = value;
+            }, { inputStyleWidth: "100px" });
+
+        this.addSeparator();
+
+        this.scoredTicksElement = $('<input class="for-copying" readonly/>')[0] as HTMLInputElement;
+        let $scoredTicks = $("<label>Scored ticks: </label>").width("100%")
+            .append(this.scoredTicksElement);
+        this.mainMenu.appendChild($scoredTicks[0]);
+
+        this.shareLinkElement = $('<input class="for-copying" readonly/>')[0] as HTMLInputElement;
+        let $shareLink = $("<label>Share link: </label>").width("100%")
+            .append(this.shareLinkElement);
+        this.mainMenu.appendChild($shareLink[0]);
+
+        let $soloGamesLink = $('<a href="/Solo/Games" target="_blank">View solo history</a>');
+        this.mainMenu.appendChild($soloGamesLink[0]);
+
+        $(".for-copying").click(e => {
+            $(e.currentTarget).select();
+        });
+
+        let restartButton = $restart[0] as HTMLButtonElement;
+        Utils.bindEnterKeyToButton(altarOption.inputElement, restartButton);
+        Utils.bindEnterKeyToButton(seedOption.inputElement, restartButton);
+    }
+
+    initOptionsFromLocalStorage() {
+        for (let option of this.options) {
+            let value = option.get();
+            let localStorageValue = localStorage.getItem(option.name);
+            if (localStorageValue === null) {
+                continue;
+            }
+
+            if (typeof value === "boolean") {
+                option.set(localStorageValue === "true");
+            } else if (typeof value === "number") {
+                option.set(+localStorageValue);
+            } else {
+                option.set(localStorageValue);
+            }
+        }
+    }
+
+    addOption(name: string, label: string,
+        get: () => number | string | boolean, set?: (value: number | string | boolean) => void,
+        settings: { min?: number, max?: number, step?: number, fullLabelWidth?: boolean, inputStyleWidth?: string } = {},
+        useLocalStorage = true) {
+        let value = get();
+        let inputElement: HTMLInputElement;
+        if (typeof value === "number") {
+            inputElement = this.addNumericInput(label, settings.min, settings.max, settings.step, settings.fullLabelWidth);
+        } else if (typeof value === "boolean") {
+            inputElement = this.addBooleanInput(label, settings.fullLabelWidth);
+        } else {
+            inputElement = this.addTextInput(label, settings.fullLabelWidth);
+        }
+        if (settings.inputStyleWidth !== undefined) {
+            inputElement.style.width = settings.inputStyleWidth;
+        }
+        if (set !== undefined) {
+            inputElement.addEventListener("change", e => {
+                let newValue = (e.currentTarget as HTMLInputElement).value;
+                if (typeof value === "boolean") {
+                    let checked = (e.currentTarget as HTMLInputElement).checked;
+                    set(checked);
+                    newValue = checked.toString();
+                } else if (typeof value === "number") {
+                    set(+newValue);
+                } else {
+                    set(newValue);
+                }
+                if (useLocalStorage) {
+                    localStorage.setItem(name, newValue);
+                }
+            });
+        }
+        let option = { name, inputElement, useLocalStorage, get, set };
+        this.options.push(option);
+        return option;
+    }
+
+    addSeparator() {
+        this.mainMenu.appendChild(document.createElement("hr"));
+    }
+
+    update() {
+        for (let option of this.options) {
+            let value = option.get();
+            if (typeof value === "boolean") {
+                option.inputElement.checked = value;
+            } else {
+                option.inputElement.value = value;
+            }
+        }
+
+        this.updateScoredTicks();
+        this.updateShareLink();
+    }
+
+    private addTextInput(label: string, fullWidth = false) {
+        let $input = $('<input type="text"/>')
+            .addClass("form-control");
+        let $label = $("<label/>").text(label).append($input);
+        if (fullWidth) {
+            $label.width("100%");
+        }
+        this.mainMenu.appendChild($label[0]);
+        return $input[0] as HTMLInputElement;
+    }
+
+    private addNumericInput(label: string, min = 0, max = 2147483647, step = 1, fullWidth = false) {
+        let $input = $('<input type="number"/>')
+            .attr({ min, max, step })
+            .addClass("form-control");
+        let $label = $("<label/>").text(label).append($input);
+        if (fullWidth) {
+            $label.width("100%");
+        }
+        this.mainMenu.appendChild($label[0]);
+        return $input[0] as HTMLInputElement;
+    }
+
+    private addBooleanInput(label: string, fullWidth = false) {
+        let $input = $('<input type="checkbox"/>');
+        let $label = $("<label/>").append($input).append(label);
+        if (fullWidth) {
+            $label.width("100%");
+        }
+        this.mainMenu.appendChild($label[0]);
+        return $input[0] as HTMLInputElement;
+    }
+
+    private updateScoredTicks() {
+        this.scoredTicksElement.value = this.gameState.scoredTicks.join(" ");
+    }
+
+    private updateShareLink() {
+        let args: string[] = [];
+        // Don't need altar, seed, or start positions since those are part of the game code.
+        if (this.gameState.numberOfOrbs !== GameState.defaults.numberOfOrbs) {
+            args.push("numorbs=" + this.gameState.numberOfOrbs);
+        }
+        if (this.gameState.board.reachDistance !== GopBoard.defaults.reachDistance) {
+            args.push("reach=" + this.gameState.board.reachDistance);
+        }
+        if (GameState.ticksPerAltar !== GameState.defaults.ticksPerAltar) {
+            args.push("ticks=" + GameState.ticksPerAltar);
+        }
+        if (this.gameState.presetSpawns.length > 0) {
+            args.push("spawns=" + Utils.pointArrayToJSON(this.gameState.presetSpawns));
+        }
+        if (this.gameState.respawnOrbs !== GameState.defaults.respawnOrbs) {
+            args.push("respawn=" + this.gameState.respawnOrbs);
+        }
+        args.push("code=" + this.gameplayData.toString().replace(/ /g, "+"));
+
+        this.shareLinkElement.value = `${location.protocol}//${location.host}${location.pathname}?${args.join("&")}`;
+    }
+
+    onKeyDown(e: KeyboardEvent) {
+        if (e.key === "Escape" || e.key === "Esc") {
+            this.overlayContainer.hidden = true;
+            this.game.resume();
+            this.parent.renderer.domElement.focus();
+        }
+    }
+}
+
+/** A box showing at the top of the screen with altar, seed, and a save button. */
+class InfoBox {
+    element: HTMLDivElement;
+    altarSeedElement: HTMLDivElement;
+    gameFinishedElement: HTMLDivElement;
+    finalScoreSpan: HTMLSpanElement;
+    saveButton: HTMLButtonElement;
+    saveTimeoutHandle: number;
+
+    constructor(private parent: GopUI3D, public allowSave = false) { }
+
+    init() {
+        this.element = $("<div/>").addClass("info-box")[0] as HTMLDivElement;
+        this.parent.container.appendChild(this.element);
+
+        this.altarSeedElement = $("<div/>")[0] as HTMLDivElement;
+        this.element.appendChild(this.altarSeedElement);
+
+        this.gameFinishedElement = $("<div/>")[0] as HTMLDivElement;
+        this.gameFinishedElement.hidden = true;
+        this.element.appendChild(this.gameFinishedElement);
+
+        this.finalScoreSpan = $("<span>Final score 0:</span>")[0] as HTMLSpanElement;
+        this.gameFinishedElement.appendChild(this.finalScoreSpan);
+
+        // Allow save only if not custom game
+        if (this.allowSave && !this.game.isCustom) {
+            this.saveButton = $("<button>Save</button>").addClass("btn btn-primary")[0] as HTMLButtonElement;
+            this.saveButton.style.pointerEvents = "initial";
+            this.saveButton.addEventListener("click", this.onSaveClicked.bind(this));
+            this.gameFinishedElement.appendChild(this.saveButton);
+        }
+
+        this.update();
+    }
+
+    private get game() { return this.parent.game; }
+
+    private get gameState() { return this.parent.game.gameState; }
+
+    update() {
+        this.altarSeedElement.textContent = `${AltarData[this.gameState.altar].name} altar, seed ${this.gameState.seed}`;
+
+        this.gameFinishedElement.hidden = !this.game.isFinished;
+        if (this.game.isFinished) {
+            this.finalScoreSpan.textContent = `Final score: ${this.gameState.score} `;
+        }
+    }
+
+    /**
+     * Resets the save state, with an optional delay.
+     * @param delay The amount of milliseconds to delay resetting the save state by.
+     */
+    resetSaveState(delay = 0) {
+        if (this.saveButton.disabled && this.saveTimeoutHandle == null) {
+            this.saveTimeoutHandle = setTimeout(() => {
+                this.saveTimeoutHandle = null;
+                this.saveButton.disabled = false;
+                this.saveButton.textContent = "Save";
+            }, delay);
+        }
+    }
+
+    tick() {
+        this.resetSaveState(60000);
+    }
+
+    onSaveClicked(e: MouseEvent) {
+        let button = e.currentTarget as HTMLButtonElement;
+        button.disabled = true;
+        button.textContent = "Saving...";
+        if (this.gameState.players.length === 1) {
+            $.post("/api/solo", {
+                numberOfOrbs: this.gameState.numberOfOrbs,
+                seed: this.gameState.seed,
+                altar: this.gameState.altar,
+                score: this.gameState.score,
+                code: this.game.gameplayData.toString()
+            }, function (data) {
+                button.textContent = "Saved";
+                data.timestamp = new Date(data.timestamp);
+            });
+        } else {
+            $.post("/api/multiplayer/solo", {
+                numberOfPlayers: this.gameState.players.length,
+                numberOfOrbs: this.gameState.numberOfOrbs,
+                seed: this.gameState.seed,
+                altar: this.gameState.altar,
+                score: this.gameState.score,
+                code: this.game.gameplayData.toString()
+            }, function () {
+                button.textContent = "Saved to Multiplayer";
+            });
         }
     }
 }

@@ -87,14 +87,9 @@
                 }
             };
 
-            if (options.game.altar !== undefined && !(options.game.altar in AltarData)) {
-                Utils.loadCustomAltar(options.game.altar).then(function (data) {
-                    AltarData[options.game.altar] = data;
-                    initializeGopUI();
-                });
-            } else {
+            Utils.loadAltar(options.game.altar).always(function () {
                 initializeGopUI();
-            }
+            });
         })
     </script>
 }
