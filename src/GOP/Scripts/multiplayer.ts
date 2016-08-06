@@ -451,13 +451,6 @@ class Multiplayer {
             this.gopui.infoBox.saveButton.disabled = true;
         }
 
-        //     hub.client.rejectPlayer = function (players) {
-        //         $("#multiplayerInterface, #game").hide();
-        //         $("#sorry")
-        //             .text("Sorry, " + players.map(function (p) { return p.username; }).join(players.length === 2 ? " and " : ", ") + (players.length === 1 ? " is" : " are") + " currently playing a game. You will be joined automatically when the game has ended.")
-        //             .show();
-        //     };
-
         this.hub.client.setCountdown = countdown => {
             this.runningState = RunningState.Countdown;
             this.gopui.sidePanel.startButton.textContent = "Starting in " + countdown;
