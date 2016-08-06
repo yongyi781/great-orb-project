@@ -77,20 +77,24 @@ class MultiplayerGopUI extends GopUI3D {
         return this;
     }
 
-    // Override   
+    // Override
     setAltarAndSeed(altar: number, seed: number) {
         seed = Math.max(0, Math.min(2147483647, seed));
         // Does this altar exist? If not, load default altar.
         Utils.loadAltar(altar).fail(() => { altar = Altar.None; }).always(() => {
-            this.hub.server.setGameParams(altar, seed);
+            if ($.connection.hub.state === $.signalR.connectionState.connected) {
+                this.hub.server.setGameParams(altar, seed);
+            }
         });
     }
 
     // Override
     restart(resetGameplayData = true) {
         if (resetGameplayData && this.game.isStarted) {
-            this.hub.server.setPlayerLocation(this.game.player.location.x, this.game.player.location.y);
-            this.hub.server.sendNewGameSignal();
+            if ($.connection.hub.state === $.signalR.connectionState.connected) {
+                this.hub.server.setPlayerLocation(this.game.player.location.x, this.game.player.location.y);
+                this.hub.server.sendNewGameSignal();
+            }
         }
         super.restart(resetGameplayData);
     }
@@ -106,21 +110,25 @@ class MultiplayerGopUI extends GopUI3D {
         this.optionsMenu.visible = false;
     }
 
-    // Override   
+    // Override
     rewind(ticks = 7) {
         if (this.multiplayer.runningState === RunningState.Started) {
-            this.hub.server.rewind(ticks);
+            if ($.connection.hub.state === $.signalR.connectionState.connected) {
+                this.hub.server.rewind(ticks);
+            }
         }
     }
 
-    // Override   
+    // Override
     fastForward(ticks = 7) {
         if (this.multiplayer.runningState === RunningState.Started) {
-            this.hub.server.fastForward(ticks);
+            if ($.connection.hub.state === $.signalR.connectionState.connected) {
+                this.hub.server.fastForward(ticks);
+            }
         }
     }
 
-    // Override    
+    // Override
     onSaveClicked() {
         let button = this.infoBox.saveButton;
         button.disabled = true;
@@ -139,7 +147,7 @@ class MultiplayerGopUI extends GopUI3D {
             new GameActionList(filteredActions));
 
         $.post("/api/multiplayer/", {
-            playerNames: this.multiplayer.players.map(p => p.username),
+            playerNames: this.multiplayer.players.filter(p => !p.isWatching).map(p => p.username),
             numberOfOrbs: this.gameState.numberOfOrbs,
             seed: this.gameState.seed,
             altar: this.gameState.altar,
@@ -147,11 +155,13 @@ class MultiplayerGopUI extends GopUI3D {
             code: filteredGameplayData.toString()
         }, () => {
             button.textContent = "Saved";
-            this.hub.server.notifySaved();
+            if ($.connection.hub.state === $.signalR.connectionState.connected) {
+                this.hub.server.notifySaved();
+            }
         });
     }
 
-    // These methods call the original rewind and fast forward methods.    
+    // These methods call the original rewind and fast forward methods.
     clientRewind(ticks: number) {
         super.rewind(ticks);
     }
@@ -191,7 +201,9 @@ class MultiplayerSidePanel {
         this.watchingCheckBox = $watchingDiv.find("input")[0] as HTMLInputElement;
         this.watchingCheckBox.defaultChecked = true;
         this.watchingCheckBox.addEventListener("change", e => {
-            this.hub.server.setWatching(this.watchingCheckBox.checked);
+            if ($.connection.hub.state === $.signalR.connectionState.connected) {
+                this.hub.server.setWatching(this.watchingCheckBox.checked);
+            }
             this.startButton.disabled = this.watchingCheckBox.checked;
         });
         controlsDiv.appendChild($watchingDiv[0]);
@@ -202,7 +214,9 @@ class MultiplayerSidePanel {
         this.startButton.addEventListener("click", e => {
             switch (this.runningState) {
                 case RunningState.NotStarted:
-                    this.hub.server.sendStartSignal();
+                    if ($.connection.hub.state === $.signalR.connectionState.connected) {
+                        this.hub.server.sendStartSignal();
+                    }
                     this.runningState = RunningState.Waiting;
                     break;
                 case RunningState.Started:
@@ -265,10 +279,14 @@ class MultiplayerGame extends Game {
 
         if (this.runningState === RunningState.NotStarted) {
             if (action.type === ActionType.Move) {
-                this.hub.server.setPlayerLocation(action.location.x, action.location.y);
+                if ($.connection.hub.state === $.signalR.connectionState.connected) {
+                    this.hub.server.setPlayerLocation(action.location.x, action.location.y);
+                }
             }
         } else if (this.runningState === RunningState.Countdown || this.runningState === RunningState.Started) {
-            this.hub.server.sendAction(action.toString());
+            if ($.connection.hub.state === $.signalR.connectionState.connected) {
+                this.hub.server.sendAction(action.toString());
+            }
         }
 
         // Erase gameplay data after current tick.
@@ -277,10 +295,14 @@ class MultiplayerGame extends Game {
 
     setMyRunAndRepel(run?: boolean, repel?: boolean) {
         if (run != null) {
-            this.hub.server.sendRun(run);
+            if ($.connection.hub.state === $.signalR.connectionState.connected) {
+                this.hub.server.sendRun(run);
+            }
         }
         if (repel != null) {
-            this.hub.server.sendRepel(repel);
+            if ($.connection.hub.state === $.signalR.connectionState.connected) {
+                this.hub.server.sendRepel(repel);
+            }
         }
     }
 }
@@ -380,6 +402,7 @@ class Multiplayer {
             this.gopui.gameState.players.forEach((player, i) => {
                 player.index = i;
             });
+            this.gopui.updatePlayerInfo(this.players);
             this.gopui.initPlayerGraphics();
         };
 
@@ -411,11 +434,16 @@ class Multiplayer {
 
         this.hub.client.reject = players => {
             this.gopui.container.hidden = true;
+            let names = players.map(p => p.username).join(players.length === 2 ? " and " : ", ");
+            document.querySelector("#info").textContent = `Sorry, but ${names} ${players.length === 1 ? "is" : "are"} currently playing a game. When they are finished, the game will load automatically.`
         };
 
         this.hub.client.notifyRejoin = () => {
-            this.gopui.container.hidden = false;
-            this.hub.server.addCurrentPlayer();
+            if (this.gopui.container.hidden && $.connection.hub.state === $.signalR.connectionState.connected) {
+                this.gopui.container.hidden = false;
+                document.querySelector("#info").textContent = "";
+                this.hub.server.addCurrentPlayer();
+            }
         };
 
         this.hub.client.notifySaved = () => {
@@ -476,10 +504,14 @@ class Multiplayer {
     sendCurrentRunAndRepel() {
         // Send updated run and repel
         if (this.game.player.run !== this.players[this.game.player.index].run) {
-            this.hub.server.sendRun(this.game.player.run);
+            if ($.connection.hub.state === $.signalR.connectionState.connected) {
+                this.hub.server.sendRun(this.game.player.run);
+            }
         }
         if (this.game.player.repel !== this.players[this.game.player.index].repel) {
-            this.hub.server.sendRun(this.game.player.repel);
+            if ($.connection.hub.state === $.signalR.connectionState.connected) {
+                this.hub.server.sendRun(this.game.player.repel);
+            }
         }
     }
 }

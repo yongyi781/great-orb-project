@@ -423,6 +423,7 @@
         this.timerCanvas = $("<canvas/>").css({
             position: "absolute",
             right: 40,
+            bottom: 120,
             pointerEvents: "none"
         })[0] as HTMLCanvasElement;
         this.timerCanvas.width = 2 * this.timerRadius + 2;
@@ -443,8 +444,6 @@
             textAlign: "center"
         })[0] as HTMLDivElement;
         this.container.appendChild(this.scoreIndicator);
-
-        this.timerCanvas.style.bottom = this.scoreIndicator.clientHeight + "px";
     }
 
     getGroundColor() {
@@ -1393,7 +1392,8 @@ class AttractDot {
     }
 
     update(tickProgress: number) {
-        this.mesh.position.copy(this.endObject.position.clone().lerp(this.startObject.position, tickProgress));
+        this.mesh.position.copy(this.endObject.position.clone().lerp(
+            this.startObject.position, Math.min(1, tickProgress)));
     }
 }
 

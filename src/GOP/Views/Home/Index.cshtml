@@ -420,9 +420,9 @@ These are duo angles for feeding orbs quickly.
                 }
             });
 
-            $(window).on("beforeunload", function () {
-                setTimeout(function () { $.connection.hub.stop(); }, 0);
-            });
+            // $(window).on("beforeunload", function () {
+            //     setTimeout(function () { $.connection.hub.stop(); }, 0);
+            // });
 
             $("#messageForm").submit(function (e) {
                 e.preventDefault();

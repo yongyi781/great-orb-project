@@ -60,7 +60,7 @@ namespace GOP
                 Groups.Remove(context.ConnectionId, PlayingGroup);
                 Groups.Add(context.ConnectionId, WaitlistGroup);
             }
-            else
+            else if (players.TrueForAll(p => p.ConnectionId != context.ConnectionId))
             {
                 Groups.Remove(context.ConnectionId, WaitlistGroup);
                 Groups.Add(context.ConnectionId, PlayingGroup);
@@ -112,18 +112,15 @@ namespace GOP
             var player = GetPlayer(context);
             if (player != null)
                 player.StartRequested = true;
-            if (players.Where(p => !p.IsWatching).All(p => p.StartRequested))
-            {
-                timer.Change(0, TickLength);
-                IsGameRunning = true;
-            }
             PlayingClients.UpdatePlayers(players, false);
+            StartGameIfReady();
         }
 
         public void SendNewGameSignal()
         {
             if (IsGameRunning)
                 StopGame();
+
             HasSaved = false;
             Clients.Group(WaitlistGroup).NotifyRejoin();
 
@@ -187,6 +184,7 @@ namespace GOP
                 }
             }
             PlayingClients.UpdatePlayers(players, false);
+            StartGameIfReady();
         }
         
         private Player GetPlayer(HubCallerContext context)
@@ -215,6 +213,16 @@ namespace GOP
             {
                 // Game is over
                 StopGame(false);
+            }
+        }
+
+        private void StartGameIfReady()
+        {
+            var nonWatching = players.Where(p => !p.IsWatching).ToList();
+            if (nonWatching.Count > 0 && nonWatching.All(p => p.StartRequested))
+            {
+                timer.Change(0, TickLength);
+                IsGameRunning = true;
             }
         }
 
