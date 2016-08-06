@@ -21,7 +21,7 @@ namespace GOP.ViewModels
         public string GopControls { get; set; }
     }
 
-    public class SoloGamesViewModel
+    public class SoloHistoryViewModel
     {
         public IEnumerable<SoloGameView> Games { get; set; }
     }

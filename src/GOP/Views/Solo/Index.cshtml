@@ -200,8 +200,10 @@
         }
 
         function restartGame(code, seed, altar) {
-            gopui.restartGame(code, seed, altar);
-            updateSeedAltarDisplay();
+            Utils.loadAltar(altar).fail(function () { altar = Altar.None; }).always(function () {
+                gopui.restartGame(code, seed, altar);
+                updateSeedAltarDisplay();
+            })
         }
 
         function updateShareLink() {
@@ -354,7 +356,7 @@
                                         if (AltarData[data] !== void 0) {
                                             // Capitalize name
                                             var name = AltarData[data].name;
-                                            return name[0].toUpperCase() + name.slice(1);
+                                            return `${data} (${name[0].toUpperCase()}${name.substring(1)})`;
                                         }
                                         return data + " (custom)";
                                     }

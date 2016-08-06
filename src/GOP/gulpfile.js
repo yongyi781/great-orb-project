@@ -34,18 +34,20 @@ paths.css = paths.webroot + "css/**/*.css";
 paths.minCss = paths.webroot + "css/**/*.min.css";
 paths.concatJsDest = paths.webroot + "js/site.min.js";
 paths.concatCssDest = paths.webroot + "css/site.min.css";
+paths.gop3d = paths.webroot + "js/GopUI3D.js";
+paths.minGop3d = paths.webroot + "js/GopUI3D.min.js";
 
-gulp.task("clean:js", function (cb) {
+gulp.task("clean:js", cb => {
     rimraf(paths.concatJsDest, cb);
 });
 
-gulp.task("clean:css", function (cb) {
+gulp.task("clean:css", cb => {
     rimraf(paths.concatCssDest, cb);
 });
 
 gulp.task("clean", ["clean:js", "clean:css"]);
 
-gulp.task("engine:js", function () {
+gulp.task("engine:js", () => {
     gulp.src(paths.emulatorScripts)
         .pipe(concat(paths.emulatorJsDest))
         .pipe(gulp.dest("."))
@@ -54,8 +56,14 @@ gulp.task("engine:js", function () {
         .pipe(gulp.dest("."));
 });
 
-gulp.task("copy:js", ["engine:js"], function () {
+gulp.task("copy:js", ["engine:js"], () => {
     //gulp.src(paths.scripts, { base: "Scripts" }).pipe(gulp.dest(paths.jsDest));
 });
 
-gulp.task("default", ["engine:js"]);
+gulp.task("min:gop3d", () => {
+    gulp.src(paths.gop3d).pipe(rename(paths.minGop3d)).pipe(uglify()).pipe(gulp.dest("."));
+});
+
+gulp.task("default", ["engine:js"], () => {
+
+});

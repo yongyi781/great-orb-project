@@ -15,8 +15,14 @@ namespace GOP.Hubs
 
         public override Task OnConnected()
         {
-            AddPlayer();
+            MultiplayerManager.AddPlayer(Context);
             return base.OnConnected();
+        }
+
+        public override Task OnReconnected()
+        {
+            MultiplayerManager.AddPlayer(Context);
+            return base.OnReconnected();
         }
 
         public override Task OnDisconnected(bool stopCalled)
@@ -25,7 +31,7 @@ namespace GOP.Hubs
             return base.OnDisconnected(stopCalled);
         }
 
-        public void AddPlayer()
+        public void AddCurrentPlayer()
         {
             MultiplayerManager.AddPlayer(Context);
         }
@@ -34,10 +40,10 @@ namespace GOP.Hubs
         {
             MultiplayerManager.SendStartSignal(Context);
         }
-
-        public void SendStopSignal(bool stopClients)
+        
+        public void SendNewGameSignal()
         {
-            MultiplayerManager.SendStopSignal(Context, stopClients);
+            MultiplayerManager.SendNewGameSignal();
         }
 
         public void SendAction(string action)
@@ -62,7 +68,7 @@ namespace GOP.Hubs
 
         public void SetGameParams(int altar, int seed)
         {
-            MultiplayerManager.SetGameParams(Context, altar, seed);
+            MultiplayerManager.SetGameParams(altar, seed);
         }
 
         public void SetWatching(bool watching)
@@ -70,10 +76,9 @@ namespace GOP.Hubs
             MultiplayerManager.SetWatching(Context, watching);
         }
 
-        // Saving
-        public void SendSaveRequest(string code, int score)
+        public void NotifySaved()
         {
-            MultiplayerManager.SendSaveRequest(Context, code, score);
+            Clients.All.NotifySaved();
         }
 
         public void Rewind(int ticks)

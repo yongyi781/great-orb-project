@@ -8,6 +8,6 @@
     get isDead() { return Point.isNaN(this.location); }
 
     getDrawLocation(tickProgress: number) {
-        return Point.lerp(this.prevLocation, this.location, tickProgress);
+        return Point.lerp(this.prevLocation, this.location, Math.min(1, tickProgress));
     }
 }

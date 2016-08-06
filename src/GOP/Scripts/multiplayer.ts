@@ -18,21 +18,23 @@ interface MultiplayerHubConnection extends SignalR.Hub.Connection {
         setGameParams(altar: number, seed: number): void;
         rewindTo(tick: number): void;
         fastForwardTo(tick: number): void;
-        reject(players: PlayerInfo[]): void;
-        setState(runningState: RunningState): void;
+        newGame(): void;
+        notifySaved(): void;
         notifyRejoin(): void;
-
+        reject(players: PlayerInfo[]): void;
+        setCountdown(countdown: number): void;
         tick(players: PlayerInfo[], currentTick: number): void;
     };
 
     server: {
-        addPlayer(): void;
+        addCurrentPlayer(): void;
+        notifySaved(): void;
         sendAction(action: string): void;
+        sendNewGameSignal(): void;
         sendRepel(repel: boolean): void;
         sendRun(run: boolean): void;
         sendSaveRequest(code: string, score: number): void;
         sendStartSignal(): void;
-        sendStopSignal(stopClients: boolean): void;
         setGameParams(altar: number, seed: number): void;
         setPlayerLocation(x: number, y: number): void;
         setWatching(watching: boolean): void;
@@ -57,10 +59,15 @@ class MultiplayerGopUI extends GopUI3D {
         this.allowPlayerSwitching = false;
         this.sidePanel = new MultiplayerSidePanel(this);
         // Server sends the ticks.
+        this.tickLength = 600;
+        this.allowConfigureTickLength = false;
         this.autoTick = false;
     }
 
     get hub() { return this.multiplayer.hub; }
+
+    // Override
+    get isPaused() { return this.optionsMenu.visible; }
 
     // Override   
     init() {
@@ -79,14 +86,69 @@ class MultiplayerGopUI extends GopUI3D {
         });
     }
 
+    // Override
+    restart(resetGameplayData = true) {
+        if (resetGameplayData && this.game.isStarted) {
+            this.hub.server.setPlayerLocation(this.game.player.location.x, this.game.player.location.y);
+            this.hub.server.sendNewGameSignal();
+        }
+        super.restart(resetGameplayData);
+    }
+
+    // Override
+    pause() {
+        // Don't pause the game itself.
+        this.optionsMenu.visible = true;
+    }
+
+    // Override    
+    resume() {
+        this.optionsMenu.visible = false;
+    }
+
     // Override   
     rewind(ticks = 7) {
-        this.hub.server.rewind(ticks);
+        if (this.multiplayer.runningState === RunningState.Started) {
+            this.hub.server.rewind(ticks);
+        }
     }
 
     // Override   
     fastForward(ticks = 7) {
-        this.hub.server.fastForward(ticks);
+        if (this.multiplayer.runningState === RunningState.Started) {
+            this.hub.server.fastForward(ticks);
+        }
+    }
+
+    // Override    
+    onSaveClicked() {
+        let button = this.infoBox.saveButton;
+        button.disabled = true;
+        button.textContent = "Saving...";
+
+        let filteredStartInfoPlayers = this.game.gameplayData.startInfo.players.filter((_, i) => {
+            return this.multiplayer.players[i] != null && !this.multiplayer.players[i].isWatching;
+        });
+
+        var filteredActions = this.game.gameplayData.actions.rawActions.filter((_, i) => {
+            return this.multiplayer.players[i] != null && !this.multiplayer.players[i].isWatching;
+        });
+
+        let filteredGameplayData = new GameplayData(
+            new GameStartInfo(this.gameState.seed, this.gameState.altar, filteredStartInfoPlayers),
+            new GameActionList(filteredActions));
+
+        $.post("/api/multiplayer/", {
+            playerNames: this.multiplayer.players.map(p => p.username),
+            numberOfOrbs: this.gameState.numberOfOrbs,
+            seed: this.gameState.seed,
+            altar: this.gameState.altar,
+            score: this.gameState.score,
+            code: filteredGameplayData.toString()
+        }, () => {
+            button.textContent = "Saved";
+            this.hub.server.notifySaved();
+        });
     }
 
     // These methods call the original rewind and fast forward methods.    
@@ -109,15 +171,15 @@ class MultiplayerSidePanel {
     startButton: HTMLButtonElement;
     playerInfoDiv: HTMLDivElement;
 
-    constructor(private parent: MultiplayerGopUI) {
+    constructor(private gopui: MultiplayerGopUI) {
         this.startButton = document.createElement("button");
         this.playerInfoDiv = document.createElement("div");
     }
 
-    get hub() { return this.parent.hub };
+    get hub() { return this.gopui.hub };
 
-    get runningState() { return this.parent.multiplayer.runningState; }
-    set runningState(value) { this.parent.multiplayer.runningState = value; }
+    get runningState() { return this.gopui.multiplayer.runningState; }
+    set runningState(value) { this.gopui.multiplayer.runningState = value; }
 
     init() {
         this.element = $("<div/>").addClass("multiplayer-panel")[0] as HTMLDivElement;
@@ -144,10 +206,10 @@ class MultiplayerSidePanel {
                     this.runningState = RunningState.Waiting;
                     break;
                 case RunningState.Started:
-                    this.hub.server.sendStopSignal(true);
+                    this.gopui.restart();
                     break;
                 case RunningState.Ended:
-                    this.runningState = RunningState.NotStarted;
+                    this.gopui.restart();
                     break;
                 default:
                     break;
@@ -158,7 +220,7 @@ class MultiplayerSidePanel {
         this.element.appendChild(controlsDiv);
         this.element.appendChild(this.playerInfoDiv);
 
-        this.parent.container.appendChild(this.element);
+        this.gopui.container.appendChild(this.element);
     }
 
     updatePlayerInfo(players: PlayerInfo[]) {
@@ -166,13 +228,16 @@ class MultiplayerSidePanel {
         players.forEach((playerInfo, i) => {
             let li = document.createElement("li");
             li.textContent = playerInfo.username;
-            li.style.color = this.parent.playerColors[i];
+            li.style.color = this.gopui.playerColors[i];
             if (playerInfo.isWatching) {
                 li.textContent += " (watching)";
             } else if (!playerInfo.startRequested) {
                 li.textContent += " (not started)";
             }
-            if (i === this.parent.playerIndex) {
+            if (playerInfo.action != null) {
+                li.textContent += " - " + playerInfo.action;
+            }
+            if (i === this.gopui.playerIndex) {
                 li.style.backgroundColor = "rgba(255, 255, 255, 0.1)";
                 li.style.fontWeight = "bold";
             }
@@ -190,10 +255,10 @@ class MultiplayerGame extends Game {
     }
 
     get hub() { return this.multiplayer.hub; }
-    
+
     get runningState() { return this.multiplayer.runningState; }
 
-    setPlayerAction(action: GameAction) {
+    setMyAction(action: GameAction) {
         // Don't touch run and repel player settings.
         action.toggleRun = this.player.action.toggleRun;
         action.changeWand = this.player.action.changeWand;
@@ -202,13 +267,21 @@ class MultiplayerGame extends Game {
             if (action.type === ActionType.Move) {
                 this.hub.server.setPlayerLocation(action.location.x, action.location.y);
             }
-        } else {
-            console.log("Sending action " + action);
+        } else if (this.runningState === RunningState.Countdown || this.runningState === RunningState.Started) {
             this.hub.server.sendAction(action.toString());
         }
 
         // Erase gameplay data after current tick.
         this.gameplayData.actions.sliceForPlayer(this.playerIndex, this.gameState.currentTick);
+    }
+
+    setMyRunAndRepel(run?: boolean, repel?: boolean) {
+        if (run != null) {
+            this.hub.server.sendRun(run);
+        }
+        if (repel != null) {
+            this.hub.server.sendRepel(repel);
+        }
     }
 }
 
@@ -247,19 +320,19 @@ class Multiplayer {
                     watchingCheckBox.disabled = true;
                     break;
                 case RunningState.Countdown:
-                    startButton.textContent = "Starting in " + this.countdown;
                     startButton.disabled = true;
                     watchingCheckBox.disabled = true;
                     break;
                 case RunningState.Started:
-                    startButton.textContent = "Stop";
-                    startButton.disabled = !isWatching;
+                    startButton.textContent = "Restart";
+                    startButton.disabled = isWatching;
                     watchingCheckBox.disabled = true;
+                    this.gopui.game.start();
                     break;
                 case RunningState.Ended:
-                    startButton.textContent = "Reset";
+                    startButton.textContent = "New Game";
                     startButton.disabled = isWatching;
-                    watchingCheckBox.disabled = false;
+                    watchingCheckBox.disabled = true;
                     break;
             }
         }
@@ -268,34 +341,53 @@ class Multiplayer {
     init() {
         this.hub.client.updatePlayers = (players, arrayModified) => {
             this.players = players;
-            console.dir(players);
             if (arrayModified) {
                 this.gopui.gameState.players = players.map((player, index) => {
                     let p = new Point(player.startLocation.x, player.startLocation.y);
                     return new Player(this.gopui.gameState, p, index);
                 });
                 this.gopui.initPlayerGraphics();
-            } else if (this.game.runningState === RunningState.NotStarted || this.game.runningState === RunningState.Waiting) {
+            } else if (this.runningState !== RunningState.Started) {
                 for (let player of this.gopui.gameState.players) {
                     let serverPlayer = players[player.index];
+                    if (serverPlayer == null) {
+                        continue;
+                    }
                     player.location = new Point(serverPlayer.startLocation.x, serverPlayer.startLocation.y);
                     player.prevLocation = Point.NaN;
                 }
+                this.game.resetGameplayData();
                 this.gopui.initPlayerGraphics();
                 this.gopui.updateDisplay();
+            }
+
+            for (let player of this.gopui.gameState.players) {
+                let serverActionStr = players[player.index].action;
+                if (serverActionStr != null) {
+                    player.action = GameAction.parse(serverActionStr);
+                    this.gopui.game.gameplayData.actions.sliceForPlayer(player.index, this.gopui.gameState.currentTick);
+                    // actions[i] = actions[i].slice(0, gopui.gameState.currentTick);
+                }
             }
 
             this.gopui.updatePlayerInfo(players);
         };
 
         this.hub.client.removePlayer = index => {
+            this.players.splice(index, 1);
             this.gopui.gameState.players.splice(index, 1);
+            // Re-compute player indexes
+            this.gopui.gameState.players.forEach((player, i) => {
+                player.index = i;
+            });
             this.gopui.initPlayerGraphics();
         };
 
         this.hub.client.setPlayerIndex = index => {
             this.gopui.playerIndex = index;
-            this.gopui.updatePlayerInfo(this.players);
+            if (this.players != null) {
+                this.gopui.updatePlayerInfo(this.players);
+            }
         };
 
         this.hub.client.setGameParams = (altar, seed) => {
@@ -306,50 +398,30 @@ class Multiplayer {
             });
         };
 
-        this.hub.client.setState = (runningState) => {
-            this.runningState = runningState;
-        };
-
         this.hub.client.rewindTo = tick => {
             this.gopui.clientRewind(this.gopui.gameState.currentTick - tick);
         };
 
         this.hub.client.fastForwardTo = tick => {
             this.gopui.clientFastForward(tick - this.gopui.gameState.currentTick);
+            if (this.game.isFinished) {
+                this.runningState = RunningState.Ended;
+            }
         };
 
         this.hub.client.reject = players => {
-
+            this.gopui.container.hidden = true;
         };
 
-        //     hub.client.setGameParams = function (params) {
-        //         multiViewModel.gameParamsUpdating = true;
-        //         multiViewModel.altar(params.altar);
-        //         multiViewModel.seed(params.seed);
-        //         multiViewModel.gameParamsUpdating = false;
-        //         gopui.restartGame();
-        //     };
+        this.hub.client.notifyRejoin = () => {
+            this.gopui.container.hidden = false;
+            this.hub.server.addCurrentPlayer();
+        };
 
-        //     hub.client.receiveMinusTicks = function () {
-        //         let tickToLoad = gopui.gameState.currentTick - gopui.options.plusMinusTicksAdvance;
-        //         gopui.restartGame(true, multiViewModel.playerIndex());
-
-        //         for (let i = 0; i < tickToLoad; i++)
-        //             gopui.tick();
-
-        //         // Send current run/repel state
-        //         hub.server.sendRun(gopui.player.run);
-        //         hub.server.sendRepel(gopui.player.repel);
-        //     }
-
-        //     hub.client.receivePlusTicks = function () {
-        //         for (let i = 0; i < gopui.options.plusMinusTicksAdvance; i++)
-        //             gopui.tick();
-
-        //         // Send current run/repel state
-        //         hub.server.sendRun(gopui.player.run);
-        //         hub.server.sendRepel(gopui.player.repel);
-        //     }
+        this.hub.client.notifySaved = () => {
+            this.gopui.infoBox.saveButton.textContent = "Saved";
+            this.gopui.infoBox.saveButton.disabled = true;
+        }
 
         //     hub.client.rejectPlayer = function (players) {
         //         $("#multiplayerInterface, #game").hide();
@@ -358,10 +430,39 @@ class Multiplayer {
         //             .show();
         //     };
 
+        this.hub.client.setCountdown = countdown => {
+            this.runningState = RunningState.Countdown;
+            this.gopui.sidePanel.startButton.textContent = "Starting in " + countdown;
+        };
+
+        this.hub.client.newGame = () => {
+            this.runningState = RunningState.NotStarted;
+            this.gopui.restart(true);
+        };
+
         this.hub.client.tick = (players, currentTick) => {
-            console.log("Tick! tick: " + currentTick);
-            console.log(players);
+            this.players = players;
+            this.gopui.updatePlayerInfo(this.players);
+            this.gopui.game.isStarted = true;
+
+            // Set player actions now
+            players.forEach((player, i) => {
+                this.game.setRunAndRepel(i, player.run, player.repel);
+            });
             this.gopui.tick();
+            this.gopui.tickProgress = 0;
+            this.sendCurrentRunAndRepel();
+
+            // This may have unintended consequences
+            if (this.gopui.gameState.currentTick !== currentTick) {
+                console.error("Ticks are not aligned");
+                this.gopui.gameState.currentTick = currentTick;
+            }
+            if (this.gopui.game.isFinished) {
+                this.runningState = RunningState.Ended;
+            } else {
+                this.runningState = RunningState.Started;
+            }
         };
 
         $.connection.hub.logging = true;
@@ -371,296 +472,14 @@ class Multiplayer {
             alert("Failed to connect!");
         });
     }
+
+    sendCurrentRunAndRepel() {
+        // Send updated run and repel
+        if (this.game.player.run !== this.players[this.game.player.index].run) {
+            this.hub.server.sendRun(this.game.player.run);
+        }
+        if (this.game.player.repel !== this.players[this.game.player.index].repel) {
+            this.hub.server.sendRun(this.game.player.repel);
+        }
+    }
 }
-
-// let hub = (<MultiplayerHubSignalR>$.connection).multiplayerHub,
-//     connectionStarted = false,
-//     gopui: GopUI,
-//     lastTimestamp = 0,
-//     startingPositions = [new Point(2, 0), new Point(-2, 0), new Point(0, -2), new Point(0, 2), new Point(0, 0), new Point(2, -2)];
-
-// function init(gopControls: any) {
-//     let isCustomConfig = false;
-
-//     let options = {
-//         hideRestart: true,
-//         showSave: true,
-//         useServer: true,
-//         canvasMargin: 120,
-//         numberOfOrbs: 3,
-//         //showPlusMinusTicksButtons: false,
-//         //ticksPerAltar: 5,
-//         viewModelFunctions: {
-//             minusTicksButtonEnabled: function () { return !multiViewModel.isWatching() && multiViewModel.startState() === StartState.STARTED; },
-//             plusTicksButtonEnabled: function () { return !multiViewModel.isWatching() && multiViewModel.startState() === StartState.STARTED; }
-//         }
-//     };
-
-//     let spawnParam = Utils.getQueryAsString("spawns");
-//     if (spawnParam !== undefined) {
-//         try {
-//             options.presetSpawns = JSON.parse(spawnParam).map(function (a) { return new Point(a[0], a[1]); });
-//             isCustomConfig = isCustomConfig || (options.presetSpawns.length > 0);
-//         } catch (e) { }
-//     }
-
-//     let numOrbsParam = Utils.getQueryAsString("numorbs");
-//     if (numOrbsParam !== undefined) {
-//         options.numberOfOrbs = Math.max(0, Math.min(26, parseInt(numOrbsParam, 10)));
-//     }
-
-//     let ticksParam = Utils.getQueryAsString("ticks");
-//     if (ticksParam !== undefined) {
-//         options.ticksPerAltar = parseInt(ticksParam, 10);
-//         isCustomConfig = isCustomConfig || options.ticksPerAltar !== GameState.TICKS_PER_ALTAR;
-//     }
-
-//     let maxReachParam = Utils.getQueryAsString("maxreachdist");
-//     if (maxReachParam !== undefined) {
-//         options.maxReachDistance = parseInt(maxReachParam, 10);
-//         isCustomConfig = isCustomConfig || options.maxReachDistance !== 10;
-//     }
-
-//     let latencyParam = Utils.getQueryAsString("latency");
-//     if (latencyParam !== undefined)
-//         options.latency = parseInt(latencyParam, 10);
-
-//     if (isCustomConfig) {
-//         $("#gamesContainer").hide();
-//         options.showSave = false;
-//     }
-
-//     if (gopControls !== undefined) {
-//         options.gopControls = JSON.parse('@Html.Raw(Model.GopControls)');
-//     }
-
-//     gopui = new GopUI($("#game")[0], options);
-
-//     gopui.viewModel.run.subscribe(function (value) {
-//         if (!multiViewModel.gameParamsUpdating)
-//             hub.server.sendRun(value);
-//     });
-
-//     gopui.viewModel.repel.subscribe(function (value) {
-//         if (!multiViewModel.gameParamsUpdating)
-//             hub.server.sendRepel(value);
-//     });
-
-//     gopui.viewModel.setCurrentAction = function (action, user) {
-//         let copy = action.copy();
-//         copy.toggleRun = false;
-//         copy.changeWand = false;
-//         gopui.viewModel.currentAction = copy;
-//         hub.server.sendAction(copy.toString());
-//     };
-
-//     gopui.paint = function (timestamp) {
-//         if (multiViewModel.startState() === StartState.STARTED) {
-//             gopui.gopCanvas.tickProgress = Math.min((timestamp - gopui.lastTick) / gopui.options.tickInterval, 1);
-//         } else {
-//             gopui.gopCanvas.tickProgress = 0;
-//             gopui.lastTick = 0;
-//         }
-
-//         gopui.gopCanvas.paint();
-//         if (multiViewModel.startState() !== StartState.ENDED && gopui.gameState.currentTick >= GameState.TICKS_PER_ALTAR) {
-//             multiViewModel.startState(StartState.ENDED);
-//             hub.server.sendStopSignal(false);
-//         }
-//         gopui.animationHandle = requestAnimationFrame(gopui.paint);
-//         lastTimestamp = timestamp;
-//         gopui.updatePointer();
-//     };
-
-//     gopui.onclick = function (p) {
-//         if (multiViewModel.startState() === StartState.STOPPED) {
-//             hub.server.setPlayerLocation(p.x, p.y);
-//             return false;
-//         }
-//         return true;
-//     };
-
-//     gopui.onMinusTicksClicked = function () {
-//         if (connectionStarted)
-//             hub.server.sendMinusTicks();
-//     };
-
-//     gopui.onPlusTicksClicked = function () {
-//         if (connectionStarted)
-//             hub.server.sendPlusTicks();
-//     };
-
-//     $("#gop-saveGameButton").click(function () {
-//         if (connectionStarted) {
-//             let initialData = gopui.viewModel.initialData();
-//             let actions = gopui.viewModel.actions();
-
-//             let filteredInitialData = initialData;
-//             filteredInitialData.players = initialData.players.filter(function (p, i) {
-//                 return !multiViewModel.players()[i] || !multiViewModel.players()[i].isWatching;
-//             });
-
-//             let filteredActions = actions.filter(function (p, i) {
-//                 return !multiViewModel.players()[i] || !multiViewModel.players()[i].isWatching;
-//             });
-
-//             let code = Utils.formatGameCode({ initialData: filteredInitialData, actions: filteredActions });
-//             hub.server.sendSaveRequest(code, gopui.gameState.score);
-//         }
-//     });
-
-//     $(gamesContainer).on("click", "[data-code]", function () {
-//         window.open("Solo?code=" + $(this).data("code"));
-//     });
-
-//     hub.client.setPlayerIndex = function (index) {
-//         multiViewModel.playerIndex(index);
-//         gopui.player = gopui.gameState.players[index];
-//         gopui.gopCanvas.player = gopui.gameState.players[index];
-//     };
-
-//     hub.client.setGameParams = function (params) {
-//         multiViewModel.gameParamsUpdating = true;
-//         multiViewModel.altar(params.altar);
-//         multiViewModel.seed(params.seed);
-//         multiViewModel.gameParamsUpdating = false;
-//         gopui.restartGame();
-//     };
-
-//     hub.client.receiveMinusTicks = function () {
-//         let tickToLoad = gopui.gameState.currentTick - gopui.options.plusMinusTicksAdvance;
-//         gopui.restartGame(true, multiViewModel.playerIndex());
-
-//         for (let i = 0; i < tickToLoad; i++)
-//             gopui.tick();
-
-//         // Send current run/repel state
-//         hub.server.sendRun(gopui.player.run);
-//         hub.server.sendRepel(gopui.player.repel);
-//     }
-
-//     hub.client.receivePlusTicks = function () {
-//         for (let i = 0; i < gopui.options.plusMinusTicksAdvance; i++)
-//             gopui.tick();
-
-//         // Send current run/repel state
-//         hub.server.sendRun(gopui.player.run);
-//         hub.server.sendRepel(gopui.player.repel);
-//     }
-
-//     hub.client.rejectPlayer = function (players) {
-//         $("#multiplayerInterface, #game").hide();
-//         $("#sorry")
-//             .text("Sorry, " + players.map(function (p) { return p.username; }).join(players.length === 2 ? " and " : ", ") + (players.length === 1 ? " is" : " are") + " currently playing a game. You will be joined automatically when the game has ended.")
-//             .show();
-//     };
-
-//     hub.client.removePlayer = function (index) {
-//         multiViewModel.players.splice(index, 1);
-//         gopui.gameState.players.splice(index, 1);
-//     };
-
-//     hub.client.updatePlayers = function (players, playerArrayModified) {
-//         if (playerArrayModified) {
-//             gopui.gameState.players = players.map(function (player, index) {
-//                 return new Player(gopui.gameState, startingPositions[index], index);
-//             });
-//         }
-//         multiViewModel.players(players);
-//         let currentPlayer = players[multiViewModel.playerIndex()];
-//         if (currentPlayer && (!currentPlayer.started && !currentPlayer.isWatching))
-//             multiViewModel.startState(StartState.STOPPED);
-//     };
-
-//     // Called to update what is shown in the save button.
-//     hub.client.notifySaved = function (data) {
-//         gopui.viewModel.saved(true);
-//         gameListViewModel.games.unshift(data);
-//     };
-
-//     // Only called before game is started
-//     hub.client.setPlayerStartLocation = function (index, x, y) {
-//         gopui.gameState.players[index].location = new Point(x, y);
-//     };
-
-//     hub.client.start = function () {
-//         gopui.restartGame();
-//     };
-
-//     hub.client.stop = function () {
-//         multiViewModel.startState(StartState.STOPPED);
-//         gopui.restartGame();
-//     };
-
-//     hub.client.gameEnded = function () {
-//         multiViewModel.startState(StartState.ENDED);
-//     };
-
-//     hub.client.notifyRejoin = function () {
-//         hub.server.addPlayer();
-//         $("#multiplayerInterface, #game").show();
-//         $("#sorry").hide();
-//     };
-
-//     hub.client.countdown = function (t) {
-//         multiViewModel.startState(StartState.STARTED + t - 1);
-//     };
-
-//     hub.client.tick = function (players) {
-//         multiViewModel.startState(StartState.STARTED);
-//         multiViewModel.players(players);
-//         gopui.viewModel.currentTick(gopui.gameState.currentTick);
-//         let actions = gopui.viewModel.actions();
-
-//         gopui.gameState.players.forEach(function (player, i) {
-//             if (actions[i] === undefined)
-//                 actions[i] = [];
-//             if (players[i] === undefined) {
-//                 // Player got removed
-//                 return;
-//             }
-
-//             if (players[i].action !== null) {
-//                 player.action = GameAction.parse(players[i].action);
-//                 // Remove actions past this point.
-//                 actions[i] = actions[i].slice(0, gopui.gameState.currentTick);
-//             }
-
-//             if (actions[i].length <= gopui.gameState.currentTick) {
-//                 // Update client run and repel state if not replaying from code
-//                 player.action.toggleRun = player.run != players[i].run;
-//                 player.action.changeWand = player.repel != players[i].repel;
-//             }
-//         });
-
-//         gopui.viewModel.actions.valueHasMutated();
-
-//         multiViewModel.gameParamsUpdating = true;
-//         gopui.tick();
-//         multiViewModel.gameParamsUpdating = false;
-
-//         // TODO
-
-//         if (actions[gopui.player.index].length > gopui.gameState.currentTick) {
-//             // Send it to hub if playing from code and is current player
-//             hub.server.sendRun(gopui.player.run);
-//             hub.server.sendRepel(gopui.player.repel);
-//         }
-
-//         gopui.lastTick = lastTimestamp;
-//         gopui.gopCanvas.tickProgress = 0;
-//     };
-
-//     $.ajaxSetup({ cache: false });
-
-//     $(function () {
-//         ko.applyBindings(multiViewModel, $("#multiplayerInterface")[0]);
-//         ko.applyBindings(gameListViewModel, $("#gamesContainer")[0]);
-
-//         $.connection.hub.start().done(() => { connectionStarted = true; });
-
-//         $.getJSON("MultiplayerHandler.ashx", function (data) {
-//             gameListViewModel.games(data);
-//         });
-//     });
-// }

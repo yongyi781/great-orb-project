@@ -41,14 +41,14 @@ namespace GOP.Controllers
             });
         }
 
-        public IActionResult Games()
+        public IActionResult History()
         {
             DbContext.CacheViewUsers = true;
             DbContext.LoadUsersIntoCache();
 
             var soloGames = GetSoloGames();
 
-            return View(new SoloGamesViewModel
+            return View(new SoloHistoryViewModel
             {
                 Games = soloGames
             });

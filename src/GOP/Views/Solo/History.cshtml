@@ -1,10 +1,10 @@
-﻿@model SoloGamesViewModel
+﻿@model SoloHistoryViewModel
 @{
     ViewData["Title"] = "Solo History";
     ViewData["UseDataTable"] = true;
 }
 
-<h2>Solo History</h2>
+<h2>@ViewData["Title"]</h2>
 <div id="searchDiv" class="form-inline">
     Username: <input type="text" id="userSearch" class="form-control input-sm" placeholder="Search users">
     # orbs: <input type="number" id="numOrbsSearch" class="form-control input-sm" min="1" placeholder="Search # orbs" />
@@ -81,7 +81,7 @@
                                 if (AltarData[data] !== void 0) {
                                     // Capitalize name
                                     var name = AltarData[data].name;
-                                    return name[0].toUpperCase() + name.slice(1);
+                                    return `${data} (${name[0].toUpperCase()}${name.substring(1)})`;
                                 }
                                 return data + " (custom)";
                             }

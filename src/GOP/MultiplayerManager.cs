@@ -12,7 +12,8 @@ namespace GOP
 {
     public class MultiplayerManager
     {
-        public const int TicksPerAltar = 10;
+        public const int TicksPerAltar = 199;
+        public const int TickLength = 600;
         public readonly Point[] DefaultStartingLocations =
         {
             new Point(2, 0),
@@ -25,6 +26,7 @@ namespace GOP
         private readonly Timer timer;
         private readonly object playersLock = new object();
         private const int CountdownLength = 5;
+        private const string PlayingGroup = "Playing";
         private const string WaitlistGroup = "Waitlist";
 
         private readonly List<Player> players = new List<Player>();
@@ -33,7 +35,7 @@ namespace GOP
         {
             DbContext = dbContext;
             HubContext = hubContext;
-            timer = new Timer(Tick, null, Timeout.Infinite, 600);
+            timer = new Timer(Tick, null, Timeout.Infinite, TickLength);
         }
 
         public ApplicationDbContext DbContext { get; set; }
@@ -41,6 +43,7 @@ namespace GOP
 
         public IHubConnectionContext<dynamic> Clients { get { return HubContext.Clients; } }
         public IGroupManager Groups { get { return HubContext.Groups; } }
+        public dynamic PlayingClients { get { return Clients.Group(PlayingGroup); } }
 
         public bool IsGameRunning { get; set; }
         public bool HasSaved { get; set; }
@@ -54,11 +57,13 @@ namespace GOP
             if (IsGameRunning)
             {
                 Clients.Client(context.ConnectionId).Reject(players);
+                Groups.Remove(context.ConnectionId, PlayingGroup);
                 Groups.Add(context.ConnectionId, WaitlistGroup);
             }
             else
             {
                 Groups.Remove(context.ConnectionId, WaitlistGroup);
+                Groups.Add(context.ConnectionId, PlayingGroup);
                 lock (playersLock)
                 {
                     players.Add(new Player
@@ -72,7 +77,7 @@ namespace GOP
                     });
                 }
                 Clients.Client(context.ConnectionId).SetGameParams(Altar, Seed);
-                Clients.All.UpdatePlayers(players, true);
+                PlayingClients.UpdatePlayers(players, true);
                 for (int i = 0; i < players.Count; ++i)
                 {
                     Clients.Client(players[i].ConnectionId).SetPlayerIndex(i);
@@ -88,14 +93,17 @@ namespace GOP
                 if (playerIndex >= 0)
                 {
                     players.RemoveAt(playerIndex);
-                    Clients.All.RemovePlayer(playerIndex);
+                    PlayingClients.RemovePlayer(playerIndex);
                     for (int i = 0; i < players.Count; ++i)
                     {
                         Clients.Client(players[i].ConnectionId).SetPlayerIndex(i);
                     }
                 }
                 if (players.Count(p => !p.IsWatching) == 0)
-                    StopGame(true);
+                {
+                    // No more players, restart the whole thing.
+                    SendNewGameSignal();
+                }
             }
         }
 
@@ -106,40 +114,25 @@ namespace GOP
                 player.StartRequested = true;
             if (players.Where(p => !p.IsWatching).All(p => p.StartRequested))
             {
-                timer.Change(0, 600);
-                Clients.All.SetState(RunningState.Started);
+                timer.Change(0, TickLength);
                 IsGameRunning = true;
             }
-            Clients.All.UpdatePlayers(players, false);
+            PlayingClients.UpdatePlayers(players, false);
         }
 
-        public void SendStopSignal(HubCallerContext context, bool stopClients = true)
+        public void SendNewGameSignal()
         {
-            if (IsGameRunning && !GetPlayer(context).IsWatching)
+            if (IsGameRunning)
+                StopGame();
+            HasSaved = false;
+            Clients.Group(WaitlistGroup).NotifyRejoin();
+
+            foreach (var p in players)
             {
-                StopGame(stopClients);
-                if (stopClients)
-                {
-                    foreach (var player in players)
-                    {
-                        player.StartRequested = false;
-                    }
-                    Clients.All.SetState(RunningState.Ended);
-                    Clients.All.UpdatePlayers(players, false);
-                }
-                else
-                {
-                    // Game is still "running"
-                    Clients.All.SetState(RunningState.Ended);
-                }
+                p.StartRequested = false;
             }
-            else
-            {
-                var player = GetPlayer(context);
-                if (player != null)
-                    player.StartRequested = false;
-                Clients.All.UpdatePlayers(players, false);
-            }
+            PlayingClients.UpdatePlayers(players, false);
+            PlayingClients.NewGame();
         }
 
         public void SendAction(HubCallerContext context, string action)
@@ -147,7 +140,7 @@ namespace GOP
             var player = GetPlayer(context);
             if (player != null && !(player.IsWatching && IsAttractOrbAction(action)))
                 player.Action = action;
-            Clients.All.UpdatePlayers(players, false);
+            PlayingClients.UpdatePlayers(players, false);
         }
 
         public void SendRun(HubCallerContext context, bool run)
@@ -170,15 +163,15 @@ namespace GOP
             if (player != null)
             {
                 player.StartLocation = new Point(x, y);
-                Clients.All.UpdatePlayers(players, false);
+                PlayingClients.UpdatePlayers(players, false);
             }
         }
 
-        public void SetGameParams(HubCallerContext context, int altar, int seed)
+        public void SetGameParams(int altar, int seed)
         {
             Altar = altar;
             Seed = seed;
-            Clients.All.SetGameParams(altar, seed);
+            PlayingClients.SetGameParams(altar, seed);
         }
 
         public void SetWatching(HubCallerContext context, bool watching)
@@ -193,53 +186,9 @@ namespace GOP
                     player.Action = null;
                 }
             }
-            Clients.All.UpdatePlayers(players, false);
+            PlayingClients.UpdatePlayers(players, false);
         }
-
-        // The code has already been filtered for non-watching players.
-        public void SendSaveRequest(HubCallerContext context, string code, int score)
-        {
-            if (!HasSaved)
-            {
-                HasSaved = true;
-
-                // Prepare list of players
-                var filteredPlayerNames = from player in players
-                                          where !player.IsWatching
-                                          select player.Username;
-
-                // Save the game
-                //using (var db = new GOPEntities())
-                //{
-                //    var game = new MultiplayerGame
-                //    {
-                //        Time = DateTime.Now,
-                //        NumberOfPlayers = filteredPlayerNames.Count(),
-                //        Usernames = string.Join("; ", filteredPlayerNames),
-                //        NumberOfOrbs = 3,
-                //        Seed = Seed,
-                //        Altar = Altar,
-                //        Score = score,
-                //        Code = code
-                //    };
-                //    db.MultiplayerGames.Add(game);
-                //    db.SaveChanges();
-
-                //    Clients.All.NotifySaved(new
-                //    {
-                //        id = game.Id,
-                //        time = game.Timestamp.ToString(),
-                //        numberOfPlayers = game.NumberOfPlayers,
-                //        usernames = game.Usernames,
-                //        seed = game.Seed,
-                //        altar = game.Altar,
-                //        score = game.Score,
-                //        code = game.Code
-                //    });
-                //}
-            }
-        }
-
+        
         private Player GetPlayer(HubCallerContext context)
         {
             return players.FirstOrDefault(p => p.ConnectionId == context.ConnectionId);
@@ -248,43 +197,35 @@ namespace GOP
         private void Tick(object state)
         {
             ++CurrentTick;
-            var playerClients = Clients.Clients(players.Select(p => p.ConnectionId).ToList());
             if (CurrentTick <= 0)
             {
-                playerClients.SetCountdown(-CurrentTick);
+                PlayingClients.SetCountdown(-CurrentTick + 1);
             }
-            else if (CurrentTick >= TicksPerAltar)
+            else if (CurrentTick <= TicksPerAltar)
             {
-                // Game is over
-                StopGame(true);
-                playerClients.SetState(RunningState.Ended);
-            }
-            else
-            {
-                playerClients.Tick(players, CurrentTick);
+                PlayingClients.Tick(players, CurrentTick);
+
+                foreach (var p in players)
+                {
+                    p.Action = null;
+                }
             }
 
-            foreach (var p in players)
+            if (CurrentTick >= TicksPerAltar)
             {
-                p.Action = null;
+                // Game is over
+                StopGame(false);
             }
         }
 
-        private void StopGame(bool setGameRunningToFalse)
+        private void StopGame(bool callClientStop = true)
         {
-            timer.Change(Timeout.Infinite, 600);
+            timer.Change(Timeout.Infinite, TickLength);
             CurrentTick = -CountdownLength;
-            Clients.All.SetState(RunningState.Ended);
-            if (setGameRunningToFalse)
+            IsGameRunning = false;
+            if (callClientStop)
             {
-                Clients.Group(WaitlistGroup).NotifyRejoin();
-                IsGameRunning = false;
-                HasSaved = false;
-                foreach (var p in players)
-                {
-                    p.StartRequested = false;
-                    Clients.All.UpdatePlayers();
-                }
+                PlayingClients.Stop();
             }
         }
 
@@ -292,8 +233,6 @@ namespace GOP
         {
             return char.IsLetter(action[action.Length - 1]);
         }
-
-        public enum RunningState { NotStarted, Waiting, Countdown, Started, Ended }
 
         public class Player
         {

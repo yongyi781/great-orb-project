@@ -1,115 +1,30 @@
-﻿@model MultiplayerViewModel
 @{
     ViewData["Title"] = "Multiplayer";
-    ViewData["UseDataTable"] = true;
 }
 
-<h1>@ViewData["Title"]</h1>
-<p>The migration is still in progress. You can view the past multiplayer games, however.</p>
-<p>You can also <a asp-controller="Solo" asp-action="Index" asp-route-start="[[2,0],[-2,0]]">solo with multiple players</a>.</p>
+@section styles {
+    <link rel="stylesheet" href="../css/gop3d.css" />
+}
 
-<h2>Games</h2>
-<div id="searchDiv" class="form-inline">
-    Username: <input type="text" id="userSearch" class="form-control input-sm" placeholder="Search users">
-    # orbs: <input type="number" id="numOrbsSearch" class="form-control input-sm" min="1" placeholder="Search # orbs" />
-    Seed: <input type="number" id="seedSearch" class="form-control input-sm" min="0" placeholder="Search seed" />
-    Altar: <input type="number" id="altarSearch" class="form-control input-sm" min="0" placeholder="Search altar" />
+<div>Loading something awesome...</div>
+
+<div id="container" style="position: absolute; left: 0; top: 0; z-index: 1000">
 </div>
-<hr />
-<table id="gamesTable" class="table table-striped table-condensed table-hover table-clickable-rows" data-order='[[ 0, "desc" ]]'>
-    <thead>
-        <tr>
-            <th>ID</th>
-            <th>Timestamp</th>
-            <th># players</th>
-            <th>Usernames</th>
-            <th># orbs</th>
-            <th>Seed</th>
-            <th>Altar</th>
-            <th>Score</th>
-        </tr>
-    </thead>
-</table>
 
 @section scripts {
+    <script src="~/lib/signalr/jquery.signalR.min.js"></script>
+    <script src="~/lib/threejs/three.js"></script>
+    <script src="~/lib/stats.js/build/stats.min.js"></script>
     <script src="~/js/gop.min.js"></script>
+    <script src="~/js/GopUI3D.min.js"></script>
     <script src="~/js/utils.js"></script>
+    <script src="~/signalr/hubs"></script>
+    <script src="~/js/multiplayer.js"></script>
     <script>
-        var games, table;
-
-        $(function () {
-            var GameModes = ["Nobody", "Solo", "Duo", "Trio", "Quad"];
-
-            $("#gamesTable").on("click", "tbody > tr", function () {
-                window.open("/Watch/Multiplayer/" + $(this).children("td:first").text());
-            });
-
-            games = @Json.Serialize(Model.Games);
-            games.forEach(function (game) {
-                game.timestamp = new Date(game.timestamp);
-            });
-            $.fn.dataTable.ext.search.push(
-                function(settings, data, dataIndex) {
-                    var username = $("#userSearch").val().toLowerCase();
-                    var numOrbs = parseInt($("#numOrbsSearch").val(), 10);
-                    var seed = parseInt($("#seedSearch").val(), 10);
-                    var altar = parseInt($("#altarSearch").val(), 10);
-                    var dataUsername = data[3].toLowerCase();
-                    var dataNumOrbs = parseInt(data[4], 10);
-                    var dataSeed = parseInt(data[5], 10);
-                    var dataAltar = parseInt(data[6], 10);
-                    return dataUsername.indexOf(username) > -1 &&
-                        (isNaN(numOrbs) || dataNumOrbs == numOrbs) &&
-                        (isNaN(seed) || dataSeed === seed) &&
-                        (isNaN(altar) || dataAltar === altar);
-                }
-            );
-
-            Utils.loadAltarNames().always(function () {
-                table = $("#gamesTable").DataTable({
-                    data: games,
-                    deferRender: true,
-                    columns: [
-                        { data: "id" },
-                        {
-                            data: "timestamp",
-                            render: function (data, type, row) {
-                                if (type === "display")
-                                    return data.toLocaleString();
-                                return data;
-                            }
-                        },
-                        {
-                            data: "numberOfPlayers",
-                            render: function (data, type, row) {
-                                if (type === "display" && data in GameModes)
-                                    return GameModes[data];
-                                return data;
-                            }
-                        },
-                        { data: "usernames" },
-                        { data: "numberOfOrbs" },
-                        { data: "seed" },
-                        {
-                            data: "altar",
-                            render: function (data, type, row) {
-                                if (type === "display") {
-                                    if (AltarData[data] !== void 0) {
-                                        // Capitalize name
-                                        var name = AltarData[data].name;
-                                        return name[0].toUpperCase() + name.slice(1);
-                                    }
-                                    return data + " (custom)";
-                                }
-                                return data;
-                            }
-                        },
-                        { data: "score" }
-                    ]
-                });
-
-                $("#searchDiv > input").on("input", function() { table.draw(); });
-            });
+        var m;
+        Utils.loadAltar(Altar.Air).always(function () {
+            m = new Multiplayer(document.querySelector("#container"));
+            m.init();
         });
     </script>
 }

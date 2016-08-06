@@ -102,6 +102,21 @@
     }
 
     /**
+     * Returns an index in the array, if an element in the array satisfies the provided testing function. Otherwise -1 is returned.
+     * @param list The array.
+     * @param predicate The function to execute on each value in the array.
+     * @returns An index in the array if an element passes the test; otherwise, -1.
+     */
+    export function findIndex<T>(list: T[], predicate: (element: T, index: number, array: T[]) => boolean) {
+        for (let i = 0; i < list.length; i++) {
+            if (predicate(list[i], i, list)) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    /**
      * Binds the enter key for an input control to a button.
      * @param input The input control.
      * @param button The button to click.
@@ -134,7 +149,7 @@
      * @param altar The altar ID.
      */
     export function loadAltar(altar: number) {
-        if (altar in AltarData) {
+        if (altar in AltarData && AltarData[altar].name != null && AltarData[altar].grid != null && AltarData[altar].spawns != null) {
             return $.Deferred<void>().resolve().promise();
         }
 

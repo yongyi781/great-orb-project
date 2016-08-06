@@ -3,6 +3,7 @@ using GOP.ViewModels;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -16,29 +17,19 @@ namespace GOP.Controllers
         [FromServices]
         public UserManager<ApplicationUser> UserManager { get; set; }
 
-        public async Task<IActionResult> Index()
+        public IActionResult Index()
         {
-            var multiplayerGames = GetMultiplayerGames();
-            var currentUser = await GetCurrentUserAsync();
-
-            return View(new MultiplayerViewModel
-            {
-                CustomAltar = null,
-                Games = multiplayerGames,
-                GopControls = currentUser?.GopControls
-            });
+            return View();
         }
 
-        public async Task<IActionResult> Index2()
+        public IActionResult History()
         {
             var multiplayerGames = GetMultiplayerGames();
-            var currentUser = await GetCurrentUserAsync();
 
-            return View(new MultiplayerViewModel
+            return View(new MultiplayerHistoryViewModel
             {
                 CustomAltar = null,
-                Games = multiplayerGames,
-                GopControls = currentUser?.GopControls
+                Games = multiplayerGames
             });
         }
 
@@ -55,6 +46,25 @@ namespace GOP.Controllers
             if (result == null)
                 return NotFound();
             return new ObjectResult(GetMultiplayerGameView(result));
+        }
+
+        [HttpPost("api/[controller]")]
+        public void Post(ICollection<string> playerNames, int numberOfOrbs, int seed, int altar, int score, string code)
+        {
+            var game = new MultiplayerGame
+            {
+                Timestamp = DateTimeOffset.Now,
+                NumberOfPlayers = playerNames.Count,
+                Usernames = string.Join("; ", playerNames),
+                NumberOfOrbs = numberOfOrbs,
+                Seed = seed,
+                Altar = altar,
+                Score = score,
+                Code = code
+            };
+
+            DbContext.MultiplayerGames.Add(game);
+            DbContext.SaveChanges();
         }
 
         [HttpPost("api/[controller]/solo")]

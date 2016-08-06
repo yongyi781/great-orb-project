@@ -16,10 +16,9 @@ namespace GOP.ViewModels
         public int Score { get; set; }
     }
 
-    public class MultiplayerViewModel
+    public class MultiplayerHistoryViewModel
     {
         public CustomAltar CustomAltar { get; set; }
         public IEnumerable<MultiplayerGameView> Games { get; set; }
-        public string GopControls { get; set; }
     }
 }

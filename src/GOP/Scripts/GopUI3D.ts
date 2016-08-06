@@ -1,4 +1,6 @@
 ﻿class GopUI3D {
+    static WaterZOffset = 0.02;
+
     playerColors = ["#08f", "#871450", "#148718", "#630D0D"];
     skyColor = "dodgerblue";
     orbColor = "#dddd00";
@@ -11,7 +13,8 @@
     rockHeight = 0.4;
     waterHeight = 0.06;
     playerHeight = 1.5;
-    tickLength = 0.5;   // in seconds
+    tickLength = 500;   // in milliseconds
+    allowConfigureTickLength = true;
     cameraRotateXSpeed = 0.8 * Math.PI;
     cameraRotateYSpeed = 0.5 * Math.PI;
     mouseRotateSensitivity = 0.006;
@@ -25,7 +28,9 @@
     keybinds = {
         run: "r",
         repel: "q",
-        attract: "z"
+        attract: "z",
+        rewind: "-",
+        fastForward: "="
     };
 
     runRepelIndicator: HTMLDivElement;
@@ -37,7 +42,7 @@
     optionsMenu: OptionsMenu;
     infoBox: InfoBox;
 
-    renderer = new THREE.WebGLRenderer();
+    renderer = new THREE.WebGLRenderer({ antialias: Utils.getQueryAsBoolean("antialias") });
     camera = new FollowCamera(60, 1, 0.1, 20000);
     scene = new THREE.Scene();
     textureLoader = new THREE.TextureLoader();
@@ -52,15 +57,14 @@
     ground: THREE.Mesh;
     playerObjects: PlayerObject[] = [];
     orbObjects: OrbObject[] = [];
-    light = new THREE.DirectionalLight(0xffffff, 0.3);
+    light = new THREE.DirectionalLight(0xffffcc, 0.9);
     altarLight = new THREE.PointLight(0xffffff, 1.5, 15, 2);
-    ambientLight = new THREE.AmbientLight(0xffffff, 0.9);
+    ambientLight = new THREE.AmbientLight(0xccccff, 0.7);
     altarObjects = new THREE.Group();
     attractDots: AttractDot[] = [];
 
     clock = new THREE.Clock();
     tickProgress = 1;
-    lastMousePosition: Point;
     mouseVector: THREE.Vector2;
     stats: Stats;
 
@@ -82,6 +86,7 @@
         gameState: GameState,
         playerIndex: number) {
         this.game = new Game(gameState, playerIndex);
+        this.infoBox = new InfoBox(this, true);
     }
 
     get gameState() {
@@ -109,7 +114,9 @@
     set playerIndex(value) {
         if (this.playerIndex !== value) {
             this.game.playerIndex = value;
-            this.camera.followTarget = this.playerObjects[value].mesh;
+            if (value < this.playerObjects.length) {
+                this.camera.followTarget = this.playerObjects[value].mesh;
+            }
         }
     }
 
@@ -128,6 +135,8 @@
             this.initAltarGraphics();
         }
     }
+
+    get isPaused() { return this.game.isPaused; }
 
     init() {
         this.renderer.setClearColor(this.skyColor);
@@ -172,7 +181,6 @@
         this.initControls();
 
         // Init info box
-        this.infoBox = new InfoBox(this, true);
         this.infoBox.init();
 
         // Init context menu
@@ -270,7 +278,7 @@
         barrierGeom.faces.splice(10, 2);
         let rockGeom = new THREE.BoxGeometry(1, 1, this.rockHeight);
         rockGeom.faces.splice(10, 2);
-        let waterGeom = new THREE.BoxGeometry(1, 1, this.waterHeight);
+        let waterGeom = new THREE.PlaneGeometry(1, 1);
         waterGeom.faces.splice(10, 2);
         let wallWGeom = new THREE.BoxGeometry(wallWidth, 1, this.barrierHeight);
         wallWGeom.faces.splice(10, 2);
@@ -282,32 +290,33 @@
         for (let y = -this.radius; y <= this.radius; y++) {
             for (let x = -this.radius; x <= this.radius; x++) {
                 let tile = this.gameState.board.get(new Point(x, y));
+                let mesh: THREE.Mesh;
                 if (tile === Tile.Barrier) {
-                    let mesh = new THREE.Mesh(barrierGeom);
+                    mesh = new THREE.Mesh(barrierGeom);
                     mesh.position.set(x, y, this.barrierHeight / 2);
                     geometries[0].mergeMesh(mesh);
                 } else if (tile === Tile.Rock) {
-                    let mesh = new THREE.Mesh(rockGeom);
+                    mesh = new THREE.Mesh(rockGeom);
                     mesh.position.set(x, y, this.rockHeight / 2);
                     geometries[1].mergeMesh(mesh);
                 } else if (tile === Tile.Water) {
-                    let mesh = new THREE.Mesh(waterGeom);
-                    mesh.position.set(x, y, this.waterHeight / 2);
+                    mesh = new THREE.Mesh(waterGeom);
+                    mesh.position.set(x, y, GopUI3D.WaterZOffset);
                     geometries[2].mergeMesh(mesh);
                 }
                 // Walls
                 if (tile === Tile.WallW || tile === Tile.WallSW) {
-                    let mesh = new THREE.Mesh(wallWGeom);
+                    mesh = new THREE.Mesh(wallWGeom);
                     mesh.position.set(x - 0.5, y, this.barrierHeight / 2);
                     geometries[3].mergeMesh(mesh);
                 }
                 if (tile === Tile.WallS || tile === Tile.WallSW) {
-                    let mesh = new THREE.Mesh(wallSGeom);
+                    mesh = new THREE.Mesh(wallSGeom);
                     mesh.position.set(x, y - 0.5, this.barrierHeight / 2);
                     geometries[3].mergeMesh(mesh);
                 }
                 if (tile === Tile.Minipillar1 || tile === Tile.Minipillar2) {
-                    let mesh = new THREE.Mesh(wallSWGeom);
+                    mesh = new THREE.Mesh(wallSWGeom);
                     mesh.position.set(x - 0.5, y - 0.5, this.barrierHeight / 2);
                     geometries[3].mergeMesh(mesh);
                 }
@@ -322,6 +331,7 @@
                 mesh.matrixAutoUpdate = false;
                 mesh.castShadow = true;
                 if (tile === Tile.Water) {
+                    mesh.castShadow = false;
                     // Performance consideration
                     if (geometries[i].vertices.length < 1000) {
                         mesh.receiveShadow = true;
@@ -382,7 +392,7 @@
         this.renderer.domElement.addEventListener("mousedown", this.onMouseDown.bind(this));
         this.renderer.domElement.addEventListener("mouseup", this.onMouseUp.bind(this));
         this.renderer.domElement.addEventListener("mousemove", this.onMouseMove.bind(this));
-        this.renderer.domElement.addEventListener("mousewheel", this.onMouseWheel.bind(this));
+        this.renderer.domElement.addEventListener("wheel", this.onWheel.bind(this));
         this.renderer.domElement.addEventListener("contextmenu", e => e.preventDefault());
         this.renderer.domElement.addEventListener("keydown", this.onKeyDown.bind(this));
         this.renderer.domElement.addEventListener("keyup", this.onKeyUp.bind(this));
@@ -457,7 +467,7 @@
 
     clickableObjectsUnderLocation(v: THREE.Vector2) {
         this.raycaster.setFromCamera(v, this.camera);
-        return this.raycaster.intersectObjects(this.orbObjects.map(obj => obj.mesh).concat(this.ground));
+        return this.raycaster.intersectObjects(this.orbObjects.map(obj => obj.mesh).concat(this.ground), true);
     }
 
     generateGroundTexture() {
@@ -544,7 +554,9 @@
 
         let repelColor = this.game.player.repel ? "#ddeedd" : "#ccbbbb";
         let repelHtml = `<span style="color: ${repelColor}">Repel ${this.game.player.repel ? "on" : "off"}</span>`;
-        this.runRepelIndicator.innerHTML = `${runHtml}<br/>${repelHtml}`;
+        if (this.runRepelIndicator != null) {
+            this.runRepelIndicator.innerHTML = `${runHtml}<br/>${repelHtml}`;
+        }
     }
 
     drawTimer() {
@@ -610,6 +622,8 @@
         if (this.isInitialized) {
             this.updateDisplay();
         }
+
+        this.infoBox.resetSaveState(0);
     }
 
     restartFromCode(code: string) {
@@ -690,6 +704,16 @@
         this.updateHud();
     }
 
+    pause() {
+        this.game.pause();
+        this.optionsMenu.visible = true;
+    }
+
+    resume() {
+        this.game.resume();
+        this.optionsMenu.visible = false;
+    }
+
     /**
      * Called when the game state should advance a tick.
      */
@@ -705,7 +729,7 @@
      */
     update(elapsed: number) {
         if (this.game.isStarted && !this.game.isPaused && !this.game.isFinished) {
-            this.tickProgress += elapsed / this.tickLength;
+            this.tickProgress += elapsed * 1000 / this.tickLength;
 
             if (this.autoTick) {
                 if (this.tickProgress >= 1) {
@@ -750,7 +774,7 @@
         // Update cursor
         if (this.mouseVector !== undefined) {
             this.raycaster.setFromCamera(this.mouseVector, this.camera);
-            let intersections = this.raycaster.intersectObjects(this.orbObjects.map(obj => obj.mesh));
+            let intersections = this.raycaster.intersectObjects(this.orbObjects.map(obj => obj.mesh), true);
             this.renderer.domElement.style.cursor = intersections.length > 0 ? "pointer" : "default";
         }
     }
@@ -772,28 +796,53 @@
         this.stats.update();
     }
 
-    onKeyDown(e: KeyboardEvent) {
-        // console.log(e.key);
-        if (e.key[0] !== "F") {
-            // Let F keys through for now
-            e.preventDefault();
+    onSaveClicked() {
+        let button = this.infoBox.saveButton;
+        button.disabled = true;
+        button.textContent = "Saving...";
+        if (this.gameState.players.length === 1) {
+            $.post("/api/solo", {
+                numberOfOrbs: this.gameState.numberOfOrbs,
+                seed: this.gameState.seed,
+                altar: this.gameState.altar,
+                score: this.gameState.score,
+                code: this.game.gameplayData.toString()
+            }, function (data) {
+                button.textContent = "Saved";
+                data.timestamp = new Date(data.timestamp);
+            });
+        } else {
+            $.post("/api/multiplayer/solo", {
+                numberOfPlayers: this.gameState.players.length,
+                numberOfOrbs: this.gameState.numberOfOrbs,
+                seed: this.gameState.seed,
+                altar: this.gameState.altar,
+                score: this.gameState.score,
+                code: this.game.gameplayData.toString()
+            }, function () {
+                button.textContent = "Saved to Multiplayer";
+            });
         }
+    }
+
+    onKeyDown(e: KeyboardEvent) {
+        let handled = true;
         switch (e.key) {
             case this.keybinds.run:
                 if (!this.game.isPaused) {
-                    this.game.setPlayerRunAndRepel(!this.game.player.run, null);
+                    this.game.setMyRunAndRepel(!this.game.player.run, null);
                     this.updateHud();
                 }
                 break;
             case this.keybinds.repel:
                 if (!this.game.isPaused) {
-                    this.game.setPlayerRunAndRepel(null, true);
+                    this.game.setMyRunAndRepel(null, true);
                     this.updateHud();
                 }
                 break;
             case this.keybinds.attract:
                 if (!this.game.isPaused) {
-                    this.game.setPlayerRunAndRepel(null, false);
+                    this.game.setMyRunAndRepel(null, false);
                     this.updateHud();
                 }
                 break;
@@ -818,33 +867,38 @@
             case "R":
                 this.restart();
                 break;
-            case "-":
+            case this.keybinds.rewind:
                 this.rewind();
                 break;
-            case "=": case "+":
+            case this.keybinds.fastForward:
                 this.fastForward();
                 break;
             case "Escape": case "Esc":
                 // TODO: Account for puzzles
-                if (this.game.isPaused) {
-                    this.game.resume();
+                if (this.isPaused) {
+                    this.resume();
                 } else {
-                    this.game.pause();
+                    this.pause();
                 }
-                this.optionsMenu.visible = this.game.isPaused;
                 break;
             case "1": case "2": case "3": case "4": case "5": case "6":
-                if (this.allowPlayerSwitching) {
+                if (this.allowPlayerSwitching && !e.ctrlKey && !e.shiftKey) {
                     let index = +e.key - 1;
                     if (index < this.gameState.players.length) {
                         this.playerIndex = index;
                         this.updateHud();
                         this.updateOrbsVisibility();
                     }
+                } else {
+                    handled = false;
                 }
                 break;
             default:
+                handled = false;
                 break;
+        }
+        if (handled) {
+            e.preventDefault();
         }
     }
 
@@ -891,28 +945,23 @@
             let intersections = this.clickableObjectsUnderLocation(this.mouseVector);
             if (intersections.length > 0) {
                 let first = intersections[0];
-                let clickedOrbIndex = -1;
-                for (let i = 0; i < this.orbObjects.length; i++) {
-                    if (this.orbObjects[i].mesh === first.object) {
-                        clickedOrbIndex = i;
-                        break;
-                    }
-                }
+                let clickedOrbIndex = Utils.findIndex(this.orbObjects, orbObj => orbObj.mesh === first.object || orbObj.circle === first.object);
+
                 if (clickedOrbIndex !== -1) {
                     // Orb clicked
-                    this.game.setPlayerAction(GameAction.attract(clickedOrbIndex, false, false, true));
+                    this.game.setMyAction(GameAction.attract(clickedOrbIndex, false, false, true));
                 } else {
                     // Ground clicked
                     let p = new Point(Math.round(first.point.x), Math.round(first.point.y));
                     if (p.equals(this.game.player.location) || (GopBoard.isInAltar(p) && GopBoard.isPlayerAdjacentToAltar(
                         this.game.player.location))) {
-                        this.game.setPlayerAction(GameAction.idle());
+                        this.game.setMyAction(GameAction.idle());
                     } else if (GopBoard.isInAltar(p)) {
                         // Find closest square
-                        this.game.setPlayerAction(GameAction.move(
+                        this.game.setMyAction(GameAction.move(
                             this.gameState.board.nearestAltarPoint(this.game.player.location, PathMode.Player)));
                     } else {
-                        this.game.setPlayerAction(GameAction.move(p));
+                        this.game.setMyAction(GameAction.move(p));
                     }
                 }
             }
@@ -943,19 +992,18 @@
         }
 
         // Rotate camera
-        if (this.middleMouseClicked && this.lastMousePosition !== undefined) {
-            let delta = new Point(e.x, e.y).subtract(this.lastMousePosition);
-            this.camera.rotateAroundTarget(-this.mouseRotateSensitivity * delta.x, this.mouseRotateSensitivity * delta.y);
+        if (this.middleMouseClicked) {
+            this.camera.rotateAroundTarget(-this.mouseRotateSensitivity * e.movementX, this.mouseRotateSensitivity * e.movementY);
         }
-
-        this.lastMousePosition = new Point(e.x, e.y);
     }
 
-    onMouseWheel(e: MouseWheelEvent) {
+    onWheel(e: WheelEvent) {
         // Logarithmic
         e.preventDefault();
 
-        this.camera.zoomTowardTarget(-this.mouseWheelZoomFactor * e.wheelDelta);
+        let wheelFactor = e.deltaMode === WheelEvent.DOM_DELTA_PIXEL ? -120 / 100 :
+            e.deltaMode === WheelEvent.DOM_DELTA_LINE ? -40 : 1;
+        this.camera.zoomTowardTarget(-this.mouseWheelZoomFactor * wheelFactor * e.deltaY);
     }
 
     onWindowResize() {
@@ -975,31 +1023,29 @@
             return;
         }
 
-        for (let intersection of intersections) {
-            let isOrb = false;
-            for (let orbObj of this.orbObjects) {
-                if (intersection.object === orbObj.mesh) {
-                    isOrb = true;
-                    let $menuItem = $(`<li class="context-menu-item">Attract <span style="color: yellow">Orb ${GameAction.orbIndexToChar(orbObj.orb.index)}</span></li>`)
-                        .mousedown(eInner => {
-                            eInner.preventDefault();
-                            if (eInner.button === 0) {
-                                this.contextMenu.hidden = true;
-                                this.game.setPlayerAction(GameAction.attract(orbObj.orb.index, false, false, true));
-                            }
-                        });
-                    $menuItems.append($menuItem);
-                    break;
-                }
-            }
-            if (!isOrb && intersection.object === this.ground) {
-                let p = new Point(Math.round(intersection.point.x), Math.round(intersection.point.y));
+        let visitedOrbs: boolean[] = [];
+
+        for (let inters of intersections) {
+            let orbIndex = Utils.findIndex(this.orbObjects, orbObj => inters.object === orbObj.mesh || inters.object === orbObj.circle);
+            if (orbIndex !== -1 && !visitedOrbs[orbIndex]) {
+                visitedOrbs[orbIndex] = true;
+                let $menuItem = $(`<li class="context-menu-item">Attract <span style="color: yellow">Orb ${GameAction.orbIndexToChar(orbIndex)}</span></li>`)
+                    .mousedown(eInner => {
+                        eInner.preventDefault();
+                        if (eInner.button === 0) {
+                            this.contextMenu.hidden = true;
+                            this.game.setMyAction(GameAction.attract(orbIndex, false, false, true));
+                        }
+                    });
+                $menuItems.append($menuItem);
+            } else if (inters.object === this.ground) {
+                let p = new Point(Math.round(inters.point.x), Math.round(inters.point.y));
                 let $menuItem = $(`<li class="context-menu-item">Walk to ${p}</li>`)
                     .mousedown(eInner => {
                         eInner.preventDefault();
                         if (eInner.button === 0) {
                             this.contextMenu.hidden = true;
-                            this.game.setPlayerAction(GameAction.move(p));
+                            this.game.setMyAction(GameAction.move(p));
                         }
                     });
                 $menuItems.append($menuItem);
@@ -1140,7 +1186,7 @@ class Game {
      * Sets the player action for the next tick. Sets only the action type and target, not run and repel variables of the action.
      * @param action The action to set.
      */
-    setPlayerAction(action: GameAction) {
+    setMyAction(action: GameAction) {
         // Don't touch run and repel player settings.
         action.toggleRun = this.player.action.toggleRun;
         action.changeWand = this.player.action.changeWand;
@@ -1155,29 +1201,36 @@ class Game {
         this.gameplayData.actions.sliceForPlayer(this.playerIndex, this.gameState.currentTick);
     }
 
-    setPlayerRunAndRepel(run?: boolean, repel?: boolean) {
+    setRunAndRepel(playerIndex: number, run?: boolean, repel?: boolean, eraseGameplayData = false) {
+        let player = this.gameState.players[playerIndex];
         if (this.isStarted) {
             if (run !== undefined && run !== null) {
-                this.player.action.toggleRun = this.player.run !== run;
+                player.action.toggleRun = player.run !== run;
             }
             if (repel !== undefined && repel !== null) {
-                this.player.action.changeWand = this.player.repel !== repel;
+                player.action.changeWand = player.repel !== repel;
             }
-            // Erase gameplay data after the current tick.
-            this.gameplayData.actions.sliceForPlayer(this.player.index, this.gameState.currentTick);
+            if (eraseGameplayData) {
+                // Erase gameplay data after the current tick.
+                this.gameplayData.actions.sliceForPlayer(playerIndex, this.gameState.currentTick);
+            }
         } else {
             // Modify start info instead
-            let startPlayer = this.gameplayData.startInfo.players[this.player.index];
-            this.player.run = startPlayer.run = run;
-            this.player.repel = startPlayer.repel = repel;
+            let startPlayer = this.gameplayData.startInfo.players[playerIndex];
+            player.run = startPlayer.run = run;
+            player.repel = startPlayer.repel = repel;
         }
+    }
+
+    setMyRunAndRepel(run?: boolean, repel?: boolean) {
+        this.setRunAndRepel(this.playerIndex, run, repel, true);
     }
 }
 
 class FollowCamera extends THREE.PerspectiveCamera {
     private oldTargetPosition = new THREE.Vector3();
     private easeTargetPosition = new THREE.Vector3();
-    easeFactor = 0.06;
+    easeFactor = 0.05;
     maxZoom = 200;
 
     constructor(fov?: number, aspect?: number, near?: number, far?: number,
@@ -1257,7 +1310,7 @@ class PlayerObject {
         height: number,
         color: number | string) {
         this.mesh = new THREE.Mesh(
-            new THREE.BoxGeometry(0.8, 0.8, height),
+            new THREE.BoxGeometry(0.6, 0.6, height),
             new THREE.MeshPhongMaterial({ color }));
         this.mesh.position.set(player.location.x, player.location.y, height / 2);
         this.mesh.castShadow = true;
@@ -1296,18 +1349,18 @@ class OrbObject {
         this.circle = new THREE.Mesh(
             new THREE.CircleGeometry(0.5, 16),
             new THREE.MeshBasicMaterial({
-                color,
+                color: 0x000000,
                 transparent: true,
-                opacity: 0.2
+                opacity: 0.35
             })
         );
-        this.circle.position.z = -z + 0.1;
+        this.circle.position.z = -z + 2 * GopUI3D.WaterZOffset;
         this.mesh.add(this.circle);
 
         let c = new THREE.Color(color as string);
         let {h, s, l} = c.getHSL();
         c.setHSL(h, s, Math.max(0.5, l));
-        this.light = new THREE.PointLight(c.getHex(), 1, 15, 2);
+        this.light = new THREE.PointLight(c.getHex(), 1.2, 15, 2);
     }
 
     update(tickProgress: number) {
@@ -1413,11 +1466,11 @@ class OptionsMenu {
             .click(e => {
                 let altar = +altarOption.inputElement.value;
                 let seed = +seedOption.inputElement.value;
-                this.parent.setAltarAndSeed(altar, seed);
 
                 Utils.loadAltar(altar).fail(() => {
                     altar = Altar.None;
                 }).always(() => {
+                    this.parent.setAltarAndSeed(altar, seed);
                     this.parent.restart();
                 });
             });
@@ -1457,18 +1510,18 @@ class OptionsMenu {
             },
             { min: 0, max: 1, step: 0.05, fullLabelWidth: true });
 
-        this.addOption("useShadows", "Shadows",
+        this.addOption("useShadows", "Shadows&nbsp;",
             () => this.parent.useShadows,
             (value: boolean) => { this.parent.useShadows = value; });
 
-        this.addOption("useOrbLights", "Orb lights",
+        this.addOption("useOrbLights", "Orb lights&nbsp;",
             () => this.parent.useOrbLights,
             (value: boolean) => {
                 this.parent.useOrbLights = value;
                 this.parent.initOrbGraphics();
             });
 
-        this.addOption("useAltarLight", "Altar light",
+        this.addOption("useAltarLight", "Altar light&nbsp;",
             () => this.parent.scene.children.indexOf(this.parent.altarLight) !== -1,
             (value: boolean) => {
                 if (value) {
@@ -1477,6 +1530,15 @@ class OptionsMenu {
                     this.parent.scene.remove(this.parent.altarLight);
                 }
             });
+
+        if (this.parent.allowConfigureTickLength) {
+            this.addSeparator();
+            this.addOption("tickLength", "Tick length (ms):",
+                () => this.parent.tickLength,
+                (value: number) => {
+                    this.parent.tickLength = value;
+                });
+        }
 
         this.addSeparator();
 
@@ -1498,6 +1560,18 @@ class OptionsMenu {
                 this.parent.keybinds.attract = value;
             }, { inputStyleWidth: "100px" });
 
+        this.addOption("rewindKey", "Rewind key:",
+            () => this.parent.keybinds.rewind,
+            (value: string) => {
+                this.parent.keybinds.rewind = value;
+            }, { inputStyleWidth: "100px" });
+
+        this.addOption("fastForwardKey", "Fast forward key:",
+            () => this.parent.keybinds.fastForward,
+            (value: string) => {
+                this.parent.keybinds.fastForward = value;
+            }, { inputStyleWidth: "100px" });
+
         this.addSeparator();
 
         this.scoredTicksElement = $('<input class="for-copying" readonly/>')[0] as HTMLInputElement;
@@ -1510,7 +1584,7 @@ class OptionsMenu {
             .append(this.shareLinkElement);
         this.mainMenu.appendChild($shareLink[0]);
 
-        let $soloGamesLink = $('<a href="/Solo/Games" target="_blank">View solo history</a>');
+        let $soloGamesLink = $('<a href="/Solo/History" target="_blank">View solo history</a>');
         this.mainMenu.appendChild($soloGamesLink[0]);
 
         $(".for-copying").click(e => {
@@ -1653,13 +1727,13 @@ class OptionsMenu {
         }
         args.push("code=" + this.gameplayData.toString().replace(/ /g, "+"));
 
-        this.shareLinkElement.value = `${location.protocol}//${location.host}${location.pathname}?${args.join("&")}`;
+        this.shareLinkElement.value = `${location.protocol}//${location.host}/gop3dtest/?${args.join("&")}`;
     }
 
     onKeyDown(e: KeyboardEvent) {
         if (e.key === "Escape" || e.key === "Esc") {
             this.overlayContainer.hidden = true;
-            this.game.resume();
+            this.parent.resume();
             this.parent.renderer.domElement.focus();
         }
     }
@@ -1674,11 +1748,11 @@ class InfoBox {
     saveButton: HTMLButtonElement;
     saveTimeoutHandle: number;
 
-    constructor(private parent: GopUI3D, public allowSave = false) { }
+    constructor(private gopui: GopUI3D, public allowSave = false) { }
 
     init() {
         this.element = $("<div/>").addClass("info-box")[0] as HTMLDivElement;
-        this.parent.container.appendChild(this.element);
+        this.gopui.container.appendChild(this.element);
 
         this.altarSeedElement = $("<div/>")[0] as HTMLDivElement;
         this.element.appendChild(this.altarSeedElement);
@@ -1688,6 +1762,7 @@ class InfoBox {
         this.element.appendChild(this.gameFinishedElement);
 
         this.finalScoreSpan = $("<span>Final score 0:</span>")[0] as HTMLSpanElement;
+        this.finalScoreSpan.style.color = "#00ff00";
         this.gameFinishedElement.appendChild(this.finalScoreSpan);
 
         // Allow save only if not custom game
@@ -1695,15 +1770,16 @@ class InfoBox {
             this.saveButton = $("<button>Save</button>").addClass("btn btn-primary")[0] as HTMLButtonElement;
             this.saveButton.style.pointerEvents = "initial";
             this.saveButton.addEventListener("click", this.onSaveClicked.bind(this));
+            this.gameFinishedElement.appendChild(document.createElement("br"));
             this.gameFinishedElement.appendChild(this.saveButton);
         }
 
         this.update();
     }
 
-    private get game() { return this.parent.game; }
+    private get game() { return this.gopui.game; }
 
-    private get gameState() { return this.parent.game.gameState; }
+    private get gameState() { return this.gopui.game.gameState; }
 
     update() {
         this.altarSeedElement.textContent = `${AltarData[this.gameState.altar].name} altar, seed ${this.gameState.seed}`;
@@ -1718,8 +1794,8 @@ class InfoBox {
      * Resets the save state, with an optional delay.
      * @param delay The amount of milliseconds to delay resetting the save state by.
      */
-    resetSaveState(delay = 0) {
-        if (this.saveButton.disabled && this.saveTimeoutHandle == null) {
+    resetSaveState(delay: number) {
+        if (this.saveButton != null && this.saveButton.disabled && this.saveTimeoutHandle == null) {
             this.saveTimeoutHandle = setTimeout(() => {
                 this.saveTimeoutHandle = null;
                 this.saveButton.disabled = false;
@@ -1733,31 +1809,6 @@ class InfoBox {
     }
 
     onSaveClicked(e: MouseEvent) {
-        let button = e.currentTarget as HTMLButtonElement;
-        button.disabled = true;
-        button.textContent = "Saving...";
-        if (this.gameState.players.length === 1) {
-            $.post("/api/solo", {
-                numberOfOrbs: this.gameState.numberOfOrbs,
-                seed: this.gameState.seed,
-                altar: this.gameState.altar,
-                score: this.gameState.score,
-                code: this.game.gameplayData.toString()
-            }, function (data) {
-                button.textContent = "Saved";
-                data.timestamp = new Date(data.timestamp);
-            });
-        } else {
-            $.post("/api/multiplayer/solo", {
-                numberOfPlayers: this.gameState.players.length,
-                numberOfOrbs: this.gameState.numberOfOrbs,
-                seed: this.gameState.seed,
-                altar: this.gameState.altar,
-                score: this.gameState.score,
-                code: this.game.gameplayData.toString()
-            }, function () {
-                button.textContent = "Saved to Multiplayer";
-            });
-        }
+        this.gopui.onSaveClicked();
     }
 }
