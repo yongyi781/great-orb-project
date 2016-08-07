@@ -3,14 +3,16 @@
 }
 
 @section styles {
-    <link rel="stylesheet" href="../css/gop3d.css" />
+    <link rel="stylesheet" href="/css/gop3d.css" />
 }
 
 <h2>@ViewData["Title"]</h2>
 <div id="info">Loading something awesome...</div>
 
-<div id="container" style="position: absolute; left: 0; top: 0; z-index: 1000">
+<div id="container" style="position: absolute; left: 0; top: 0; z-index: 1001">
 </div>
+
+<input id="instance" type="hidden" value="@ViewData["Instance"]" />
 
 @section scripts {
     <script src="~/lib/signalr/jquery.signalR.min.js"></script>

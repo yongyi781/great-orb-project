@@ -1,0 +1,400 @@
+﻿@model SoloViewModel
+@{
+    ViewData["Title"] = "Solo (Legacy)";
+    ViewData["UseDataTable"] = true;
+}
+
+<div class="pull-right">
+    <button type="button" class="btn btn-info" data-toggle="modal" data-target="#shortcutsModal">Keyboard Shortcuts</button>
+    <button type="button" class="btn btn-info" data-toggle="modal" data-target="#helpModal">Help</button>
+</div>
+
+<h2>@ViewData["Title"]</h2>
+<p>Not sure what to do? Click Help at the top right corner.</p>
+<div id="gameTopPanel">
+    <div class="row">
+        <div class="col-xs-6 col-md-5">
+            <div class="input-group">
+                <span class="input-group-addon">Seed: </span>
+                <input type="number" class="form-control" id="seedInput" value="0" />
+                <span class="input-group-btn">
+                    <button type="button" id="restartButton" class="btn btn-default">Restart (Shift+R)</button>
+                </span>
+            </div>
+        </div>
+        <div class="col-xs-6 col-md-7" data-toggle="buttons">
+            <div id="altarsBtnGroup" class="btn-group">
+                <label class="btn btn-default"><input type="radio" name="altar" value="0">None</label>
+                <label class="btn btn-default"><input type="radio" name="altar" value="1">Air</label>
+                <label class="btn btn-default"><input type="radio" name="altar" value="2">Mind</label>
+                <label class="btn btn-default"><input type="radio" name="altar" value="3">Water</label>
+                <label class="btn btn-default"><input type="radio" name="altar" value="4">Earth</label>
+                <label class="btn btn-default"><input type="radio" name="altar" value="5">Fire</label>
+                <label class="btn btn-default"><input type="radio" name="altar" value="6">Body</label>
+            </div>
+        </div>
+    </div>
+</div>
+<div id="game"></div>
+
+<div>
+    <label for="shareLink">Share link: </label><br />
+    <input id="shareLink" class="for-copying" readonly />
+</div>
+@if (!Model.IsCustomGameType)
+{
+    <h2>Last 10 Games</h2>
+    <a asp-action="Games" target="_blank">View all games</a>
+    <table id="gamesTable" class="table table-striped table-condensed table-hover table-clickable-rows" data-order='[[ 0, "desc" ]]'>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Timestamp</th>
+                <th>Username</th>
+                <th># orbs</th>
+                <th>Seed</th>
+                <th>Altar</th>
+                <th>Score</th>
+            </tr>
+        </thead>
+    </table>
+}
+<!-- Auxiliary elements -->
+<input id="gopControls" type="hidden" value="@Model.GopControls" />
+<input id="isCustom" type="hidden" value="@Model.IsCustomGameType" />
+<div id="shortcutsModal" class="modal fade">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h3 class="modal-title">Keyboard Shortcuts</h3>
+            </div>
+            <div class="modal-body">
+                Note: The mouse must be over the game canvas for the shortcuts to activate.
+                <table class="table table-striped table-condensed">
+                    <thead>
+                        <tr>
+                            <th>Key</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>F</td>
+                            <td>Bring entire game canvas into view</td>
+                        </tr>
+                        <tr>
+                            <td>L</td>
+                            <td>Reload currently loaded game</td>
+                        </tr>
+                        <tr>
+                            <td>R</td>
+                            <td>Toggle run</td>
+                        </tr>
+                        <tr>
+                            <td>Shift+R</td>
+                            <td>Restart game</td>
+                        </tr>
+                        <tr>
+                            <td>Left arrow</td>
+                            <td>-10 ticks</td>
+                        </tr>
+                        <tr>
+                            <td>Right arrow</td>
+                            <td>+10 ticks</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div id="helpModal" class="modal fade">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h3 class="modal-title">Help</h3>
+            </div>
+            <div class="modal-body">
+                <h4>Quick start</h4>
+                <p>
+                    The object of the game is to get as many orbs into the altar as you can in 2 minutes.
+                    You have two wands to help you do this: attractor and repeller. The attractor
+                    attracts orbs toward you and the repeller pushes orbs away from you.
+                </p>
+                <p>
+                    Choose a seed by typing a number in the <strong>Seed</strong> field, and then choose
+                    an altar by clicking on the corresponding button in the altars list.
+                    You can start playing by clicking anywhere in the game screen.
+                </p>
+                <p>
+                    You may want to choose a different place to start from. If this is the case, just move to your
+                    desired position and restart the game. Your position will be remembered.
+                </p>
+                <h4>Random seeds</h4>
+                <p>
+                    By default, the emulator chooses a random seed between 0 and @(GOP.Controllers.SoloController.DefaultMaxRandomSeed - 1) inclusive every time the page loads.
+                    To generate a new seed, refresh the page.
+                </p>
+                <p>
+                    If you want the webpage to generate a random seed in a different range, you can do so by
+                    modifying the <code>smin</code> and <code>smax</code> parameters in the address bar. The smin parameter is
+                    the inclusive lower bound for the random number, and the smax parameter is the exclusive upper bound.
+                </p>
+                <h4>Saving your game</h4>
+                <p>
+                    When an altar is over, you have the option to save the game in this site's records by clicking
+                    the <strong>Save this game</strong> button. Don't worry about whether you got the best
+                    score you could have.
+                    You can always retry the altar for a better score. The hiscores will only use
+                    your best score for any particular seed and altar.
+                </p>
+                <h4>What if I make a mistake?</h4>
+                <p>
+                    You can keep playing, if you want to simulate playing an actual game of GOP.
+                    However, at some point you will want to try to maximize your score. If you make a mistake,
+                    you can click the <strong>-10 ticks</strong> button to go back 10 ticks and
+                    try to correct it.
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div id="confirmChangeAltarModal" class="modal fade">
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+            <div class="modal-body">
+                You will lose your current game if you switch altars. Continue?
+            </div>
+            <div class="modal-footer">
+                <button type="button" data-dismiss="modal" class="btn btn-primary" id="yes">Yes</button>
+                <button type="button" data-dismiss="modal" class="btn">No</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section scripts {
+    <script src="~/js/gop.min.js"></script>
+    <script src="~/js/gopui.js"></script>
+    <script src="~/js/utils.js"></script>
+    <script>
+        var gopui, options, games, table, isCustom = Utils.parseBoolean($("#isCustom").val()), isUpdatingSeedAltarDisplay = false;
+
+        function selectAltarButton(altar) {
+            $("input[name=altar][value=" + altar + "]:radio").parent().button("toggle");
+        }
+
+        function updateSeedAltarDisplay() {
+            isUpdatingSeedAltarDisplay = true;
+            $("#seedInput").val(gopui.gameState.seed);
+            selectAltarButton(gopui.gameState.altar);
+            isUpdatingSeedAltarDisplay = false;
+        }
+
+        function restartGame(code, seed, altar) {
+            Utils.loadAltar(altar).fail(function () { altar = Altar.None; }).always(function () {
+                gopui.restartGame(code, seed, altar);
+                updateSeedAltarDisplay();
+            })
+        }
+
+        function updateShareLink() {
+            var args = [];
+            if (options.game.numberOfOrbs !== undefined) {
+                args.push("numorbs=" + options.game.numberOfOrbs);
+            }
+            if (options.game.altar !== undefined) {
+                args.push("altar=" + options.game.altar);
+            }
+            if (options.game.reachDistance !== undefined) {
+                args.push("reach=" + options.game.reachDistance);
+            }
+            if (options.game.ticksPerAltar !== undefined) {
+                args.push("ticks=" + options.game.ticksPerAltar);
+            }
+            if (options.game.presetSpawns instanceof Array && options.game.presetSpawns.length > 0) {
+                args.push("spawns=" + JSON.stringify(options.game.presetSpawns.map(function (p) { return [p.x, p.y] })));
+            }
+            args.push("code=" + gopui.$gameCodeText.text().replace(/ /g, "+"));
+
+            var shareLinkElement = $("#shareLink")[0];
+            $("#shareLink").val(`${location.protocol}//${location.host}${location.pathname}?${args.join("&")}`);
+            if ($("#shareLink").is(":focus")) {
+                $("#shareLink").select();
+            }
+        }
+
+        function initializeGopUI() {
+            gopui = new GopUI($("#game")[0], options);
+
+            gopui.$saveButton.click(function () {
+                gopui.$saveButton.text("Saving...").prop("disabled", true);
+                if (gopui.gameState.players.length == 1) {
+                    $.post("/api/solo", {
+                        numberOfOrbs: gopui.options.game.numberOfOrbs,
+                        seed: gopui.gameState.seed,
+                        altar: gopui.gameState.altar,
+                        score: gopui.gameState.score,
+                        code: gopui.gameplayData.toString() },
+                        function (data) {
+                            gopui.$saveButton.text("Saved");
+                            data.timestamp = new Date(data.timestamp);
+                            table.row.add(data);
+                            table.draw();
+                        });
+                } else {
+                    $.post("/api/multiplayer/solo", {
+                        numberOfPlayers: gopui.gameState.players.length,
+                        numberOfOrbs: gopui.options.game.numberOfOrbs,
+                        seed: gopui.gameState.seed,
+                        altar: gopui.gameState.altar,
+                        score: gopui.gameState.score,
+                        code: gopui.gameplayData.toString() },
+                        function () {
+                            gopui.$saveButton.text("Saved to Multiplayer");
+                        });
+                }
+            });
+
+            updateSeedAltarDisplay();
+        }
+
+        $(function () {
+            options = {
+                game: {
+                    seed: Utils.getQueryAsNumber("seed"),
+                    altar: Utils.getQueryAsNumber("altar", 1),
+                    code: Utils.getQueryAsString("code"),
+                    numberOfOrbs: Utils.getQueryAsNumber("numorbs"),
+                    reachDistance: Utils.getQueryAsNumber("reach"),
+                    ticksPerAltar: Utils.getQueryAsNumber("ticks"),
+                    startLocations: Utils.getQueryAsPointArray("start"),
+                    presetSpawns: Utils.getQueryAsPointArray("spawns"),
+                    suppressRandomSpawns: Utils.getQueryAsBoolean("norandom")
+                },
+                client: {
+                    visibilityRadius: Utils.getQueryAsNumber("visibility"),
+                    latency: Utils.getQueryAsNumber("latency"),
+                    tickInterval: Utils.getQueryAsNumber("tickinterval") || 450,
+                    altarAndStartLocationForced: Utils.getQueryAsBoolean("forcestart"),
+                    gopControls: JSON.parse($("#gopControls").val() || null) || undefined
+                },
+                interface: {
+                    showRestart: false,
+                    showSave: !isCustom,
+                    plusMinusTicksAdvance: Utils.getQueryAsNumber("advance"),
+                    showScore: Utils.getQueryAsBoolean("showscore")
+                },
+                callbacks: {
+                    tick: function (force, redraw) {
+                        gopui.$saveButton.text("Save").prop("disabled",
+                            gopui.gameState.currentTick < GameState.ticksPerAltar);
+                        if (redraw) {
+                            updateShareLink();
+                        }
+                    }
+                }
+            };
+
+            if (options.game.seed === void 0) {
+                var smin = Utils.getQueryAsNumber("smin") || 0;
+                var smax = Utils.getQueryAsNumber("smax") || @GOP.Controllers.SoloController.DefaultMaxRandomSeed;
+                options.game.seed = Utils.getRandomInt(smin, smax);
+            }
+
+            if (options.game.numberOfOrbs !== void 0) {
+                options.game.numberOfOrbs = Math.min(@GOP.Controllers.SoloController.MaxOrbs, options.game.numberOfOrbs);
+            }
+
+            Utils.loadAltar(options.game.altar).done(function () {
+                if (options.game.altar > 6) {
+                    var $radio = $('<input type="radio" name="altar">').val(options.game.altar);
+                    $("#altarsBtnGroup").append($('<label class="btn btn-default"/>').append($radio, AltarData[options.game.altar].name));
+                }
+            }).always(function () {
+                initializeGopUI();
+            });
+
+            games = @Json.Serialize(Model.Games);
+            Utils.loadAltarNames().always(function () {
+                if (games !== null)
+                {
+                    games.forEach(function (game) {
+                        game.timestamp = new Date(game.timestamp);
+                    });
+
+                    table = $("#gamesTable").DataTable({
+                        data: games,
+                        deferRender: true,
+                        paging: false,
+                        searching: false,
+                        columns: [
+                            { data: "id" },
+                            {
+                                data: "timestamp",
+                                render: function (data, type, row) {
+                                    if (type === "display")
+                                        return data.toLocaleString();
+                                    return data;
+                                }
+                            },
+                            { data: "username" },
+                            { data: "numberOfOrbs" },
+                            { data: "seed" },
+                            {
+                                data: "altar",
+                                render: function (data, type, row) {
+                                    if (type === "display") {
+                                        if (AltarData[data] !== void 0) {
+                                            // Capitalize name
+                                            var name = AltarData[data].name;
+                                            return `${data} (${name[0].toUpperCase()}${name.substring(1)})`;
+                                        }
+                                        return data + " (custom)";
+                                    }
+                                    return data;
+                                }
+                            },
+                            { data: "score" }
+                        ]
+                    });
+                }
+            });
+ 
+            $("#restartButton").click(function () {
+                restartGame(undefined, parseInt($("#seedInput").val(), 10));
+            });
+
+            $("#altarsBtnGroup").on("change", "input[name=altar]:radio", function (e) {
+                if (!isUpdatingSeedAltarDisplay) {
+                    let altar = +$(e.currentTarget).val();
+                    Utils.loadAltar(altar).done(function () {
+                        if (gopui.isGameRunning) {
+                            $("#confirmChangeAltarModal").modal().one("click", "#yes", function () {
+                                restartGame(undefined, undefined, parseInt($(e.currentTarget).val(), 10));
+                            });
+                        } else {
+                            restartGame(undefined, undefined, parseInt($(e.currentTarget).val(), 10));
+                        }
+                    });
+                }
+            });
+
+            $(".for-copying").click(function (e) { $(e.currentTarget).select(); });
+
+            $("#gamesTable").on("click", "tbody > tr", function () {
+                window.open("/Watch/Solo/" + $(this).children("td:first").text());
+            });
+
+            Utils.bindEnterKeyToButton($("#seedInput")[0], $("#restartButton")[0]);
+        });
+    </script>
+}

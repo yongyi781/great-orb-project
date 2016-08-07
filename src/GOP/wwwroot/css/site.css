@@ -47,6 +47,10 @@ a:visited {
     color: #9e67b7;
 }
 
+.nav-tabs a:visited {
+    color: #fff;
+}
+
 label > input {
     font-weight: initial;
 }

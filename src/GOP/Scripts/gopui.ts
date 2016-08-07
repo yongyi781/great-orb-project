@@ -390,15 +390,17 @@ class GopUI {
             player.freeze();
         });
 
-        this.gameState.reset();
-        if (redraw) {
-            this.gopCanvas.paintBackground();
-            this.gopCanvas.paint();
-            this.updateDisplay();
-        }
+        Utils.loadAltar(this.gameState.altar).fail(() => { this.gameState.altar = Altar.None; }).always(() => {
+            this.gameState.reset();
+            if (redraw) {
+                this.gopCanvas.paintBackground();
+                this.gopCanvas.paint();
+                this.updateDisplay();
+            }
 
-        // Disable the save button.
-        this.$saveButton.prop("disabled", true);
+            // Disable the save button.
+            this.$saveButton.prop("disabled", true);
+        });
     }
 
     onCanvasMouseDown(e: JQueryMouseEventObject) {

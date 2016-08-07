@@ -16,10 +16,17 @@ namespace GOP.Controllers
 
         [FromServices]
         public UserManager<ApplicationUser> UserManager { get; set; }
-
+        
         public IActionResult Index()
         {
             return View();
+        }
+
+        [HttpGet("[controller]/i/{name}")]
+        public IActionResult Instance(string name)
+        {
+            ViewData["Instance"] = name;
+            return View(nameof(Index));
         }
 
         public IActionResult History()

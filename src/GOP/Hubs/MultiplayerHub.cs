@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.SignalR;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Threading.Tasks;
 
@@ -6,12 +7,14 @@ namespace GOP.Hubs
 {
     public class MultiplayerHub : Hub
     {
-        public MultiplayerHub(MultiplayerManager manager)
+        public MultiplayerHub(MultiplayerManager manager, ILogger<MultiplayerHub> logger)
         {
             MultiplayerManager = manager;
+            Logger = logger;
         }
 
         public MultiplayerManager MultiplayerManager { get; set; }
+        public ILogger<MultiplayerHub> Logger { get; set; }
 
         public override Task OnConnected()
         {
@@ -36,9 +39,9 @@ namespace GOP.Hubs
             MultiplayerManager.AddPlayer(Context);
         }
 
-        public void SendStartSignal()
+        public void SetReady(bool ready)
         {
-            MultiplayerManager.SendStartSignal(Context);
+            MultiplayerManager.SetReady(Context, ready);
         }
         
         public void SendNewGameSignal()

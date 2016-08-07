@@ -23,7 +23,12 @@ namespace GOP.Controllers
         [FromServices]
         public UserManager<ApplicationUser> UserManager { get; set; }
 
-        public async Task<IActionResult> Index(int? altar, string spawns, int reach = DefaultReach, int numOrbs = 3, int ticks = DefaultTicks)
+        public IActionResult Index()
+        {
+            return View();
+        }
+
+        public async Task<IActionResult> Legacy(int? altar, string spawns, int reach = DefaultReach, int numOrbs = 3, int ticks = DefaultTicks)
         {
             DbContext.CacheViewUsers = true;
             DbContext.LoadUsersIntoCache();
@@ -36,8 +41,7 @@ namespace GOP.Controllers
             return View(new SoloViewModel
             {
                 IsCustomGameType = isCustomGameType,
-                Games = isCustomGameType ? null : soloGames,
-                GopControls = currentUser?.GopControls
+                Games = isCustomGameType ? null : soloGames
             });
         }
 

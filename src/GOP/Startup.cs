@@ -106,7 +106,7 @@ namespace GOP
                     template: "{controller=Home}/{action=Index}/{id?}");
             });
 
-            app.UseFileServer(true);
+            app.UseDirectoryBrowser();
         }
     }
 }

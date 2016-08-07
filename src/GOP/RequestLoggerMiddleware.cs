@@ -54,7 +54,7 @@ namespace GOP
             var userAgent = FormatForLog(context.Request.Headers["User-Agent"]);
             var referer = FormatForLog(context.Request.Headers["Referer"]);
 
-            await next.Invoke(context);
+            await next(context);
 
             var statusCode = context.Response.StatusCode;
             var str = $"{DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss")} {localIp} {method} {url} {queryString} {port} {username} {remoteIp} {userAgent} {referer} {statusCode}";

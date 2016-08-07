@@ -34,7 +34,7 @@ interface MultiplayerHubConnection extends SignalR.Hub.Connection {
         sendRepel(repel: boolean): void;
         sendRun(run: boolean): void;
         sendSaveRequest(code: string, score: number): void;
-        sendStartSignal(): void;
+        setReady(ready: boolean): void;
         setGameParams(altar: number, seed: number): void;
         setPlayerLocation(x: number, y: number): void;
         setWatching(watching: boolean): void;
@@ -47,8 +47,7 @@ interface SignalR {
     multiplayerHub: MultiplayerHubConnection;
 }
 
-enum RunningState { NotStarted, Waiting, Countdown, Started, Ended }
-enum SaveState { NotSaved, Waiting, Saved }
+enum RunningState { NotReady, Ready, Countdown, Started, Ended }
 
 class MultiplayerGopUI extends GopUI3D {
     sidePanel: MultiplayerSidePanel;
@@ -195,7 +194,7 @@ class MultiplayerSidePanel {
         this.element = $("<div/>").addClass("multiplayer-panel")[0] as HTMLDivElement;
 
         let controlsDiv = document.createElement("div");
-        controlsDiv.style.pointerEvents = "initial";
+        controlsDiv.style.pointerEvents = "auto";
 
         let $watchingDiv = $('<div><label><input type="checkbox"/>Watching</label></div>');
         this.watchingCheckBox = $watchingDiv.find("input")[0] as HTMLInputElement;
@@ -209,16 +208,21 @@ class MultiplayerSidePanel {
         controlsDiv.appendChild($watchingDiv[0]);
 
         this.startButton.className = "btn btn-primary";
-        this.startButton.textContent = "Start";
+        this.startButton.textContent = "Set Ready";
         this.startButton.disabled = this.watchingCheckBox.checked;
         this.startButton.addEventListener("click", e => {
             switch (this.runningState) {
-                case RunningState.NotStarted:
-                    if ($.connection.hub.state === $.signalR.connectionState.connected) {
-                        this.hub.server.sendStartSignal();
-                    }
-                    this.runningState = RunningState.Waiting;
+                case RunningState.NotReady:
+                    // if ($.connection.hub.state === $.signalR.connectionState.connected) {
+                        this.hub.server.setReady(true);
+                    // }
+                    this.runningState = RunningState.Ready;
                     break;
+                case RunningState.Ready:
+                    // if ($.connection.hub.state === $.signalR.connectionState.connected) {
+                        this.hub.server.setReady(false);
+                    // }
+                    this.runningState = RunningState.NotReady;
                 case RunningState.Started:
                     this.gopui.restart();
                     break;
@@ -246,7 +250,7 @@ class MultiplayerSidePanel {
             if (playerInfo.isWatching) {
                 li.textContent += " (watching)";
             } else if (!playerInfo.startRequested) {
-                li.textContent += " (not started)";
+                li.textContent += " (not ready)";
             }
             if (playerInfo.action != null) {
                 li.textContent += " - " + playerInfo.action;
@@ -277,7 +281,7 @@ class MultiplayerGame extends Game {
         action.toggleRun = this.player.action.toggleRun;
         action.changeWand = this.player.action.changeWand;
 
-        if (this.runningState === RunningState.NotStarted) {
+        if (this.runningState === RunningState.NotReady) {
             if (action.type === ActionType.Move) {
                 if ($.connection.hub.state === $.signalR.connectionState.connected) {
                     this.hub.server.setPlayerLocation(action.location.x, action.location.y);
@@ -304,6 +308,9 @@ class MultiplayerGame extends Game {
                 this.hub.server.sendRepel(repel);
             }
         }
+        if (!this.isStarted) {
+            super.setMyRunAndRepel(run, repel);
+        }
     }
 }
 
@@ -312,7 +319,7 @@ class Multiplayer {
     hub = $.connection.multiplayerHub;
     players: PlayerInfo[];
 
-    private mRunningState = RunningState.NotStarted;
+    private mRunningState = RunningState.NotReady;
     private countdown = 5;
 
     constructor(container: HTMLDivElement) {
@@ -331,14 +338,14 @@ class Multiplayer {
             let watchingCheckBox = this.gopui.sidePanel.watchingCheckBox;
             let isWatching = this.currentPlayer.isWatching;
             switch (this.mRunningState) {
-                case RunningState.NotStarted:
-                    startButton.textContent = "Start";
+                case RunningState.NotReady:
+                    startButton.textContent = "Set Ready";
                     startButton.disabled = isWatching;
                     watchingCheckBox.disabled = false;
                     break;
-                case RunningState.Waiting:
-                    startButton.textContent = "Waiting for others";
-                    startButton.disabled = true;
+                case RunningState.Ready:
+                    startButton.textContent = "Set Not Ready";
+                    startButton.disabled = false;
                     watchingCheckBox.disabled = true;
                     break;
                 case RunningState.Countdown:
@@ -349,7 +356,6 @@ class Multiplayer {
                     startButton.textContent = "Restart";
                     startButton.disabled = isWatching;
                     watchingCheckBox.disabled = true;
-                    this.gopui.game.start();
                     break;
                 case RunningState.Ended:
                     startButton.textContent = "New Game";
@@ -457,14 +463,14 @@ class Multiplayer {
         };
 
         this.hub.client.newGame = () => {
-            this.runningState = RunningState.NotStarted;
+            this.runningState = RunningState.NotReady;
             this.gopui.restart(true);
         };
 
         this.hub.client.tick = (players, currentTick) => {
             this.players = players;
             this.gopui.updatePlayerInfo(this.players);
-            this.gopui.game.isStarted = true;
+            this.gopui.game.start();
 
             // Set player actions now
             players.forEach((player, i) => {
@@ -486,9 +492,10 @@ class Multiplayer {
             }
         };
 
-        $.connection.hub.logging = true;
+        $.connection.hub.logging = Utils.getQueryAsBoolean("debug", false);
+        $.connection.hub.qs = `instance=${(document.querySelector("#instance") as HTMLInputElement).value}`;
         $.connection.hub.start().done(() => {
-            this.gopui.init().start();
+            this.gopui.init().startAnimation();
         }).fail(() => {
             alert("Failed to connect!");
         });

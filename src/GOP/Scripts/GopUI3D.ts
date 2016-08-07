@@ -534,7 +534,7 @@
      * Starts the 3D GOP rendering. Note that this doesn't start the game itself.
      * The player must click to start the game.
      */
-    start() {
+    startAnimation() {
         this.clock.start();
         this.updateDisplay();
         this.animate();
@@ -830,19 +830,19 @@
             case this.keybinds.run:
                 if (!this.game.isPaused) {
                     this.game.setMyRunAndRepel(!this.game.player.run, null);
-                    this.updateHud();
+                    this.drawRunRepelIndicators();
                 }
                 break;
             case this.keybinds.repel:
                 if (!this.game.isPaused) {
                     this.game.setMyRunAndRepel(null, true);
-                    this.updateHud();
+                    this.drawRunRepelIndicators();
                 }
                 break;
             case this.keybinds.attract:
                 if (!this.game.isPaused) {
                     this.game.setMyRunAndRepel(null, false);
-                    this.updateHud();
+                    this.drawRunRepelIndicators();
                 }
                 break;
             case "w": case "W": case "ArrowUp": case "Up":
@@ -1203,10 +1203,10 @@ class Game {
     setRunAndRepel(playerIndex: number, run?: boolean, repel?: boolean, eraseGameplayData = false) {
         let player = this.gameState.players[playerIndex];
         if (this.isStarted) {
-            if (run !== undefined && run !== null) {
+            if (run != null) {
                 player.action.toggleRun = player.run !== run;
             }
-            if (repel !== undefined && repel !== null) {
+            if (repel != null) {
                 player.action.changeWand = player.repel !== repel;
             }
             if (eraseGameplayData) {
@@ -1216,8 +1216,11 @@ class Game {
         } else {
             // Modify start info instead
             let startPlayer = this.gameplayData.startInfo.players[playerIndex];
-            player.run = startPlayer.run = run;
-            player.repel = startPlayer.repel = repel;
+            if (run != null) {
+                player.run = startPlayer.run = run;
+            } if (repel != null) {
+                player.repel = startPlayer.repel = repel;
+            }
         }
     }
 
@@ -1343,7 +1346,6 @@ class OrbObject {
                 opacity
             }));
         this.mesh.position.set(orb.location.x, orb.location.y, z);
-        // this.mesh.castShadow = true;
 
         this.circle = new THREE.Mesh(
             new THREE.CircleGeometry(0.5, 16),
@@ -1380,11 +1382,11 @@ class AttractDot {
         public endObject: THREE.Object3D,
         color: number | string) {
         this.mesh = new THREE.Mesh(
-            new THREE.SphereGeometry(0.1, 8, 8),
+            new THREE.SphereGeometry(0.12, 8, 8),
             new THREE.MeshLambertMaterial({
                 color,
                 transparent: true,
-                opacity: 0.5
+                opacity: 0.75
             })
         );
         this.mesh.position.copy(startObject.position);
@@ -1727,7 +1729,7 @@ class OptionsMenu {
         }
         args.push("code=" + this.gameplayData.toString().replace(/ /g, "+"));
 
-        this.shareLinkElement.value = `${location.protocol}//${location.host}/gop3dtest/?${args.join("&")}`;
+        this.shareLinkElement.value = `${location.protocol}//${location.host}/Solo/?${args.join("&")}`;
     }
 
     onKeyDown(e: KeyboardEvent) {

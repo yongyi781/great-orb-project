@@ -8,43 +8,9 @@
     <link rel="stylesheet" href="../css/gop3d.css" />
 </head>
 <body>
-    <div id="container" style="position: relative"></div>
-
-    <script src="../lib/jquery/dist/jquery.min.js"></script>
-    <script src="../lib/threejs/three.min.js"></script>
-    <script src="../lib/stats.js/build/stats.min.js"></script>
-    <script src="../js/gop.min.js"></script>
-    <script src="../js/GopUI3D.js"></script>
-    <script src="../js/utils.js"></script>
-    <script>
-        var numberOfOrbs = Utils.getQueryAsInteger("numorbs", GameState.defaults.numberOfOrbs);
-        var altar = Utils.getQueryAsInteger("altar", GameState.defaults.altar);
-        var seed = Utils.getQueryAsInteger("seed", Utils.getRandomInt(0, 200));
-        var playerLocations = Utils.getQueryAsPointArray("start", [new Point(2, 0)]);
-        var spawns = Utils.getQueryAsPointArray("spawns", []);
-        var reachDist = Utils.getQueryAsInteger("reach", GopBoard.defaults.reachDistance);
-        var respawnOrbs = Utils.getQueryAsBoolean("respawn", true);
-        var gs, gopui, code;
-
-        GameState.ticksPerAltar = Utils.getQueryAsInteger("ticks", GameState.defaults.ticksPerAltar);
-
-        Utils.loadAltar(altar).fail(function () { altar = 0; }).always(function () {
-            gs = new GameState(new GopBoard(53, 53, reachDist), playerLocations, spawns, numberOfOrbs, seed, altar, respawnOrbs);
-
-            gopui = new GopUI3D($("#container")[0], gs, 0);
-            gopui.init();
-            
-            var altarLoaded = $.Deferred().resolve().promise();
-
-            code = Utils.getQueryAsString("code");
-            if (code !== undefined) {
-                altarLoaded = gopui.restartFromCode(code);
-            }
-            altarLoaded.always(function () {
-                gopui.start();
-                gopui.renderer.domElement.focus();
-            });
-        });
-    </script>
+    <div class="container">
+        <h2>GOP 3D Test</h2>
+        <p>Thank you for testing the 3D GOP emulator! We really appreciate everyone's effort. You can see the final product in <a href="/Solo">the main solo page</a> now.</p>
+    </div>
 </body>
 </html>

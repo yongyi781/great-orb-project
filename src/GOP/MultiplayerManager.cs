@@ -107,11 +107,11 @@ namespace GOP
             }
         }
 
-        public void SendStartSignal(HubCallerContext context)
+        public void SetReady(HubCallerContext context, bool ready)
         {
             var player = GetPlayer(context);
             if (player != null)
-                player.StartRequested = true;
+                player.StartRequested = ready;
             PlayingClients.UpdatePlayers(players, false);
             StartGameIfReady();
         }

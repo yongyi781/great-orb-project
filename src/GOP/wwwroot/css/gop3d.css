@@ -18,7 +18,7 @@
     margin: auto;
     padding: 20px;
     background-color: rgba(0, 0, 0, 0.5);
-    pointer-events: initial;
+    pointer-events: auto;
     outline: none;
     overflow: auto;
 }
@@ -44,8 +44,7 @@
     top: 50px;
     padding: 10px;
 	max-width: 300px;
-    pointer-events: none;
-    background-color: rgba(0, 0, 0, 0.05);
+    background-color: rgba(0, 0, 0, 0.3);
     color: white;
     pointer-events: none;
 }

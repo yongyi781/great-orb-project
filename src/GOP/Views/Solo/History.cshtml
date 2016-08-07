@@ -60,7 +60,6 @@
             table = $("#gamesTable").DataTable({
                 data: games,
                 deferRender: true,
-                pageLength: 25,
                 columns: [
                     { data: "id" },
                     {
@@ -78,10 +77,8 @@
                         data: "altar",
                         render: function (data, type, row) {
                             if (type === "display") {
-                                if (AltarData[data] !== void 0) {
-                                    // Capitalize name
-                                    var name = AltarData[data].name;
-                                    return `${data} (${name[0].toUpperCase()}${name.substring(1)})`;
+                                if (AltarData[data] != null) {
+                                    return AltarData[data].name;
                                 }
                                 return data + " (custom)";
                             }

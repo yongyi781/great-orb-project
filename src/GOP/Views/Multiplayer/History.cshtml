@@ -90,10 +90,8 @@
                             data: "altar",
                             render: function (data, type, row) {
                                 if (type === "display") {
-                                    if (AltarData[data] !== void 0) {
-                                        // Capitalize name
-                                        var name = AltarData[data].name;
-                                        return name[0].toUpperCase() + name.slice(1);
+                                    if (AltarData[data] != null) {
+                                        return AltarData[data].name;
                                     }
                                     return data + " (custom)";
                                 }
