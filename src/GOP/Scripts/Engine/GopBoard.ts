@@ -285,6 +285,11 @@
         return s;
     }
 
+    /** Returns a JSON representation of the grid. */    
+    toJSON() {
+        return JSON.stringify(this.grid.slice().reverse());
+    }
+
     /**
      * Returns -1 if there are no obstacles in the line of sight, otherwise the index of the
      * first obstacle to the line of sight.

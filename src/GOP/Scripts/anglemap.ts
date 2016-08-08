@@ -70,6 +70,7 @@ class Anglemap {
                     AltarData[this.currentAltar].spawns.sort((p1, p2) => p1.compare(p2));
                 } else {
                     AltarData[this.currentAltar].spawns.splice(index, 1);
+                    this.invalidatedSquares.push(p);
                 }
             }
 

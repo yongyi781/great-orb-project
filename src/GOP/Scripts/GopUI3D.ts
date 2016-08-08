@@ -2,7 +2,6 @@
     static WaterZOffset = 0.02;
 
     playerColors = ["#08f", "#871450", "#148718", "#630D0D"];
-    skyColor = "dodgerblue";
     orbColor = "#dddd00";
     barrierColor = "#666666";
     rockColor = "#888888";
@@ -143,7 +142,6 @@
     get clickIndicatorDuration() { return 0.4; }
 
     init() {
-        this.renderer.setClearColor(this.skyColor);
         this.renderer.shadowMap.enabled = true;
         this.renderer.setPixelRatio(devicePixelRatio);
         this.renderer.domElement.tabIndex = 1;
@@ -256,7 +254,10 @@
 
         let groundColor = AltarData[this.gameState.altar].groundColor;
         if (groundColor instanceof Array) {
-            groundColor = groundColor[0];
+            // Use ground pattern instead of ground color
+            groundColor = "#ffffff";
+        } else if (groundColor == null) {
+            groundColor = "#545566";
         }
 
         if (this.altarObjects !== undefined) {
@@ -268,7 +269,7 @@
         this.ground = new THREE.Mesh(
             new THREE.PlaneBufferGeometry(this.size, this.size),
             new THREE.MeshPhongMaterial({
-                color: this.getGroundColor(),
+                color: groundColor as string,
                 map: this.generateGroundTexture()
             })
         );
@@ -430,17 +431,6 @@
         this.container.appendChild(this.clickIndicator.domElement);
     }
 
-    getGroundColor() {
-        let groundColor = AltarData[this.gameState.altar].groundColor;
-        if (!groundColor) {
-            return "#545566";
-        }
-        if (groundColor instanceof Array) {
-            return groundColor[0];
-        }
-        return groundColor as string;
-    }
-
     getWaterColor() {
         let color = AltarData[this.gameState.altar].waterColor;
         if (color == null) {
@@ -476,13 +466,6 @@
             return this.gridTexture;
         }
 
-        let lightGroundColors = (groundColors as string[]).map(cStr => {
-            let c = new THREE.Color(cStr);
-            let {h, s, l} = c.getHSL();
-            c.setHSL(h, s, 1.3 * l);
-            return "#" + c.getHexString();
-        });
-
         let canvas = document.createElement("canvas");
         let size = 2048;
         let scale = size / this.size;
@@ -490,14 +473,14 @@
         canvas.width = size;
         canvas.height = size;
         let context = canvas.getContext("2d");
-        context.fillStyle = lightGroundColors[0];
+        context.fillStyle = groundColors[0];
         context.fillRect(0, 0, canvas.width, canvas.height);
         for (let y = -this.radius; y <= this.radius; y++) {
             for (let x = -this.radius; x <= this.radius; x++) {
                 let nx = this.radius + x;
                 let ny = this.radius - y;
-                let color = lightGroundColors[groundPattern[ny][nx]];
-                if (color !== lightGroundColors[0]) {
+                let color = groundColors[groundPattern[ny][nx]];
+                if (color !== groundColors[0]) {
                     context.fillStyle = color;
                     context.fillRect(Math.round(scale * nx), Math.round(scale * ny), roundedScale, roundedScale);
                 }
@@ -505,7 +488,7 @@
         }
         // Draw gridlines
         context.lineWidth = 1;
-        context.strokeStyle = "#666";
+        context.strokeStyle = "#222222";
         context.beginPath();
         for (let x = 1; x <= this.size; x++) {
             context.moveTo(Math.floor(x * scale) + 0.5, 0);
@@ -1797,7 +1780,7 @@ class OptionsMenu {
         }
         args.push("code=" + this.gameplayData.toString().replace(/ /g, "+"));
 
-        this.shareLinkElement.value = `${location.protocol}//${location.host}/Solo/?${args.join("&")}`;
+        this.shareLinkElement.value = `${location.protocol}//${location.host}/Solo?${args.join("&")}`;
     }
 
     onKeyDown(e: KeyboardEvent) {
