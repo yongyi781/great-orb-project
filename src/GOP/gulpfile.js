@@ -64,6 +64,4 @@ gulp.task("min:gop3d", () => {
     gulp.src(paths.gop3d).pipe(rename(paths.minGop3d)).pipe(uglify()).pipe(gulp.dest("."));
 });
 
-gulp.task("default", ["engine:js"], () => {
-
-});
+gulp.task("default", ["engine:js", "min:gop3d"]);

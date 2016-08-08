@@ -32,7 +32,7 @@
         this.loadImages();
     }
 
-    groundColor() {
+    getGroundColor() {
         let c = AltarData[this.gameState.altar].groundColor;
         if (c == null) {
             return GopCanvas.defaultGroundColor;
@@ -40,7 +40,15 @@
         if (c instanceof Array) {
             return c[0];
         }
-        return <string>c;
+        return c as string;
+    }
+
+    getWaterColor() {
+        let color = AltarData[this.gameState.altar].waterColor;
+        if (color == null) {
+            return GopCanvas.defaultWaterColor;
+        }
+        return color.substr(0, 7);
     }
 
     tileColor(x: number, y: number) {
@@ -56,13 +64,13 @@
                 if (pattern !== undefined && pattern !== null) {
                     return AltarData[this.gameState.altar].groundColor[pattern[this.board.ymax - y][x + this.board.xmax]];
                 }
-                return this.groundColor();
+                return this.getGroundColor();
             case Tile.Barrier:
                 return "black";
             case Tile.Rock:
                 return "#333";
             case Tile.Water:
-                return AltarData[this.gameState.altar].waterColor || GopCanvas.defaultWaterColor;
+                return this.getWaterColor();
             default:
                 return "#ff0000";
         }
@@ -171,12 +179,12 @@
      * Paints the barriers, walls, rocks, and water.
      */
     paintBackground() {
-        this.bgContext.fillStyle = this.groundColor();
+        this.bgContext.fillStyle = this.getGroundColor();
         this.bgContext.fillRect(0, 0, this.bgCanvas.width, this.bgCanvas.height);
         for (let y = -this.board.ymax; y <= this.board.ymax; y++) {
             for (let x = -this.board.xmax; x <= this.board.xmax; x++) {
                 let color = this.tileColor(x, y);
-                if (color !== this.groundColor()) {
+                if (color !== this.getGroundColor()) {
                     this.bgFillSquare(this.bgContext, color, x, y, 0);
                 }
             }

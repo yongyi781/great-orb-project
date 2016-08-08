@@ -137,7 +137,7 @@ class MultiplayerGopUI extends GopUI3D {
             return this.multiplayer.players[i] != null && !this.multiplayer.players[i].isWatching;
         });
 
-        var filteredActions = this.game.gameplayData.actions.rawActions.filter((_, i) => {
+        let filteredActions = this.game.gameplayData.actions.rawActions.filter((_, i) => {
             return this.multiplayer.players[i] != null && !this.multiplayer.players[i].isWatching;
         });
 
@@ -185,7 +185,7 @@ class MultiplayerSidePanel {
         this.playerInfoDiv = document.createElement("div");
     }
 
-    get hub() { return this.gopui.hub };
+    get hub() { return this.gopui.hub; }
 
     get runningState() { return this.gopui.multiplayer.runningState; }
     set runningState(value) { this.gopui.multiplayer.runningState = value; }
@@ -213,15 +213,15 @@ class MultiplayerSidePanel {
         this.startButton.addEventListener("click", e => {
             switch (this.runningState) {
                 case RunningState.NotReady:
-                    // if ($.connection.hub.state === $.signalR.connectionState.connected) {
+                    if ($.connection.hub.state === $.signalR.connectionState.connected) {
                         this.hub.server.setReady(true);
-                    // }
+                    }
                     this.runningState = RunningState.Ready;
                     break;
                 case RunningState.Ready:
-                    // if ($.connection.hub.state === $.signalR.connectionState.connected) {
+                    if ($.connection.hub.state === $.signalR.connectionState.connected) {
                         this.hub.server.setReady(false);
-                    // }
+                    }
                     this.runningState = RunningState.NotReady;
                 case RunningState.Started:
                     this.gopui.restart();
@@ -319,8 +319,7 @@ class Multiplayer {
     hub = $.connection.multiplayerHub;
     players: PlayerInfo[];
 
-    private mRunningState = RunningState.NotReady;
-    private countdown = 5;
+    private _runningState = RunningState.NotReady;
 
     constructor(container: HTMLDivElement) {
         let gs = new GameState(new GopBoard(53, 53), [new Point(2, 0), new Point(-2, 0)]);
@@ -330,14 +329,14 @@ class Multiplayer {
     get game() { return this.gopui.game as MultiplayerGame; }
     get currentPlayer() { return this.players[this.gopui.playerIndex]; }
 
-    get runningState() { return this.mRunningState; }
+    get runningState() { return this._runningState; }
     set runningState(value) {
-        if (this.mRunningState !== value) {
-            this.mRunningState = value;
+        if (this._runningState !== value) {
+            this._runningState = value;
             let startButton = this.gopui.sidePanel.startButton;
             let watchingCheckBox = this.gopui.sidePanel.watchingCheckBox;
             let isWatching = this.currentPlayer.isWatching;
-            switch (this.mRunningState) {
+            switch (this._runningState) {
                 case RunningState.NotReady:
                     startButton.textContent = "Set Ready";
                     startButton.disabled = isWatching;
@@ -361,6 +360,9 @@ class Multiplayer {
                     startButton.textContent = "New Game";
                     startButton.disabled = isWatching;
                     watchingCheckBox.disabled = true;
+                    break;
+                default:
+                    console.error("How did we get here?");
                     break;
             }
         }
@@ -441,7 +443,7 @@ class Multiplayer {
         this.hub.client.reject = players => {
             this.gopui.container.hidden = true;
             let names = players.map(p => p.username).join(players.length === 2 ? " and " : ", ");
-            document.querySelector("#info").textContent = `Sorry, but ${names} ${players.length === 1 ? "is" : "are"} currently playing a game. When they are finished, the game will load automatically.`
+            document.querySelector("#info").textContent = `Sorry, but ${names} ${players.length === 1 ? "is" : "are"} currently playing a game. When they are finished, the game will load automatically.`;
         };
 
         this.hub.client.notifyRejoin = () => {
@@ -455,7 +457,7 @@ class Multiplayer {
         this.hub.client.notifySaved = () => {
             this.gopui.infoBox.saveButton.textContent = "Saved";
             this.gopui.infoBox.saveButton.disabled = true;
-        }
+        };
 
         this.hub.client.setCountdown = countdown => {
             this.runningState = RunningState.Countdown;

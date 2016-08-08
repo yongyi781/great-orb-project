@@ -1,4 +1,45 @@
-﻿.overlay-container {
+﻿.gop3d-container {
+    position: absolute;
+    left: 0;
+    top: 0;
+    z-index: 1001;
+    overflow: hidden;
+}
+
+.run-repel-indicator {
+    position: absolute;
+    font-size: 20px;
+    right: 0;
+    top: 0;
+    padding: 10px;
+    width: 140px;
+    pointer-events: none;
+    background-color: rgba(0, 0, 0, 0.2);
+    color: white;
+    text-align: center;
+}
+
+.timer {
+    position: absolute;
+    right: 40px;
+    bottom: 120px;
+    pointer-events: none;
+}
+
+.score-indicator {
+    position: absolute;
+    font-size: 24px;
+    right: 0;
+    bottom: 0;
+    padding-top: 20px;
+    width: 160px;
+    height: 120px;
+    pointer-events: none;
+    color: white;
+    text-align: center;
+}
+
+.overlay-container {
     position: absolute;
     left: 0;
     top: 0;

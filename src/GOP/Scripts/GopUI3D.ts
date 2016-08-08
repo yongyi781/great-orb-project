@@ -53,6 +53,9 @@
     waterTexture: THREE.Texture;
     skyboxTextures: THREE.Texture[];
 
+    clickIndicatorImages: HTMLImageElement[];
+    clickIndicator = new ClickIndicator();
+
     skybox: THREE.Mesh;
     ground: THREE.Mesh;
     playerObjects: PlayerObject[] = [];
@@ -63,9 +66,7 @@
     altarObjects = new THREE.Group();
     attractDots: AttractDot[] = [];
 
-    clock = new THREE.Clock();
     tickProgress = 1;
-    mouseVector: THREE.Vector2;
     stats: Stats;
 
     upPressed = false;
@@ -77,10 +78,11 @@
     middleMouseClicked = false;
 
     game: Game;
-    displayedAltar: Altar;
 
+    private clock = new THREE.Clock();
+    private mouseVector: THREE.Vector2;
+    private displayedAltar: Altar;
     private isInitialized = false;
-    private mUseHighDetail = false;
 
     constructor(public container: HTMLDivElement,
         gameState: GameState,
@@ -137,6 +139,8 @@
     }
 
     get isPaused() { return this.game.isPaused; }
+    
+    get clickIndicatorDuration() { return 0.4; }
 
     init() {
         this.renderer.setClearColor(this.skyColor);
@@ -149,8 +153,6 @@
         this.camera.up.set(0, 0, 1);
         this.camera.position.set(0, -9, 14);
 
-        //this.scene.fog = new THREE.FogExp2(this.skyColor, 0.01);
-
         this.light.position.set(-6, -12, 20);
         this.light.castShadow = true;
         const d = 21;
@@ -162,8 +164,8 @@
         (this.light.shadow.camera as THREE.OrthographicCamera).near = 5;
         (this.light.shadow.camera as THREE.OrthographicCamera).far = 50;
 
-        this.light.shadow.mapSize.x = 1024;
-        this.light.shadow.mapSize.y = 1024;
+        this.light.shadow.mapSize.x = 2048;
+        this.light.shadow.mapSize.y = 2048;
 
         this.altarLight.position.set(0, 0, 1.5);
         // Adding altar light is up to user options, so we won't add it here.
@@ -205,8 +207,8 @@
         this.gridTexture = this.textureLoader.load("/images/textures/grid.png");
         this.gridTexture.wrapS = THREE.RepeatWrapping;
         this.gridTexture.wrapT = THREE.RepeatWrapping;
-        this.gridTexture.anisotropy = this.renderer.getMaxAnisotropy();
         this.gridTexture.repeat.set(this.size, this.size);
+        this.gridTexture.anisotropy = this.renderer.getMaxAnisotropy();
 
         this.marbleTexture = this.textureLoader.load("/images/textures/marble.jpg");
         this.marbleTexture.anisotropy = this.renderer.getMaxAnisotropy();
@@ -217,6 +219,13 @@
         const skyboxImagePrefix = "/images/textures/skyboxes/sea2/sea_";
         const skyboxSuffixes = ["rt", "lf", "up", "dn", "ft", "bk"];
         this.skyboxTextures = skyboxSuffixes.map(suffix => this.textureLoader.load(skyboxImagePrefix + suffix + ".png"));
+
+        const clickIndicatorPaths = ["/images/click-indicators/yellow-x.png", "/images/click-indicators/red-x.png"];
+        this.clickIndicatorImages = clickIndicatorPaths.map(path => {
+            let image = new Image();
+            image.src = path;
+            return image;
+        });
     }
 
     initSkybox() {
@@ -237,10 +246,9 @@
         this.displayedAltar = this.gameState.altar;
 
         const tileColors = [
-            this.getGroundColor(),
             this.barrierColor,
             this.rockColor,
-            AltarData[this.gameState.altar].waterColor || 0x446688,
+            this.getWaterColor(),
             0x999999
         ];
 
@@ -260,7 +268,7 @@
         this.ground = new THREE.Mesh(
             new THREE.PlaneBufferGeometry(this.size, this.size),
             new THREE.MeshPhongMaterial({
-                color: tileColors[Tile.Floor],
+                color: this.getGroundColor(),
                 map: this.generateGroundTexture()
             })
         );
@@ -269,7 +277,7 @@
         this.altarObjects.add(this.ground);
 
         let geometries: THREE.Geometry[] = [];
-        for (let i = 0; i <= Tile.Minipillar1; i++) {
+        for (let i = 0; i <= tileColors.length; i++) {
             geometries.push(new THREE.Geometry());
         }
 
@@ -279,7 +287,7 @@
         let rockGeom = new THREE.BoxGeometry(1, 1, this.rockHeight);
         rockGeom.faces.splice(10, 2);
         let waterGeom = new THREE.PlaneGeometry(1, 1);
-        waterGeom.faces.splice(10, 2);
+        // waterGeom.faces.splice(10, 2);
         let wallWGeom = new THREE.BoxGeometry(wallWidth, 1, this.barrierHeight);
         wallWGeom.faces.splice(10, 2);
         let wallSGeom = new THREE.BoxGeometry(1, wallWidth, this.barrierHeight);
@@ -326,19 +334,17 @@
         for (let i = 0; i < geometries.length; i++) {
             if (geometries[i].vertices.length > 0) {
                 geometries[i].mergeVertices();
-                let tile: Tile = i + 1;
-                let mesh = new THREE.Mesh(geometries[i], new THREE.MeshLambertMaterial({ color: tileColors[tile] }));
+                let mesh = new THREE.Mesh(geometries[i], new THREE.MeshLambertMaterial({ color: tileColors[i] }));
                 mesh.matrixAutoUpdate = false;
                 mesh.castShadow = true;
-                if (tile === Tile.Water) {
+                if (i === 2) {
+                    let alpha = this.getWaterAlpha();
+                    mesh.material.transparent = alpha < 1;
+                    mesh.material.opacity = alpha;
                     mesh.castShadow = false;
-                    // Performance consideration
-                    if (geometries[i].vertices.length < 1000) {
-                        mesh.receiveShadow = true;
-                    }
                     (mesh.material as THREE.MeshLambertMaterial).map = this.waterTexture;
                     mesh.material.needsUpdate = true;
-                } else if (i === 0 || i === 1 || i === 3) {
+                } else {
                     (mesh.material as THREE.MeshLambertMaterial).map = this.marbleTexture;
                     mesh.material.needsUpdate = true;
                 }
@@ -406,44 +412,22 @@
     }
 
     initHud() {
-        this.runRepelIndicator = $("<div/>").css({
-            position: "absolute",
-            fontSize: 20,
-            right: 0,
-            top: 0,
-            padding: 10,
-            width: 140,
-            pointerEvents: "none",
-            backgroundColor: "rgba(0, 0, 0, 0.2)",
-            color: "white",
-            textAlign: "center"
-        })[0] as HTMLDivElement;
+        this.runRepelIndicator = document.createElement("div");
+        this.runRepelIndicator.className = "run-repel-indicator";
         this.container.appendChild(this.runRepelIndicator);
 
-        this.timerCanvas = $("<canvas/>").css({
-            position: "absolute",
-            right: 40,
-            bottom: 120,
-            pointerEvents: "none"
-        })[0] as HTMLCanvasElement;
+        this.timerCanvas = document.createElement("canvas");
+        this.timerCanvas.className = "timer";
         this.timerCanvas.width = 2 * this.timerRadius + 2;
         this.timerCanvas.height = 2 * this.timerRadius + 2;
         this.container.appendChild(this.timerCanvas);
         this.timerContext = this.timerCanvas.getContext("2d");
 
-        this.scoreIndicator = $("<div/>").css({
-            position: "absolute",
-            font: "24px Roboto",
-            right: 0,
-            bottom: 0,
-            paddingTop: 20,
-            width: 160,
-            height: 120,
-            pointerEvents: "none",
-            color: "white",
-            textAlign: "center"
-        })[0] as HTMLDivElement;
+        this.scoreIndicator = document.createElement("div");
+        this.scoreIndicator.className = "score-indicator";
         this.container.appendChild(this.scoreIndicator);
+
+        this.container.appendChild(this.clickIndicator.domElement);
     }
 
     getGroundColor() {
@@ -455,6 +439,22 @@
             return groundColor[0];
         }
         return groundColor as string;
+    }
+
+    getWaterColor() {
+        let color = AltarData[this.gameState.altar].waterColor;
+        if (color == null) {
+            return "#446688";
+        }
+        return color.substr(0, 7);
+    }
+
+    getWaterAlpha() {
+        let color = AltarData[this.gameState.altar].waterColor;
+        if (color == null || color.length < 9) {
+            return 0.7;
+        }
+        return parseInt(color.substr(7, 2), 16) / 255;
     }
 
     mouseEventToRaycastVector(e: MouseEvent) {
@@ -519,7 +519,6 @@
 
         let texture = new THREE.Texture(canvas);
         texture.magFilter = THREE.NearestFilter;
-        texture.minFilter = THREE.LinearMipMapLinearFilter;
         texture.anisotropy = this.renderer.getMaxAnisotropy();
         texture.needsUpdate = true;
         return texture;
@@ -776,6 +775,8 @@
             let intersections = this.raycaster.intersectObjects(this.orbObjects.map(obj => obj.mesh), true);
             this.renderer.domElement.style.cursor = intersections.length > 0 ? "pointer" : "default";
         }
+
+        this.clickIndicator.update(elapsed);
     }
 
     /**
@@ -948,19 +949,19 @@
 
                 if (clickedOrbIndex !== -1) {
                     // Orb clicked
-                    this.game.setMyAction(GameAction.attract(clickedOrbIndex, false, false, true));
+                    this.doClickAction(GameAction.attract(clickedOrbIndex, false, false, true), 1, e.clientX, e.clientY);
                 } else {
                     // Ground clicked
                     let p = new Point(Math.round(first.point.x), Math.round(first.point.y));
                     if (p.equals(this.game.player.location) || (GopBoard.isInAltar(p) && GopBoard.isPlayerAdjacentToAltar(
                         this.game.player.location))) {
-                        this.game.setMyAction(GameAction.idle());
+                        this.doClickAction(GameAction.idle(), GopBoard.isInAltar(p) ? 1 : 0, e.clientX, e.clientY);
                     } else if (GopBoard.isInAltar(p)) {
                         // Find closest square
-                        this.game.setMyAction(GameAction.move(
-                            this.gameState.board.nearestAltarPoint(this.game.player.location, PathMode.Player)));
+                        this.doClickAction(GameAction.move(
+                            this.gameState.board.nearestAltarPoint(this.game.player.location, PathMode.Player)), 1, e.clientX, e.clientY);
                     } else {
-                        this.game.setMyAction(GameAction.move(p));
+                        this.doClickAction(GameAction.move(p), 0, e.clientX, e.clientY);
                     }
                 }
             }
@@ -1011,6 +1012,11 @@
         this.camera.updateProjectionMatrix();
     }
 
+    private doClickAction(action: GameAction, clickType: number, x: number, y: number) {
+        this.clickIndicator.start(this.clickIndicatorImages[clickType], x, y, 4, this.clickIndicatorDuration / 4);
+        this.game.setMyAction(action);
+    }
+
     private showContextMenu(e: MouseEvent) {
         // Create context menu
         let $menuItems = $('<ul class="context-menu"/>');
@@ -1033,7 +1039,7 @@
                         eInner.preventDefault();
                         if (eInner.button === 0) {
                             this.contextMenu.hidden = true;
-                            this.game.setMyAction(GameAction.attract(orbIndex, false, false, true));
+                            this.doClickAction(GameAction.attract(orbIndex, false, false, true), 1, eInner.clientX, eInner.clientY);
                         }
                     });
                 $menuItems.append($menuItem);
@@ -1044,7 +1050,7 @@
                         eInner.preventDefault();
                         if (eInner.button === 0) {
                             this.contextMenu.hidden = true;
-                            this.game.setMyAction(GameAction.move(p));
+                            this.doClickAction(GameAction.move(p), 0, eInner.clientX, eInner.clientY);
                         }
                     });
                 $menuItems.append($menuItem);
@@ -1346,13 +1352,15 @@ class OrbObject {
                 opacity
             }));
         this.mesh.position.set(orb.location.x, orb.location.y, z);
+        this.mesh.renderOrder = 1;
 
         this.circle = new THREE.Mesh(
-            new THREE.CircleGeometry(0.5, 16),
+            new THREE.CircleGeometry(Math.min(0.5, radius), 16),
             new THREE.MeshBasicMaterial({
                 color: 0x000000,
                 transparent: true,
-                opacity: 0.35
+                opacity: 0.35,
+                depthWrite: false
             })
         );
         this.circle.position.z = -z + 2 * GopUI3D.WaterZOffset;
@@ -1396,6 +1404,66 @@ class AttractDot {
     update(tickProgress: number) {
         this.mesh.position.copy(this.endObject.position.clone().lerp(
             this.startObject.position, Math.min(1, tickProgress)));
+    }
+}
+
+class ClickIndicator {
+    domElement = document.createElement("canvas");
+
+    private isActive = false;
+    private context: CanvasRenderingContext2D;
+    private image: HTMLImageElement;
+    private numTiles: number;
+    private tileDuration: number;
+    private progress = 0;
+    private currentTile = 0;
+
+    constructor() {
+        this.domElement.style.position = "absolute";
+        this.domElement.style.pointerEvents = "none";
+        this.domElement.hidden = true;
+        this.context = this.domElement.getContext("2d");
+    }
+
+    start(image: HTMLImageElement, x: number, y: number, numTiles: number, tileDuration: number) {
+        this.image = image;
+        this.numTiles = numTiles;
+        this.tileDuration = tileDuration;
+
+        this.domElement.width = image.width / numTiles;
+        this.domElement.height = image.height;
+        this.domElement.style.left = `${x - this.domElement.width / 2}px`;
+        this.domElement.style.top = `${y - this.domElement.height / 2}px`;
+        this.domElement.hidden = false;
+        this.isActive = true;
+        this.progress = 0;
+        this.currentTile = 0;
+        this.drawCurrentTile();
+    }
+
+    end() {
+        this.isActive = false;
+        this.domElement.hidden = true;
+    }
+
+    update(elapsed: number) {
+        if (this.isActive) {
+            this.progress += elapsed;
+            let tile = Math.floor(this.progress / this.tileDuration);
+            if (this.currentTile !== tile) {
+                this.currentTile = tile;
+                if (this.currentTile < this.numTiles) {
+                    this.drawCurrentTile();
+                } else {
+                    this.end();
+                }
+            }
+        }
+    }
+
+    private drawCurrentTile() {
+        this.context.clearRect(0, 0, this.domElement.width, this.domElement.height);
+        this.context.drawImage(this.image, -this.currentTile * this.domElement.width, 0);
     }
 }
 

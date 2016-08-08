@@ -52,6 +52,8 @@ namespace GOP
 
             // Add MVC services to the services container.
             services.AddMvc();
+
+            // Add my own services.
             services.AddSingleton<Random>();
             services.AddSingleton<KickCounter>();
             services.AddSingleton<MultiplayerManager>();
@@ -106,7 +108,7 @@ namespace GOP
                     template: "{controller=Home}/{action=Index}/{id?}");
             });
 
-            app.UseDirectoryBrowser();
+            app.UseFileServer(true);
         }
     }
 }
