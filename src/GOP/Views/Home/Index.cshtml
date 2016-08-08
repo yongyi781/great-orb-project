@@ -1,6 +1,7 @@
 ﻿@{
     ViewData["Title"] = "Home";
 }
+
 <h1>Welcome to Vief's Trapdoor</h1>
 <img src="~/images/yellow-attractor-96x96.png" class="hidden-xs hidden-sm pull-left" style="padding: 5px 20px" />
 <img src="~/images/trapdoor.png" class="hidden-xs hidden-sm pull-right" style="padding: 5px 20px" />
@@ -294,7 +295,9 @@ These are duo angles for feeding orbs quickly.
                 });
             }
 
-            $.connection.hub.logging = true;
+            if (Utils.getQueryAsBoolean("debug")) {
+                $.connection.hub.logging = true;
+            }
             $.connection.hub.error(function (error) {
                 $("#connectionErrors").text(error).show();
                 $.connection.hub.stop();
@@ -348,7 +351,7 @@ These are duo angles for feeding orbs quickly.
 
                 @if (User.IsInRole("Administrators"))
                 {
-                    <text>
+                <text>
                 var message = viewModel.messages()[index];
                 message.deleted = true;
                 viewModel.messages.splice(index, 1);
@@ -357,7 +360,7 @@ These are duo angles for feeding orbs quickly.
                 }
                 else
                 {
-                    <text>
+                <text>
                 viewModel.messages.splice(index, 1);
                 </text>
                 }
@@ -422,9 +425,9 @@ These are duo angles for feeding orbs quickly.
                 }
             });
 
-            // $(window).on("beforeunload", function () {
-            //     setTimeout(function () { $.connection.hub.stop(); }, 0);
-            // });
+            $(window).on("beforeunload", function () {
+                 setTimeout(function () { $.connection.hub.stop(); }, 0);
+            });
 
             $("#messageForm").submit(function (e) {
                 e.preventDefault();
