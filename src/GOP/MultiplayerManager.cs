@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace GOP
 {
@@ -45,25 +46,27 @@ namespace GOP
         public IGroupManager Groups { get { return HubContext.Groups; } }
         public dynamic PlayingClients { get { return Clients.Group(PlayingGroup); } }
 
+        public Timer Timer { get { return timer; } }
+
         public bool IsGameRunning { get; set; }
         public bool HasSaved { get; set; }
         public int CurrentTick { get; set; } = -CountdownLength;
         public int Altar { get; set; } = 1;
         public int Seed { get; set; } = 5489;
 
-        public void AddPlayer(HubCallerContext context)
+        public async Task AddPlayer(HubCallerContext context)
         {
             var httpContext = context.Request.HttpContext;
             if (IsGameRunning)
             {
-                Clients.Client(context.ConnectionId).Reject(players);
-                Groups.Remove(context.ConnectionId, PlayingGroup);
-                Groups.Add(context.ConnectionId, WaitlistGroup);
+                await Clients.Client(context.ConnectionId).Reject(players);
+                await Groups.Remove(context.ConnectionId, PlayingGroup);
+                await Groups.Add(context.ConnectionId, WaitlistGroup);
             }
             else if (players.TrueForAll(p => p.ConnectionId != context.ConnectionId))
             {
-                Groups.Remove(context.ConnectionId, WaitlistGroup);
-                Groups.Add(context.ConnectionId, PlayingGroup);
+                await Groups.Remove(context.ConnectionId, WaitlistGroup);
+                await Groups.Add(context.ConnectionId, PlayingGroup);
                 lock (playersLock)
                 {
                     players.Add(new Player
@@ -76,68 +79,66 @@ namespace GOP
                         StartLocation = DefaultStartingLocations[Math.Min(DefaultStartingLocations.Length - 1, players.Count)]
                     });
                 }
-                Clients.Client(context.ConnectionId).SetGameParams(Altar, Seed);
-                PlayingClients.UpdatePlayers(players, true);
-                for (int i = 0; i < players.Count; ++i)
-                {
-                    Clients.Client(players[i].ConnectionId).SetPlayerIndex(i);
-                }
+                await Clients.Client(context.ConnectionId).SetGameParams(Altar, Seed);
+                await PlayingClients.UpdatePlayers(players, true);
+                await UpdatePlayerIndices();
             }
         }
 
-        public void RemovePlayer(HubCallerContext context)
+        public async Task RemovePlayer(HubCallerContext context)
         {
+            int playerIndex = -1;
             lock (playersLock)
             {
-                var playerIndex = players.FindIndex(p => p.ConnectionId == context.ConnectionId);
-                if (playerIndex >= 0)
-                {
+                playerIndex = players.FindIndex(p => p.ConnectionId == context.ConnectionId);
+                if (playerIndex != -1)
                     players.RemoveAt(playerIndex);
-                    PlayingClients.RemovePlayer(playerIndex);
-                    for (int i = 0; i < players.Count; ++i)
-                    {
-                        Clients.Client(players[i].ConnectionId).SetPlayerIndex(i);
-                    }
-                }
+            }
+
+            if (playerIndex != -1)
+            {
+                await PlayingClients.RemovePlayer(playerIndex);
+                await UpdatePlayerIndices();
+
                 if (players.Count(p => !p.IsWatching) == 0)
                 {
                     // No more players, restart the whole thing.
-                    SendNewGameSignal();
+                    await SendNewGameSignal();
                 }
             }
         }
 
-        public void SetReady(HubCallerContext context, bool ready)
+        public async Task SetReady(HubCallerContext context, bool ready)
         {
             var player = GetPlayer(context);
             if (player != null)
-                player.StartRequested = ready;
-            PlayingClients.UpdatePlayers(players, false);
+                player.IsReady = ready;
+            await PlayingClients.UpdatePlayers(players, false);
             StartGameIfReady();
         }
 
-        public void SendNewGameSignal()
+        public async Task SendNewGameSignal()
         {
             if (IsGameRunning)
-                StopGame();
+                await StopGame();
 
             HasSaved = false;
-            Clients.Group(WaitlistGroup).NotifyRejoin();
+            await Clients.Group(WaitlistGroup).NotifyRejoin();
 
             foreach (var p in players)
             {
-                p.StartRequested = false;
+                p.IsReady = false;
             }
-            PlayingClients.UpdatePlayers(players, false);
-            PlayingClients.NewGame();
+            await PlayingClients.UpdatePlayers(players, false);
+            await PlayingClients.NewGame();
         }
 
-        public void SendAction(HubCallerContext context, string action)
+        public Task SendAction(HubCallerContext context, string action)
         {
             var player = GetPlayer(context);
             if (player != null && !(player.IsWatching && IsAttractOrbAction(action)))
                 player.Action = action;
-            PlayingClients.UpdatePlayers(players, false);
+            return PlayingClients.UpdatePlayers(players, false);
         }
 
         public void SendRun(HubCallerContext context, bool run)
@@ -154,24 +155,24 @@ namespace GOP
                 player.Repel = repel;
         }
 
-        public void SetPlayerLocation(HubCallerContext context, int x, int y)
+        public async Task SetPlayerLocation(HubCallerContext context, int x, int y)
         {
             var player = players.Find(p => p.ConnectionId == context.ConnectionId);
             if (player != null)
             {
                 player.StartLocation = new Point(x, y);
-                PlayingClients.UpdatePlayers(players, false);
+                await PlayingClients.UpdatePlayers(players, false);
             }
         }
 
-        public void SetGameParams(int altar, int seed)
+        public Task SetGameParams(int altar, int seed)
         {
             Altar = altar;
             Seed = seed;
-            PlayingClients.SetGameParams(altar, seed);
+            return PlayingClients.SetGameParams(altar, seed);
         }
 
-        public void SetWatching(HubCallerContext context, bool watching)
+        public async Task SetWatching(HubCallerContext context, bool watching)
         {
             var player = GetPlayer(context);
             if (player != null)
@@ -183,25 +184,39 @@ namespace GOP
                     player.Action = null;
                 }
             }
-            PlayingClients.UpdatePlayers(players, false);
+            await PlayingClients.UpdatePlayers(players, false);
             StartGameIfReady();
         }
-        
+
+        public Task Rewind(int ticks)
+        {
+            CurrentTick = Math.Max(0, CurrentTick - ticks);
+            timer.Change(TickLength, TickLength);
+            return Clients.All.RewindTo(CurrentTick);
+        }
+
+        public Task FastForward(int ticks)
+        {
+            CurrentTick = Math.Min(TicksPerAltar, CurrentTick + ticks);
+            Timer.Change(TickLength, TickLength);
+            return Clients.All.FastForwardTo(CurrentTick);
+        }
+
         private Player GetPlayer(HubCallerContext context)
         {
             return players.FirstOrDefault(p => p.ConnectionId == context.ConnectionId);
         }
-
-        private void Tick(object state)
+        
+        private async void Tick(object state)
         {
             ++CurrentTick;
             if (CurrentTick <= 0)
             {
-                PlayingClients.SetCountdown(-CurrentTick + 1);
+                await PlayingClients.SetCountdown(-CurrentTick + 1);
             }
             else if (CurrentTick <= TicksPerAltar)
             {
-                PlayingClients.Tick(players, CurrentTick);
+                await PlayingClients.Tick(players, CurrentTick);
 
                 foreach (var p in players)
                 {
@@ -212,29 +227,35 @@ namespace GOP
             if (CurrentTick >= TicksPerAltar)
             {
                 // Game is over
-                StopGame(false);
+                await StopGame(false);
             }
         }
 
         private void StartGameIfReady()
         {
             var nonWatching = players.Where(p => !p.IsWatching).ToList();
-            if (nonWatching.Count > 0 && nonWatching.All(p => p.StartRequested))
+            if (nonWatching.Count > 0 && nonWatching.All(p => p.IsReady))
             {
                 timer.Change(0, TickLength);
                 IsGameRunning = true;
             }
         }
 
-        private void StopGame(bool callClientStop = true)
+        private async Task StopGame(bool callClientStop = true)
         {
             timer.Change(Timeout.Infinite, TickLength);
             CurrentTick = -CountdownLength;
             IsGameRunning = false;
             if (callClientStop)
             {
-                PlayingClients.Stop();
+                await PlayingClients.Stop();
             }
+        }
+
+        private Task UpdatePlayerIndices()
+        {
+            return Task.WhenAll(Enumerable.Range(0, players.Count).Select(
+                i => (Task)Clients.Client(players[i].ConnectionId).SetPlayerIndex(i)));
         }
 
         private bool IsAttractOrbAction(string action)
@@ -251,8 +272,8 @@ namespace GOP
             [JsonProperty("username")]
             public string Username { get; set; }
 
-            [JsonProperty("startRequested")]
-            public bool StartRequested { get; set; }
+            [JsonProperty("isReady")]
+            public bool IsReady { get; set; }
 
             [JsonProperty("action")]
             public string Action { get; set; }

@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
-using System;
 using System.Threading.Tasks;
 
 namespace GOP.Hubs
@@ -16,42 +15,42 @@ namespace GOP.Hubs
         public MultiplayerManager MultiplayerManager { get; set; }
         public ILogger<MultiplayerHub> Logger { get; set; }
 
-        public override Task OnConnected()
+        public override async Task OnConnected()
         {
-            MultiplayerManager.AddPlayer(Context);
-            return base.OnConnected();
+            await MultiplayerManager.AddPlayer(Context);
+            await base.OnConnected();
         }
 
-        public override Task OnReconnected()
+        public override async Task OnReconnected()
         {
-            MultiplayerManager.AddPlayer(Context);
-            return base.OnReconnected();
+            await MultiplayerManager.AddPlayer(Context);
+            await base.OnReconnected();
         }
 
-        public override Task OnDisconnected(bool stopCalled)
+        public override async Task OnDisconnected(bool stopCalled)
         {
-            MultiplayerManager.RemovePlayer(Context);
-            return base.OnDisconnected(stopCalled);
+            await MultiplayerManager.RemovePlayer(Context);
+            await base.OnDisconnected(stopCalled);
         }
 
-        public void AddCurrentPlayer()
+        public Task AddCurrentPlayer()
         {
-            MultiplayerManager.AddPlayer(Context);
+            return  MultiplayerManager.AddPlayer(Context);
         }
 
-        public void SetReady(bool ready)
+        public Task SetReady(bool ready)
         {
-            MultiplayerManager.SetReady(Context, ready);
+            return MultiplayerManager.SetReady(Context, ready);
         }
         
-        public void SendNewGameSignal()
+        public Task SendNewGameSignal()
         {
-            MultiplayerManager.SendNewGameSignal();
+            return MultiplayerManager.SendNewGameSignal();
         }
 
-        public void SendAction(string action)
+        public Task SendAction(string action)
         {
-            MultiplayerManager.SendAction(Context, action);
+            return MultiplayerManager.SendAction(Context, action);
         }
 
         public void SendRun(bool run)
@@ -64,36 +63,34 @@ namespace GOP.Hubs
             MultiplayerManager.SendRepel(Context, repel);
         }
 
-        public void SetPlayerLocation(int x, int y)
+        public Task SetPlayerLocation(int x, int y)
         {
-            MultiplayerManager.SetPlayerLocation(Context, x, y);
+            return MultiplayerManager.SetPlayerLocation(Context, x, y);
         }
 
-        public void SetGameParams(int altar, int seed)
+        public Task SetGameParams(int altar, int seed)
         {
-            MultiplayerManager.SetGameParams(altar, seed);
+            return MultiplayerManager.SetGameParams(altar, seed);
         }
 
-        public void SetWatching(bool watching)
+        public Task SetWatching(bool watching)
         {
-            MultiplayerManager.SetWatching(Context, watching);
+            return MultiplayerManager.SetWatching(Context, watching);
         }
 
-        public void NotifySaved()
+        public Task NotifySaved()
         {
-            Clients.All.NotifySaved();
+            return Clients.All.NotifySaved();
         }
 
-        public void Rewind(int ticks)
+        public Task Rewind(int ticks)
         {
-            MultiplayerManager.CurrentTick = Math.Max(0, MultiplayerManager.CurrentTick - ticks);
-            Clients.All.RewindTo(MultiplayerManager.CurrentTick);
+            return MultiplayerManager.Rewind(ticks);
         }
 
-        public void FastForward(int ticks)
+        public Task FastForward(int ticks)
         {
-            MultiplayerManager.CurrentTick = Math.Min(MultiplayerManager.TicksPerAltar, MultiplayerManager.CurrentTick + ticks);
-            Clients.All.FastForwardTo(MultiplayerManager.CurrentTick);
+            return MultiplayerManager.FastForward(ticks);
         }
     }
 }

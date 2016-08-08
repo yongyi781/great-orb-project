@@ -2,7 +2,7 @@
     connectionId: string;
     ipAddress: string;
     username: string;
-    startRequested: boolean;
+    isReady: boolean;
     action: string;
     run: boolean;
     repel: boolean;
@@ -249,7 +249,7 @@ class MultiplayerSidePanel {
             li.style.color = this.gopui.playerColors[i];
             if (playerInfo.isWatching) {
                 li.textContent += " (watching)";
-            } else if (!playerInfo.startRequested) {
+            } else if (!playerInfo.isReady) {
                 li.textContent += " (not ready)";
             }
             if (playerInfo.action != null) {
