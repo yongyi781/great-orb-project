@@ -16,7 +16,7 @@
     "Microsoft.AspNetCore.Server.Kestrel": "1.1.0-*",
     "Microsoft.AspNetCore.SignalR.Server": "0.2.0-*",
     "Microsoft.AspNetCore.StaticFiles": "1.1.0-*",
-    "Microsoft.AspNetCore.WebSockets.Server": "0.2.0-*",
+    "Microsoft.AspNetCore.WebSockets": "0.2.0-*",
     "Microsoft.EntityFrameworkCore.SqlServer": "1.1.0-*",
     "Microsoft.EntityFrameworkCore.Tools": {
       "version": "1.0.0-preview2-final",
@@ -69,7 +69,19 @@
   },
 
   "frameworks": {
-    "net461": { }
+    "net461": {}
+    //"netcoreapp1.0": {
+    //  "dependencies": {
+    //    "Microsoft.NETCore.App": {
+    //      "version": "1.0.0",
+    //      "type": "platform"
+    //    }
+    //  },
+    //  "imports": [
+    //    "dotnet5.6",
+    //    "portable-net45+win8"
+    //  ]
+    //}
   },
 
   "buildOptions": {

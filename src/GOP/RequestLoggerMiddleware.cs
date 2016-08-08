@@ -13,6 +13,7 @@ namespace GOP
         private readonly RequestDelegate next;
         private readonly ILogger logger;
         private readonly StreamWriter writer;
+        private readonly object lockObject = new object();
 
         public RequestLoggerMiddleware(RequestDelegate next, ILogger<RequestLoggerMiddleware> logger)
         {
@@ -26,7 +27,7 @@ namespace GOP
                 string fileName = LogFileName + (i > 0 ? i.ToString() : "") + ".log";
                 try
                 {
-                    writer = new StreamWriter(fileName, true);
+                    writer = File.AppendText(fileName);
                 }
                 catch (IOException)
                 {
@@ -59,7 +60,10 @@ namespace GOP
             var statusCode = context.Response.StatusCode;
             var str = $"{DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss")} {localIp} {method} {url} {queryString} {port} {username} {remoteIp} {userAgent} {referer} {statusCode}";
             logger.LogDebug(str);
-            writer.WriteLine(str);
+            lock (lockObject)
+            {
+                writer.WriteLine(str); 
+            }
         }
 
         private string FormatForLog(string str)
