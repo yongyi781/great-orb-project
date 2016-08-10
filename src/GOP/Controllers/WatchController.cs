@@ -30,11 +30,11 @@ namespace GOP.Controllers
                 return NotFound();
 
             // See if needs a custom altar
-            CustomAltar customAltar = null;
+            GopAltar customAltar = null;
             string altarName = null;
             if (game.Altar >= Utilities.AltarNames.Length)
             {
-                customAltar = DbContext.CustomAltars.Where(a => a.Id == game.Altar).FirstOrDefault();
+                customAltar = DbContext.GopAltars.Where(a => a.Id == game.Altar).FirstOrDefault();
                 altarName = customAltar.Name;
             }
             else

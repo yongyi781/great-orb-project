@@ -9,6 +9,6 @@ namespace GOP.ViewModels
         public GameType Type { get; set; }
         public GopGame Game { get; set; }
         public string AltarName { get; set; }
-        public CustomAltar CustomAltar { get; set; }
+        public GopAltar CustomAltar { get; set; }
     }
 }

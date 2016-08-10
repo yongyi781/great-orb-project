@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace GOP.Models
 {
-    public class CustomAltar
+    public class GopAltar
     {
         [DatabaseGenerated(DatabaseGeneratedOption.None)]
         public int Id { get; set; }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace GOP.Models
 {
@@ -9,7 +10,11 @@ namespace GOP.Models
         public DateTimeOffset Timestamp { get; set; }
         public int NumberOfOrbs { get; set; }
         public int Seed { get; set; }
+
         public int Altar { get; set; }
+        [ForeignKey("Altar")]
+        public GopAltar GopAltar { get; set; }
+
         public int Score { get; set; }
         [Required]
         public string Code { get; set; }
@@ -18,10 +23,12 @@ namespace GOP.Models
     public class SoloGame : GopGame
     {
         public int? UserId { get; set; }
+        public ApplicationUser User { get; set; }
+
         [Required]
+        [Column(TypeName = "varchar(50)")]
         public string IpAddress { get; set; }
 
-        protected virtual ApplicationUser User { get; set; }
     }
 
     public class MultiplayerGame : GopGame

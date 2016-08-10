@@ -225,7 +225,6 @@
             }
             args.push("code=" + gopui.$gameCodeText.text().replace(/ /g, "+"));
 
-            var shareLinkElement = $("#shareLink")[0];
             $("#shareLink").val(`${location.protocol}//${location.host}${location.pathname}?${args.join("&")}`);
             if ($("#shareLink").is(":focus")) {
                 $("#shareLink").select();
@@ -237,7 +236,7 @@
 
             gopui.$saveButton.click(function () {
                 gopui.$saveButton.text("Saving...").prop("disabled", true);
-                if (gopui.gameState.players.length == 1) {
+                if (gopui.gameState.players.length === 1) {
                     $.post("/api/solo", {
                         numberOfOrbs: gopui.options.game.numberOfOrbs,
                         seed: gopui.gameState.seed,
@@ -267,134 +266,130 @@
             updateSeedAltarDisplay();
         }
 
-        $(function () {
-            options = {
-                game: {
-                    seed: Utils.getQueryAsNumber("seed"),
-                    altar: Utils.getQueryAsNumber("altar", 1),
-                    code: Utils.getQueryAsString("code"),
-                    numberOfOrbs: Utils.getQueryAsNumber("numorbs"),
-                    reachDistance: Utils.getQueryAsNumber("reach"),
-                    ticksPerAltar: Utils.getQueryAsNumber("ticks"),
-                    startLocations: Utils.getQueryAsPointArray("start"),
-                    presetSpawns: Utils.getQueryAsPointArray("spawns"),
-                    suppressRandomSpawns: Utils.getQueryAsBoolean("norandom")
-                },
-                client: {
-                    visibilityRadius: Utils.getQueryAsNumber("visibility"),
-                    latency: Utils.getQueryAsNumber("latency"),
-                    tickInterval: Utils.getQueryAsNumber("tickinterval") || 450,
-                    altarAndStartLocationForced: Utils.getQueryAsBoolean("forcestart"),
-                    gopControls: JSON.parse($("#gopControls").val() || null) || undefined
-                },
-                interface: {
-                    showRestart: false,
-                    showSave: !isCustom,
-                    plusMinusTicksAdvance: Utils.getQueryAsNumber("advance"),
-                    showScore: Utils.getQueryAsBoolean("showscore")
-                },
-                callbacks: {
-                    tick: function (force, redraw) {
-                        gopui.$saveButton.text("Save").prop("disabled",
-                            gopui.gameState.currentTick < GameState.ticksPerAltar);
-                        if (redraw) {
-                            updateShareLink();
-                        }
+        options = {
+            game: {
+                seed: Utils.getQueryAsNumber("seed"),
+                altar: Utils.getQueryAsNumber("altar", 1),
+                code: Utils.getQueryAsString("code"),
+                numberOfOrbs: Utils.getQueryAsNumber("numorbs"),
+                reachDistance: Utils.getQueryAsNumber("reach"),
+                ticksPerAltar: Utils.getQueryAsNumber("ticks"),
+                startLocations: Utils.getQueryAsPointArray("start"),
+                presetSpawns: Utils.getQueryAsPointArray("spawns"),
+                suppressRandomSpawns: Utils.getQueryAsBoolean("norandom")
+            },
+            client: {
+                visibilityRadius: Utils.getQueryAsNumber("visibility"),
+                latency: Utils.getQueryAsNumber("latency"),
+                tickInterval: Utils.getQueryAsNumber("tickinterval") || 450,
+                altarAndStartLocationForced: Utils.getQueryAsBoolean("forcestart"),
+                gopControls: JSON.parse($("#gopControls").val() || null) || undefined
+            },
+            interface: {
+                showRestart: false,
+                showSave: !isCustom,
+                plusMinusTicksAdvance: Utils.getQueryAsNumber("advance"),
+                showScore: Utils.getQueryAsBoolean("showscore")
+            },
+            callbacks: {
+                tick: function (force, redraw) {
+                    gopui.$saveButton.text("Save").prop("disabled",
+                        gopui.gameState.currentTick < GameState.ticksPerAltar);
+                    if (redraw) {
+                        updateShareLink();
                     }
                 }
-            };
-
-            if (options.game.seed === void 0) {
-                var smin = Utils.getQueryAsNumber("smin") || 0;
-                var smax = Utils.getQueryAsNumber("smax") || @GOP.Controllers.SoloController.DefaultMaxRandomSeed;
-                options.game.seed = Utils.getRandomInt(smin, smax);
             }
+        };
 
-            if (options.game.numberOfOrbs !== void 0) {
-                options.game.numberOfOrbs = Math.min(@GOP.Controllers.SoloController.MaxOrbs, options.game.numberOfOrbs);
+        if (options.game.seed == null) {
+            var smin = Utils.getQueryAsNumber("smin") || 0;
+            var smax = Utils.getQueryAsNumber("smax") || @GOP.Controllers.SoloController.DefaultMaxRandomSeed;
+            options.game.seed = Utils.getRandomInt(smin, smax);
+        }
+
+        if (options.game.numberOfOrbs != null) {
+            options.game.numberOfOrbs = Math.min(@GOP.Controllers.SoloController.MaxOrbs, options.game.numberOfOrbs);
+        }
+
+        Utils.loadAltar(options.game.altar).done(function () {
+            if (options.game.altar > 6) {
+                var $radio = $('<input type="radio" name="altar">').val(options.game.altar);
+                $("#altarsBtnGroup").append($('<label class="btn btn-default"/>').append($radio, AltarData[options.game.altar].name));
             }
-
-            Utils.loadAltar(options.game.altar).done(function () {
-                if (options.game.altar > 6) {
-                    var $radio = $('<input type="radio" name="altar">').val(options.game.altar);
-                    $("#altarsBtnGroup").append($('<label class="btn btn-default"/>').append($radio, AltarData[options.game.altar].name));
-                }
-            }).always(function () {
-                initializeGopUI();
-            });
-
-            games = @Json.Serialize(Model.Games);
-            Utils.loadAltarNames().always(function () {
-                if (games !== null)
-                {
-                    games.forEach(function (game) {
-                        game.timestamp = new Date(game.timestamp);
-                    });
-
-                    table = $("#gamesTable").DataTable({
-                        data: games,
-                        deferRender: true,
-                        paging: false,
-                        searching: false,
-                        columns: [
-                            { data: "id" },
-                            {
-                                data: "timestamp",
-                                render: function (data, type, row) {
-                                    if (type === "display")
-                                        return data.toLocaleString();
-                                    return data;
-                                }
-                            },
-                            { data: "username" },
-                            { data: "numberOfOrbs" },
-                            { data: "seed" },
-                            {
-                                data: "altar",
-                                render: function (data, type, row) {
-                                    if (type === "display") {
-                                        if (AltarData[data] !== void 0) {
-                                            // Capitalize name
-                                            var name = AltarData[data].name;
-                                            return `${data} (${name[0].toUpperCase()}${name.substring(1)})`;
-                                        }
-                                        return data + " (custom)";
-                                    }
-                                    return data;
-                                }
-                            },
-                            { data: "score" }
-                        ]
-                    });
-                }
-            });
- 
-            $("#restartButton").click(function () {
-                restartGame(undefined, parseInt($("#seedInput").val(), 10));
-            });
-
-            $("#altarsBtnGroup").on("change", "input[name=altar]:radio", function (e) {
-                if (!isUpdatingSeedAltarDisplay) {
-                    let altar = +$(e.currentTarget).val();
-                    Utils.loadAltar(altar).done(function () {
-                        if (gopui.isGameRunning) {
-                            $("#confirmChangeAltarModal").modal().one("click", "#yes", function () {
-                                restartGame(undefined, undefined, parseInt($(e.currentTarget).val(), 10));
-                            });
-                        } else {
-                            restartGame(undefined, undefined, parseInt($(e.currentTarget).val(), 10));
-                        }
-                    });
-                }
-            });
-
-            $(".for-copying").click(function (e) { $(e.currentTarget).select(); });
-
-            $("#gamesTable").on("click", "tbody > tr", function () {
-                window.open("/Watch/Solo/" + $(this).children("td:first").text());
-            });
-
-            Utils.bindEnterKeyToButton($("#seedInput")[0], $("#restartButton")[0]);
+        }).always(function () {
+            initializeGopUI();
         });
+
+        games = @Json.Serialize(Model.Games);
+        Utils.loadAltarNames().always(function () {
+            if (games !== null)
+            {
+                games.forEach(function (game) {
+                    game.timestamp = new Date(game.timestamp);
+                });
+
+                table = $("#gamesTable").DataTable({
+                    data: games,
+                    deferRender: true,
+                    paging: false,
+                    searching: false,
+                    columns: [
+                        { data: "id" },
+                        {
+                            data: "timestamp",
+                            render: function (data, type, row) {
+                                if (type === "display")
+                                    return data.toLocaleString();
+                                return data;
+                            }
+                        },
+                        { data: "username" },
+                        { data: "numberOfOrbs" },
+                        { data: "seed" },
+                        {
+                            data: "altar",
+                            render: function (data, type, row) {
+                                if (type === "display") {
+                                    if (AltarData[data] != null) {
+                                        return AltarData[data].name;
+                                    }
+                                    return data + " (custom)";
+                                }
+                                return data;
+                            }
+                        },
+                        { data: "score" }
+                    ]
+                });
+            }
+        });
+
+        $("#restartButton").click(function () {
+            restartGame(undefined, parseInt($("#seedInput").val(), 10));
+        });
+
+        $("#altarsBtnGroup").on("change", "input[name=altar]:radio", function (e) {
+            if (!isUpdatingSeedAltarDisplay) {
+                var altar = +$(e.currentTarget).val();
+                Utils.loadAltar(altar).done(function () {
+                    if (gopui.isGameRunning) {
+                        $("#confirmChangeAltarModal").modal().one("click", "#yes", function () {
+                            restartGame(undefined, undefined, parseInt($(e.currentTarget).val(), 10));
+                        });
+                    } else {
+                        restartGame(undefined, undefined, parseInt($(e.currentTarget).val(), 10));
+                    }
+                });
+            }
+        });
+
+        $(".for-copying").click(function (e) { $(e.currentTarget).select(); });
+
+        $("#gamesTable").on("click", "tbody > tr", function () {
+            window.open("/Watch/Solo/" + $(this).children("td:first").text());
+        });
+
+        Utils.bindEnterKeyToButton($("#seedInput")[0], $("#restartButton")[0]);
     </script>
 }

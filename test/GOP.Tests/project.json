@@ -1,12 +1,12 @@
 ﻿{
+  "testRunner": "xunit",
   "dependencies": {
-    "GOP": "1.0.0",
-    "xunit.runner.aspnet": "2.0.0-aspnet-rc2-20216"
-    //"xunit": "2.1.0",
-    //"xunit.runner.dnx": "2.1.0-rc1-build204"
+    "GOP": "1.0.0-*",
+    "xunit": "2.2.0-*",
+    "dotnet-test-xunit": "2.2.0-*"
   },
 
   "frameworks": {
-    "net461": { }
+    "net461": {}
   }
 }

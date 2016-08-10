@@ -138,7 +138,7 @@
     }
 
     get isPaused() { return this.game.isPaused; }
-    
+
     get clickIndicatorDuration() { return 0.4; }
 
     init() {
@@ -810,76 +810,83 @@
 
     onKeyDown(e: KeyboardEvent) {
         let handled = true;
-        switch (e.key) {
-            case this.keybinds.run:
-                if (!this.game.isPaused) {
-                    this.game.setMyRunAndRepel(!this.game.player.run, null);
-                    this.drawRunRepelIndicators();
-                }
-                break;
-            case this.keybinds.repel:
-                if (!this.game.isPaused) {
-                    this.game.setMyRunAndRepel(null, true);
-                    this.drawRunRepelIndicators();
-                }
-                break;
-            case this.keybinds.attract:
-                if (!this.game.isPaused) {
-                    this.game.setMyRunAndRepel(null, false);
-                    this.drawRunRepelIndicators();
-                }
-                break;
-            case "w": case "W": case "ArrowUp": case "Up":
-                this.upPressed = true;
-                break;
-            case "s": case "S": case "ArrowDown": case "Down":
-                this.downPressed = true;
-                break;
-            case "a": case "A": case "ArrowLeft": case "Left":
-                this.leftPressed = true;
-                break;
-            case "d": case "D": case "ArrowRight": case "Right":
-                this.rightPressed = true;
-                break;
-            case "PageUp":
-                this.zoomInPressed = true;
-                break;
-            case "PageDown":
-                this.zoomOutPressed = true;
-                break;
-            case "R":
-                this.restart();
-                break;
-            case this.keybinds.rewind:
-                this.rewind();
-                break;
-            case this.keybinds.fastForward:
-                this.fastForward();
-                break;
-            case "Escape": case "Esc":
-                // TODO: Account for puzzles
-                if (this.isPaused) {
-                    this.resume();
-                } else {
-                    this.pause();
-                }
-                break;
-            case "1": case "2": case "3": case "4": case "5": case "6":
-                if (this.allowPlayerSwitching && !e.ctrlKey && !e.shiftKey) {
-                    let index = +e.key - 1;
-                    if (index < this.gameState.players.length) {
-                        this.playerIndex = index;
-                        this.updateHud();
-                        this.updateOrbsVisibility();
+        if (e.ctrlKey && e.key === "s") {
+            if (!this.infoBox.canSave()) {
+                this.infoBox.saveButton.click();
+            }
+        } else {
+            switch (e.key) {
+                case this.keybinds.run:
+                    if (!this.game.isPaused) {
+                        this.game.setMyRunAndRepel(!this.game.player.run, null);
+                        this.drawRunRepelIndicators();
                     }
-                } else {
+                    break;
+                case this.keybinds.repel:
+                    if (!this.game.isPaused) {
+                        this.game.setMyRunAndRepel(null, true);
+                        this.drawRunRepelIndicators();
+                    }
+                    break;
+                case this.keybinds.attract:
+                    if (!this.game.isPaused) {
+                        this.game.setMyRunAndRepel(null, false);
+                        this.drawRunRepelIndicators();
+                    }
+                    break;
+                case "w": case "W": case "ArrowUp": case "Up":
+                    this.upPressed = true;
+                    break;
+                case "s": case "S": case "ArrowDown": case "Down":
+                    this.downPressed = true;
+                    break;
+                case "a": case "A": case "ArrowLeft": case "Left":
+                    this.leftPressed = true;
+                    break;
+                case "d": case "D": case "ArrowRight": case "Right":
+                    this.rightPressed = true;
+                    break;
+                case "PageUp":
+                    this.zoomInPressed = true;
+                    break;
+                case "PageDown":
+                    this.zoomOutPressed = true;
+                    break;
+                case "R":
+                    this.restart();
+                    break;
+                case this.keybinds.rewind:
+                    this.rewind();
+                    break;
+                case this.keybinds.fastForward:
+                    this.fastForward();
+                    break;
+                case "Escape": case "Esc":
+                    // TODO: Account for puzzles
+                    if (this.isPaused) {
+                        this.resume();
+                    } else {
+                        this.pause();
+                    }
+                    break;
+                case "1": case "2": case "3": case "4": case "5": case "6":
+                    if (this.allowPlayerSwitching && !e.ctrlKey && !e.shiftKey) {
+                        let index = +e.key - 1;
+                        if (index < this.gameState.players.length) {
+                            this.playerIndex = index;
+                            this.updateHud();
+                            this.updateOrbsVisibility();
+                        }
+                    } else {
+                        handled = false;
+                    }
+                    break;
+                default:
                     handled = false;
-                }
-                break;
-            default:
-                handled = false;
-                break;
+                    break;
+            }
         }
+
         if (handled) {
             e.preventDefault();
         }
@@ -1821,8 +1828,8 @@ class InfoBox {
         // Allow save only if not custom game
         if (this.allowSave && !this.game.isCustom) {
             this.saveButton = $("<button>Save</button>").addClass("btn btn-primary")[0] as HTMLButtonElement;
-            this.saveButton.style.pointerEvents = "initial";
-            this.saveButton.addEventListener("click", this.onSaveClicked.bind(this));
+            this.saveButton.style.pointerEvents = "auto";
+            this.saveButton.addEventListener("click", () => { this.gopui.onSaveClicked(); });
             this.gameFinishedElement.appendChild(document.createElement("br"));
             this.gameFinishedElement.appendChild(this.saveButton);
         }
@@ -1838,9 +1845,16 @@ class InfoBox {
         this.altarSeedElement.textContent = `${AltarData[this.gameState.altar].name} altar, seed ${this.gameState.seed}`;
 
         this.gameFinishedElement.hidden = !this.game.isFinished;
+        if (this.saveButton != null) {
+            this.saveButton.disabled = !this.game.isFinished;
+        }
         if (this.game.isFinished) {
             this.finalScoreSpan.textContent = `Final score: ${this.gameState.score} `;
         }
+    }
+
+    canSave() {
+        return this.saveButton != null && !this.gameFinishedElement.hidden && !this.saveButton.disabled;
     }
 
     /**

@@ -30,9 +30,7 @@ namespace GOP
         public void ConfigureServices(IServiceCollection services)
         {
             // Add EF services to the services container.
-            services.AddEntityFrameworkSqlServer()
-                .AddDbContext<ApplicationDbContext>(options =>
-                    options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
+            services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
 
             // Add Identity services to the services container.
             services.AddIdentity<ApplicationUser, IdentityRole<int>>(options =>

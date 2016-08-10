@@ -52,8 +52,11 @@ namespace GOP.Hubs
 
         private void BroadcastOnlineUsers()
         {
-            var users = UniqueOnlineUsers.Select(u => DbContext.GetChatUserOnlineView(u));
-            Clients.All.UpdateOnlineUsers(users);
+            if (DbContext != null)
+            {
+                var users = UniqueOnlineUsers.Select(u => DbContext.GetChatUserOnlineView(u));
+                Clients.All.UpdateOnlineUsers(users);
+            }
         }
     }
 }

@@ -18,7 +18,6 @@ namespace GOP.ViewModels
 
     public class MultiplayerHistoryViewModel
     {
-        public CustomAltar CustomAltar { get; set; }
         public IEnumerable<MultiplayerGameView> Games { get; set; }
     }
 }

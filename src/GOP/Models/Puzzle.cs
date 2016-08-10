@@ -8,7 +8,11 @@ namespace GOP.Models
     {
         [DatabaseGenerated(DatabaseGeneratedOption.None)]
         public int Id { get; set; }
+
         public int Altar { get; set; }
+        [ForeignKey("Altar")]
+        public GopAltar GopAltar { get; set; }
+
         public int NumberOfOrbs { get; set; }
         public int NumberOfPlayers { get; set; }
         [Required]
@@ -16,6 +20,6 @@ namespace GOP.Models
         [Required]
         public string StartLocations { get; set; }
 
-        public virtual ICollection<PuzzleSubmission> PuzzleSubmissions { get; set; } = new HashSet<PuzzleSubmission>();
+        public List<PuzzleSubmission> PuzzleSubmissions { get; set; }
     }
 }

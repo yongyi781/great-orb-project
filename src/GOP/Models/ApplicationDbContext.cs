@@ -19,7 +19,7 @@ namespace GOP.Models
 
         public DbSet<ChatMessage> ChatMessages { get; set; }
         public DbSet<Nickname> Nicknames { get; set; }
-        public DbSet<CustomAltar> CustomAltars { get; set; }
+        public DbSet<GopAltar> GopAltars { get; set; }
         public DbSet<SoloGame> SoloGames { get; set; }
         public DbSet<MultiplayerGame> MultiplayerGames { get; set; }
         public DbSet<Puzzle> Puzzles { get; set; }
@@ -123,18 +123,6 @@ namespace GOP.Models
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
-            // Customize the ASP.NET Identity model and override the defaults if needed.
-            // For example, you can rename the ASP.NET Identity table names and more.
-            // Add your customizations after calling base.OnModelCreating(builder);
-            builder.Entity<ChatMessage>(b =>
-            {
-                b.Property(e => e.IpAddress).HasColumnType("varchar(50)");
-            });
-            builder.Entity<Nickname>(b =>
-            {
-                b.HasKey(e => e.IpAddress);
-                b.Property(e => e.IpAddress).HasColumnType("varchar(50)");
-            });
         }
 
         private string GetNameForIpAddress(string ipAddress) =>

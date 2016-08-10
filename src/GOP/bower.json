@@ -12,5 +12,8 @@
     "knockout": "^3.4.0",
     "signalr": "^2.2.0",
     "stats.js": "*"
+  },
+  "resolutions": {
+    "font-awesome": "^4.6.3"
   }
 }

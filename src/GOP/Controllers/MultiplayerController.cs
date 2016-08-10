@@ -33,11 +33,7 @@ namespace GOP.Controllers
         {
             var multiplayerGames = GetMultiplayerGames();
 
-            return View(new MultiplayerHistoryViewModel
-            {
-                CustomAltar = null,
-                Games = multiplayerGames
-            });
+            return View(new MultiplayerHistoryViewModel { Games = multiplayerGames });
         }
 
         [HttpGet("api/[controller]")]

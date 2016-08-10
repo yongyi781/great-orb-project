@@ -1,22 +1,22 @@
-using System;
+﻿using System;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata;
-using GOP.Models;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
+using GOP.Models;
 
 namespace GOP.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
     partial class ApplicationDbContextModelSnapshot : ModelSnapshot
     {
-        protected override void BuildModel(ModelBuilder builder)
+        protected override void BuildModel(ModelBuilder modelBuilder)
         {
-            builder
-                .HasAnnotation("ProductVersion", "7.0.0-beta7-13944")
+            modelBuilder
+                .HasAnnotation("ProductVersion", "1.1.0-alpha1-21815")
                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-            builder.Entity("GOP.Models.ApplicationUser", b =>
+            modelBuilder.Entity("GOP.Models.ApplicationUser", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd();
@@ -61,23 +61,23 @@ namespace GOP.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("NormalizedEmail")
-                        .HasAnnotation("Relational:Name", "EmailHasIndex");
+                        .HasName("EmailIndex");
 
                     b.HasIndex("NormalizedUserName")
-                        .HasAnnotation("Relational:Name", "UserNameHasIndex");
+                        .IsUnique()
+                        .HasName("UserNameIndex");
 
-                    b.HasAnnotation("Relational:TableName", "AspNetUsers");
+                    b.ToTable("AspNetUsers");
                 });
 
-            builder.Entity("GOP.Models.ChatMessage", b =>
+            modelBuilder.Entity("GOP.Models.ChatMessage", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd();
 
                     b.Property<string>("IpAddress")
                         .IsRequired()
-                        .HasAnnotation("MaxLength", 50)
-                        .HasAnnotation("Relational:ColumnType", "varchar(50)");
+                        .HasColumnType("varchar(50)");
 
                     b.Property<string>("Text")
                         .IsRequired();
@@ -87,9 +87,39 @@ namespace GOP.Migrations
                     b.Property<int?>("UserId");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("ChatMessages");
                 });
 
-            builder.Entity("GOP.Models.CustomAltar", b =>
+            modelBuilder.Entity("GOP.Models.DeadPracticeResult", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<string>("Data")
+                        .IsRequired();
+
+                    b.Property<string>("IpAddress")
+                        .IsRequired()
+                        .HasColumnType("varchar(50)");
+
+                    b.Property<string>("Settings")
+                        .IsRequired();
+
+                    b.Property<DateTimeOffset>("Timestamp");
+
+                    b.Property<int?>("UserId");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("DeadPracticeResults");
+                });
+
+            modelBuilder.Entity("GOP.Models.GopAltar", b =>
                 {
                     b.Property<int>("Id");
 
@@ -109,30 +139,11 @@ namespace GOP.Migrations
                     b.Property<string>("WaterColor");
 
                     b.HasKey("Id");
+
+                    b.ToTable("GopAltars");
                 });
 
-            builder.Entity("GOP.Models.DeadPracticeResult", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd();
-
-                    b.Property<string>("Data")
-                        .IsRequired();
-
-                    b.Property<string>("IpAddress")
-                        .IsRequired();
-
-                    b.Property<string>("Settings")
-                        .IsRequired();
-
-                    b.Property<DateTimeOffset>("Timestamp");
-
-                    b.Property<int?>("UserId");
-
-                    b.HasKey("Id");
-                });
-
-            builder.Entity("GOP.Models.MultiplayerGame", b =>
+            modelBuilder.Entity("GOP.Models.MultiplayerGame", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd();
@@ -156,13 +167,17 @@ namespace GOP.Migrations
                         .IsRequired();
 
                     b.HasKey("Id");
+
+                    b.HasIndex("Altar");
+
+                    b.ToTable("MultiplayerGames");
                 });
 
-            builder.Entity("GOP.Models.Nickname", b =>
+            modelBuilder.Entity("GOP.Models.Nickname", b =>
                 {
                     b.Property<string>("IpAddress")
-                        .HasAnnotation("MaxLength", 50)
-                        .HasAnnotation("Relational:ColumnType", "varchar(50)");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("varchar(50)");
 
                     b.Property<DateTimeOffset>("LastChanged");
 
@@ -171,9 +186,11 @@ namespace GOP.Migrations
                         .HasAnnotation("MaxLength", 50);
 
                     b.HasKey("IpAddress");
+
+                    b.ToTable("Nicknames");
                 });
 
-            builder.Entity("GOP.Models.Puzzle", b =>
+            modelBuilder.Entity("GOP.Models.Puzzle", b =>
                 {
                     b.Property<int>("Id");
 
@@ -190,9 +207,13 @@ namespace GOP.Migrations
                         .IsRequired();
 
                     b.HasKey("Id");
+
+                    b.HasIndex("Altar");
+
+                    b.ToTable("Puzzles");
                 });
 
-            builder.Entity("GOP.Models.PuzzleSubmission", b =>
+            modelBuilder.Entity("GOP.Models.PuzzleSubmission", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd();
@@ -201,7 +222,8 @@ namespace GOP.Migrations
                         .IsRequired();
 
                     b.Property<string>("IpAddress")
-                        .IsRequired();
+                        .IsRequired()
+                        .HasColumnType("varchar(50)");
 
                     b.Property<int>("PuzzleId");
 
@@ -212,9 +234,15 @@ namespace GOP.Migrations
                     b.Property<int?>("UserId");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("PuzzleId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("PuzzleSubmissions");
                 });
 
-            builder.Entity("GOP.Models.SoloGame", b =>
+            modelBuilder.Entity("GOP.Models.SoloGame", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd();
@@ -225,7 +253,8 @@ namespace GOP.Migrations
                         .IsRequired();
 
                     b.Property<string>("IpAddress")
-                        .IsRequired();
+                        .IsRequired()
+                        .HasColumnType("varchar(50)");
 
                     b.Property<int>("NumberOfOrbs");
 
@@ -238,9 +267,15 @@ namespace GOP.Migrations
                     b.Property<int?>("UserId");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("Altar");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("SoloGames");
                 });
 
-            builder.Entity("Microsoft.AspNetCore.Identity.EntityFramework.IdentityRole<int>", b =>
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityRole<int>", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd();
@@ -257,12 +292,12 @@ namespace GOP.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("NormalizedName")
-                        .HasAnnotation("Relational:Name", "RoleNameHasIndex");
+                        .HasName("RoleNameIndex");
 
-                    b.HasAnnotation("Relational:TableName", "AspNetRoles");
+                    b.ToTable("AspNetRoles");
                 });
 
-            builder.Entity("Microsoft.AspNetCore.Identity.EntityFramework.IdentityRoleClaim<int>", b =>
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityRoleClaim<int>", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd();
@@ -275,10 +310,12 @@ namespace GOP.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasAnnotation("Relational:TableName", "AspNetRoleClaims");
+                    b.HasIndex("RoleId");
+
+                    b.ToTable("AspNetRoleClaims");
                 });
 
-            builder.Entity("Microsoft.AspNetCore.Identity.EntityFramework.IdentityUserClaim<int>", b =>
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityUserClaim<int>", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd();
@@ -291,10 +328,12 @@ namespace GOP.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasAnnotation("Relational:TableName", "AspNetUserClaims");
+                    b.HasIndex("UserId");
+
+                    b.ToTable("AspNetUserClaims");
                 });
 
-            builder.Entity("Microsoft.AspNetCore.Identity.EntityFramework.IdentityUserLogin<int>", b =>
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityUserLogin<int>", b =>
                 {
                     b.Property<string>("LoginProvider");
 
@@ -306,10 +345,12 @@ namespace GOP.Migrations
 
                     b.HasKey("LoginProvider", "ProviderKey");
 
-                    b.HasAnnotation("Relational:TableName", "AspNetUserLogins");
+                    b.HasIndex("UserId");
+
+                    b.ToTable("AspNetUserLogins");
                 });
 
-            builder.Entity("Microsoft.AspNetCore.Identity.EntityFramework.IdentityUserRole<int>", b =>
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityUserRole<int>", b =>
                 {
                     b.Property<int>("UserId");
 
@@ -317,71 +358,117 @@ namespace GOP.Migrations
 
                     b.HasKey("UserId", "RoleId");
 
-                    b.HasAnnotation("Relational:TableName", "AspNetUserRoles");
+                    b.HasIndex("RoleId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("AspNetUserRoles");
                 });
 
-            builder.Entity("GOP.Models.ChatMessage", b =>
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityUserToken<int>", b =>
                 {
-                    b.HasOne("GOP.Models.ApplicationUser")
+                    b.Property<int>("UserId");
+
+                    b.Property<string>("LoginProvider");
+
+                    b.Property<string>("Name");
+
+                    b.Property<string>("Value");
+
+                    b.HasKey("UserId", "LoginProvider", "Name");
+
+                    b.ToTable("AspNetUserTokens");
+                });
+
+            modelBuilder.Entity("GOP.Models.ChatMessage", b =>
+                {
+                    b.HasOne("GOP.Models.ApplicationUser", "User")
                         .WithMany()
                         .HasForeignKey("UserId");
                 });
 
-            builder.Entity("GOP.Models.DeadPracticeResult", b =>
+            modelBuilder.Entity("GOP.Models.DeadPracticeResult", b =>
                 {
-                    b.HasOne("GOP.Models.ApplicationUser")
+                    b.HasOne("GOP.Models.ApplicationUser", "User")
                         .WithMany()
                         .HasForeignKey("UserId");
                 });
 
-            builder.Entity("GOP.Models.PuzzleSubmission", b =>
+            modelBuilder.Entity("GOP.Models.MultiplayerGame", b =>
                 {
-                    b.HasOne("GOP.Models.Puzzle")
+                    b.HasOne("GOP.Models.GopAltar", "GopAltar")
                         .WithMany()
-                        .HasForeignKey("PuzzleId");
+                        .HasForeignKey("Altar")
+                        .OnDelete(DeleteBehavior.Cascade);
+                });
 
-                    b.HasOne("GOP.Models.ApplicationUser")
+            modelBuilder.Entity("GOP.Models.Puzzle", b =>
+                {
+                    b.HasOne("GOP.Models.GopAltar", "GopAltar")
+                        .WithMany()
+                        .HasForeignKey("Altar")
+                        .OnDelete(DeleteBehavior.Cascade);
+                });
+
+            modelBuilder.Entity("GOP.Models.PuzzleSubmission", b =>
+                {
+                    b.HasOne("GOP.Models.Puzzle", "Puzzle")
+                        .WithMany("PuzzleSubmissions")
+                        .HasForeignKey("PuzzleId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("GOP.Models.ApplicationUser", "User")
                         .WithMany()
                         .HasForeignKey("UserId");
                 });
 
-            builder.Entity("GOP.Models.SoloGame", b =>
+            modelBuilder.Entity("GOP.Models.SoloGame", b =>
                 {
-                    b.HasOne("GOP.Models.ApplicationUser")
+                    b.HasOne("GOP.Models.GopAltar", "GopAltar")
+                        .WithMany()
+                        .HasForeignKey("Altar")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("GOP.Models.ApplicationUser", "User")
                         .WithMany()
                         .HasForeignKey("UserId");
                 });
 
-            builder.Entity("Microsoft.AspNetCore.Identity.EntityFramework.IdentityRoleClaim<int>", b =>
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityRoleClaim<int>", b =>
                 {
-                    b.HasOne("Microsoft.AspNetCore.Identity.EntityFramework.IdentityRole<int>")
-                        .WithMany()
-                        .HasForeignKey("RoleId");
+                    b.HasOne("Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityRole<int>")
+                        .WithMany("Claims")
+                        .HasForeignKey("RoleId")
+                        .OnDelete(DeleteBehavior.Cascade);
                 });
 
-            builder.Entity("Microsoft.AspNetCore.Identity.EntityFramework.IdentityUserClaim<int>", b =>
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityUserClaim<int>", b =>
                 {
                     b.HasOne("GOP.Models.ApplicationUser")
-                        .WithMany()
-                        .HasForeignKey("UserId");
+                        .WithMany("Claims")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade);
                 });
 
-            builder.Entity("Microsoft.AspNetCore.Identity.EntityFramework.IdentityUserLogin<int>", b =>
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityUserLogin<int>", b =>
                 {
                     b.HasOne("GOP.Models.ApplicationUser")
-                        .WithMany()
-                        .HasForeignKey("UserId");
+                        .WithMany("Logins")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade);
                 });
 
-            builder.Entity("Microsoft.AspNetCore.Identity.EntityFramework.IdentityUserRole<int>", b =>
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityUserRole<int>", b =>
                 {
-                    b.HasOne("Microsoft.AspNetCore.Identity.EntityFramework.IdentityRole<int>")
-                        .WithMany()
-                        .HasForeignKey("RoleId");
+                    b.HasOne("Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityRole<int>")
+                        .WithMany("Users")
+                        .HasForeignKey("RoleId")
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("GOP.Models.ApplicationUser")
-                        .WithMany()
-                        .HasForeignKey("UserId");
+                        .WithMany("Roles")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade);
                 });
         }
     }

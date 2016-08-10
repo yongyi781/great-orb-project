@@ -1,5 +1,5 @@
-﻿@model IEnumerable<CustomAltar>
-@{ 
+﻿@model IEnumerable<GopAltar>
+@{
     ViewData["Title"] = "Custom Altars";
 }
 
@@ -18,8 +18,9 @@
             <td>@altar.Id</td>
             <td>@altar.Name</td>
             <td>
-            <a asp-controller="Solo" asp-action="Index" asp-route-altar="@altar.Id">Play</a> |
-            <a asp-controller="Tools" asp-action="Anglemap" asp-route-altar="@altar.Id">Edit</a></td>
+                <a asp-controller="Solo" asp-action="Index" asp-route-altar="@altar.Id">Play</a> |
+                <a asp-controller="Tools" asp-action="Anglemap" asp-route-altar="@altar.Id">Angle map</a>
+            </td>
         </tr>
     }
 </table>

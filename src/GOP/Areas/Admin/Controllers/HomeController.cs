@@ -2,6 +2,7 @@
 using GOP.Hubs;
 using GOP.Models;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
@@ -13,7 +14,11 @@ namespace GOP.Areas.Admin.Controllers
     [Authorize(Roles = "Administrators")]
     public class HomeController : Controller
     {
-        [FromServices]
+        public HomeController(ApplicationDbContext dbContext)
+        {
+            DbContext = dbContext;
+        }
+
         public ApplicationDbContext DbContext { get; set; }
 
         public IActionResult ChatInfo()
@@ -50,7 +55,12 @@ namespace GOP.Areas.Admin.Controllers
                    };
         }
 
-        public IEnumerable<string> FindSoloCodeMismatches()
+        public IActionResult Test()
+        {
+            return View();
+        }
+
+        public IEnumerable<string> FindSoloCodeMismatches(bool save = false)
         {
             // Fix solo custom altar codes
             foreach (var item in DbContext.SoloGames)
@@ -61,11 +71,12 @@ namespace GOP.Areas.Admin.Controllers
                 {
                     codeElements[1] = item.Altar.ToString();
                     var newCode = string.Join(" ", codeElements);
+                    yield return "Altar = " + item.Altar + ", code = " + item.Code + ", new code = " + newCode;
                     item.Code = newCode;
-                    yield return newCode;
                 }
             }
-            DbContext.SaveChanges();
+            if (save)
+                DbContext.SaveChanges();
         }
     }
 }

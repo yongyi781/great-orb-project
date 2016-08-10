@@ -22,13 +22,13 @@ namespace GOP.Controllers
 
         public IActionResult Index()
         {
-            return View(DbContext.CustomAltars);
+            return View(DbContext.GopAltars);
         }
 
         [HttpGet("api/[controller]")]
-        public IEnumerable<CustomAltar> Get(int? min, int? max)
+        public IEnumerable<GopAltar> Get(int? min, int? max)
         {
-            IQueryable<CustomAltar> query = DbContext.CustomAltars.AsNoTracking();
+            IQueryable<GopAltar> query = DbContext.GopAltars.AsNoTracking();
             if (min != null)
                 query = query.Where(altar => altar.Id >= min);
             if (max != null)
@@ -37,10 +37,10 @@ namespace GOP.Controllers
         }
 
         [HttpPost("api/[controller]")]
-        public IActionResult Post(CustomAltar altar)
+        public IActionResult Post(GopAltar altar)
         {
             // First, try to find it in the database
-            var result = DbContext.CustomAltars.Where(x => x.Grid == altar.Grid && x.Spawns == altar.Spawns).FirstOrDefault();
+            var result = DbContext.GopAltars.Where(x => x.Grid == altar.Grid && x.Spawns == altar.Spawns).FirstOrDefault();
             var alreadyExists = true;
             if (result == null)
             {
@@ -51,9 +51,9 @@ namespace GOP.Controllers
                 result = altar;
 
                 // Find first hole in IDs of table
-                var ids = DbContext.CustomAltars.Select(x => x.Id).ToList();
+                var ids = DbContext.GopAltars.Select(x => x.Id).ToList();
                 ids.Sort();
-                int newId = -1;
+                int newId = ids[ids.Count - 1] + 1;
                 for (int i = 0; i < ids.Count - 1; i++)
                 {
                     if (ids[i + 1] - ids[i] > 1)
@@ -65,7 +65,7 @@ namespace GOP.Controllers
 
                 altar.Id = newId;
                 Logger.LogInformation("Saving altar {0}, {1}, {2}, {3}", altar.Id, altar.Name, altar.Grid, altar.Spawns);
-                DbContext.CustomAltars.Add(altar);
+                DbContext.GopAltars.Add(altar);
                 DbContext.SaveChanges();
             }
 
@@ -75,7 +75,7 @@ namespace GOP.Controllers
         [HttpGet("api/[controller]/names")]
         public IEnumerable<object> GetNames(int? min, int? max)
         {
-            IQueryable<CustomAltar> query = DbContext.CustomAltars.AsNoTracking();
+            IQueryable<GopAltar> query = DbContext.GopAltars.AsNoTracking();
             if (min != null)
                 query = query.Where(altar => altar.Id >= min);
             if (max != null)
@@ -86,7 +86,7 @@ namespace GOP.Controllers
         [HttpGet("api/[controller]/{id}")]
         public IActionResult GetById(int id)
         {
-            var altar = DbContext.CustomAltars.Where(a => a.Id == id).FirstOrDefault();
+            var altar = DbContext.GopAltars.Where(a => a.Id == id).FirstOrDefault();
             if (altar == null)
                 return NotFound();
             return new ObjectResult(altar);
