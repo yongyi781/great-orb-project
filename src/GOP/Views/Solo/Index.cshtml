@@ -21,7 +21,7 @@
     <script>
         var numberOfOrbs = Utils.getQueryAsInteger("numorbs", GameState.defaults.numberOfOrbs);
         var altar = Utils.getQueryAsInteger("altar", GameState.defaults.altar);
-        var seed = Utils.getQueryAsInteger("seed", Utils.getRandomInt(0, 200));
+        var seed = Utils.getQueryAsInteger("seed", Utils.getRandomInt(0, 300));
         var playerLocations = Utils.getQueryAsPointArray("start", [new Point(2, 0)]);
         var spawns = Utils.getQueryAsPointArray("spawns", []);
         var reachDist = Utils.getQueryAsInteger("reach", GopBoard.defaults.reachDistance);
