@@ -222,3 +222,5 @@ artifacts/
 /src/GOP/typings/
 /src/GOP/Views/Tools/Test.cshtml
 /src/GOP/Views/Tools/Test3D.cshtml
+/src/GOP/Areas/Admin/Views/Home/Uploads.cshtml
+/src/GOP/Areas/Admin/Views/Home/Test.cshtml
