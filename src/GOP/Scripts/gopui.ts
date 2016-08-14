@@ -67,9 +67,9 @@ class GopUI {
             altarAndStartLocationForced: false,
             allowInput: true,
             gopControls: {
-                run: "R",
-                repeller: "Q",
-                attractor: "Z"
+                run: "r",
+                repeller: "q",
+                attractor: "z"
             },
         },
 
@@ -647,11 +647,15 @@ class GopUI {
     }
 
     private static getKeyCodeFor(str: string) {
+        if (str == null) {
+            return 0;
+        }
+        
         if (str in GopUI.keyCodes) {
             return GopUI.keyCodes[str];
         }
-        return str.charCodeAt(0);
+        return str.toUpperCase().charCodeAt(0);
     }
 
-    static keyCodes: any = { "/": 191, "N0": 96, "N1": 97 };
+    static keyCodes: { [id: string]: number } = { "/": 191, "N0": 96, "N1": 97 };
 }

@@ -8,7 +8,6 @@ namespace GOP.Models
     public class ApplicationUser : IdentityUser<int>
     {
         public string ChatColor { get; set; }
-        public string GopControls { get; set; }
     }
 
     public class ChatMessage

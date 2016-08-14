@@ -18,6 +18,10 @@
       "type": "build"
     },
     "Microsoft.EntityFrameworkCore.SqlServer": "1.1.0-*",
+    "Microsoft.EntityFrameworkCore.Tools": {
+      "version": "1.0.0-preview2-final",
+      "type": "build"
+    },
     "Microsoft.Extensions.Configuration.CommandLine": "1.1.0-*",
     "Microsoft.Extensions.Configuration.EnvironmentVariables": "1.1.0-*",
     "Microsoft.Extensions.Configuration.Json": "1.1.0-*",

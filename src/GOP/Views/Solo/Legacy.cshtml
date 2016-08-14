@@ -60,7 +60,6 @@
     </table>
 }
 <!-- Auxiliary elements -->
-<input id="gopControls" type="hidden" value="@Model.GopControls" />
 <input id="isCustom" type="hidden" value="@Model.IsCustomGameType" />
 <div id="shortcutsModal" class="modal fade">
     <div class="modal-dialog">
@@ -283,7 +282,11 @@
                 latency: Utils.getQueryAsNumber("latency"),
                 tickInterval: Utils.getQueryAsNumber("tickinterval") || 450,
                 altarAndStartLocationForced: Utils.getQueryAsBoolean("forcestart"),
-                gopControls: JSON.parse($("#gopControls").val() || null) || undefined
+                gopControls: {
+                    run: localStorage.getItem("runKey") || "r",
+                    repeller: localStorage.getItem("repelKey") || "q",
+                    attractor: localStorage.getItem("attractKey") || "z"
+                }
             },
             interface: {
                 showRestart: false,

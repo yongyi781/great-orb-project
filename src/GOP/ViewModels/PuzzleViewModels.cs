@@ -35,7 +35,6 @@ namespace GOP.ViewModels
         public PuzzleView PuzzleView { get; set; }
         public IEnumerable<PuzzleSubmissionView> Submissions { get; set; }
         public bool RequireLogin { get; set; }
-        public string GopControls { get; set; }
     }
 
     public class PuzzleLeaderboardEntry

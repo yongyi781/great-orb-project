@@ -61,8 +61,7 @@ namespace GOP.Controllers
             {
                 PuzzleView = puzzleView,
                 Submissions = submissionViews,
-                RequireLogin = requireLogin,
-                GopControls = currentUser?.GopControls
+                RequireLogin = requireLogin
             });
         }
 
