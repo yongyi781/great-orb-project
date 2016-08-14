@@ -519,7 +519,7 @@
     startAnimation() {
         this.clock.start();
         this.updateDisplay();
-        this.animate();
+        requestAnimationFrame(this.animate.bind(this));
     }
 
     updateHud() {
@@ -811,7 +811,7 @@
     onKeyDown(e: KeyboardEvent) {
         let handled = true;
         if (e.ctrlKey && e.key === "s") {
-            if (!this.infoBox.canSave()) {
+            if (this.infoBox.canSave()) {
                 this.infoBox.saveButton.click();
             }
         } else {
@@ -939,19 +939,19 @@
 
                 if (clickedOrbIndex !== -1) {
                     // Orb clicked
-                    this.doClickAction(GameAction.attract(clickedOrbIndex, false, false, true), 1, e.clientX, e.clientY);
+                    this.doClickAction(GameAction.attract(clickedOrbIndex, false, false, true), 1, e.offsetX, e.offsetY);
                 } else {
                     // Ground clicked
                     let p = new Point(Math.round(first.point.x), Math.round(first.point.y));
                     if (p.equals(this.game.player.location) || (GopBoard.isInAltar(p) && GopBoard.isPlayerAdjacentToAltar(
                         this.game.player.location))) {
-                        this.doClickAction(GameAction.idle(), GopBoard.isInAltar(p) ? 1 : 0, e.clientX, e.clientY);
+                        this.doClickAction(GameAction.idle(), GopBoard.isInAltar(p) ? 1 : 0, e.offsetX, e.offsetY);
                     } else if (GopBoard.isInAltar(p)) {
                         // Find closest square
                         this.doClickAction(GameAction.move(
-                            this.gameState.board.nearestAltarPoint(this.game.player.location, PathMode.Player)), 1, e.clientX, e.clientY);
+                            this.gameState.board.nearestAltarPoint(this.game.player.location, PathMode.Player)), 1, e.offsetX, e.offsetY);
                     } else {
-                        this.doClickAction(GameAction.move(p), 0, e.clientX, e.clientY);
+                        this.doClickAction(GameAction.move(p), 0, e.offsetX, e.offsetY);
                     }
                 }
             }
@@ -1029,7 +1029,7 @@
                         eInner.preventDefault();
                         if (eInner.button === 0) {
                             this.contextMenu.hidden = true;
-                            this.doClickAction(GameAction.attract(orbIndex, false, false, true), 1, eInner.clientX, eInner.clientY);
+                            this.doClickAction(GameAction.attract(orbIndex), 1, eInner.pageX, eInner.pageY);
                         }
                     });
                 $menuItems.append($menuItem);
@@ -1040,7 +1040,7 @@
                         eInner.preventDefault();
                         if (eInner.button === 0) {
                             this.contextMenu.hidden = true;
-                            this.doClickAction(GameAction.move(p), 0, eInner.clientX, eInner.clientY);
+                            this.doClickAction(GameAction.move(p), 0, eInner.pageX, eInner.pageY);
                         }
                     });
                 $menuItems.append($menuItem);
@@ -1312,6 +1312,7 @@ class PlayerObject {
             new THREE.MeshPhongMaterial({ color }));
         this.mesh.position.set(player.location.x, player.location.y, height / 2);
         this.mesh.castShadow = true;
+        this.mesh.receiveShadow = true;
     }
 
     update(tickProgress: number) {
