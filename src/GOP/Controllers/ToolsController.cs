@@ -26,7 +26,7 @@ namespace GOP.Controllers
 
         public IActionResult Cookies()
         {
-            return View(Request.Cookies);
+            return View();
         }
 
         public IActionResult Test()

@@ -1,5 +1,4 @@
-﻿@model Microsoft.AspNetCore.Http.IRequestCookieCollection
-@{
+﻿@{
     ViewData["Title"] = "Cookies";
 }
 
@@ -12,11 +11,37 @@
             <th>Value</th>
         </tr>
     </thead>
-    @foreach (var cookie in Model)
+    @foreach (var cookie in Context.Request.Cookies)
     {
         <tr>
             <td>@cookie.Key</td>
             <td>@cookie.Value</td>
+        </tr>
+    }
+</table>
+
+<h3>User</h3>
+<p>This is your user information! Your current username is: @User.Identity.Name</p>
+<table class="table table-striped table-condensed">
+    <thead>
+        <tr>
+            <th>Authentication Type</th>
+            <th>Name Claim Type</th>
+            <th>Role Claim Type</th>
+            <th>Authenticated?</th>
+            <th>Claims</th>
+            <th>Name</th>
+        </tr>
+    </thead>
+    @foreach (var identity in User.Identities)
+    {
+        <tr>
+            <td>@identity.AuthenticationType</td>
+            <td>@identity.NameClaimType</td>
+            <td>@identity.RoleClaimType</td>
+            <td>@identity.IsAuthenticated</td>
+            <td>@string.Join(", ", identity.Claims.Select(c => c.Value))</td>
+            <td>@identity.Name</td>
         </tr>
     }
 </table>

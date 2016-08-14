@@ -29,6 +29,32 @@ namespace GOP.Controllers
         public IActionResult Index()
         {
             ViewData["NumberOfMessages"] = DbContext.ChatMessages.Count();
+
+            // Sync nickname cookies and database
+            var ipAddress = HttpContext.Connection.RemoteIpAddress.ToString();
+            var nickname = DbContext.Nicknames.Find(ipAddress);
+            var cookieNickname = Request.Cookies[Utilities.NicknameCookieName];
+            if (cookieNickname != null && nickname != null)
+            {
+                nickname.Name = cookieNickname;
+                nickname.LastChanged = DateTimeOffset.Now;
+                DbContext.SaveChanges();
+            }
+            else if (cookieNickname == null && nickname != null)
+            {
+                Response.Cookies.Append(Utilities.NicknameCookieName, nickname.Name);
+            }
+            else if (nickname == null && cookieNickname != null)
+            {
+                DbContext.Nicknames.Add(new Nickname
+                {
+                    IpAddress = ipAddress,
+                    Name = cookieNickname,
+                    LastChanged = DateTimeOffset.Now
+                });
+                DbContext.SaveChanges();
+            }
+
             return View();
         }
 

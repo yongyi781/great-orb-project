@@ -1,13 +1,17 @@
-﻿using System;
+﻿using GOP.Models;
+using Microsoft.AspNetCore.Http;
+using System;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Text.RegularExpressions;
 
 namespace GOP
 {
     public class Utilities
     {
         public const int NumberOfAltars = 6;
+        public const string NicknameCookieName = "Nickname";
         public static readonly string[] AltarNames = { "None", "Air", "Mind", "Water", "Earth", "Fire", "Body" };
 
         public static string FormatChatMessage(string message)
@@ -63,6 +67,45 @@ namespace GOP
                         return false;
                     }
                 }
+            }
+        }
+
+        public static void UpdateNickname(HttpContext context, ApplicationDbContext dbContext, string desiredName)
+        {
+            if (Regex.IsMatch(desiredName, @"\$\$|[^A-zÀ-ÿ0-9 $\\{}^_-]") || desiredName.Count(c => c == '$') % 2 != 0)
+                throw new InvalidOperationException("Invalid nickname.");
+            if (desiredName.Length > 50)
+                throw new InvalidOperationException("Nickname cannot be more than 50 characters long.");
+
+            context.Response.Cookies.Append(NicknameCookieName, desiredName);
+            var ipAddress = context.Connection.RemoteIpAddress.ToString();
+            var nick = dbContext.Nicknames.Find(ipAddress);
+            if (nick != null)
+            {
+                nick.Name = desiredName;
+                nick.LastChanged = DateTimeOffset.Now;
+            }
+            else
+            {
+                dbContext.Nicknames.Add(new Nickname
+                {
+                    IpAddress = ipAddress,
+                    Name = desiredName,
+                    LastChanged = DateTimeOffset.Now
+                });
+            }
+            dbContext.SaveChanges(true);
+        }
+
+        public static void ClearNickname(HttpContext context, ApplicationDbContext dbContext)
+        {
+            context.Response.Cookies.Delete(NicknameCookieName);
+            var ipAddress = context.Connection.RemoteIpAddress.ToString();
+            var nick = dbContext.Nicknames.Find(ipAddress);
+            if (nick != null)
+            {
+                dbContext.Nicknames.Remove(nick);
+                dbContext.SaveChanges();
             }
         }
     }

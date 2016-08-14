@@ -64,6 +64,7 @@ namespace GOP.Controllers
             query = query.OrderByDescending(m => m.Id).Take(numMessages).OrderBy(m => m.Id);
             var result = from m in query
                          select DbContext.GetChatMessageView(m);
+
             return result;
         }
 
@@ -172,29 +173,7 @@ namespace GOP.Controllers
 
         private void SetNickname(string desiredName)
         {
-            if (Regex.IsMatch(desiredName, @"\$\$|[^A-zÀ-ÿ0-9 $\\{}^_-]") || desiredName.Count(c => c == '$') % 2 != 0)
-                throw new InvalidOperationException("Invalid nickname.");
-            if (desiredName.Length > 50)
-                throw new InvalidOperationException("Nickname cannot be more than 50 characters long.");
-
-            var ipAddress = HttpContext.Connection.RemoteIpAddress.ToString();
-            var nick = DbContext.Nicknames.SingleOrDefault(e => e.IpAddress == ipAddress);
-            if (nick != null)
-            {
-                nick.Name = desiredName;
-                nick.LastChanged = DateTimeOffset.Now;
-                DbContext.Nicknames.Update(nick);
-            }
-            else
-            {
-                DbContext.Nicknames.Add(new Nickname
-                {
-                    IpAddress = ipAddress,
-                    Name = desiredName,
-                    LastChanged = DateTimeOffset.Now
-                });
-            }
-            DbContext.SaveChanges(true);
+            Utilities.UpdateNickname(HttpContext, DbContext, desiredName);
 
             var users = Hubs.ChatHub.UniqueOnlineUsers.Select(u => DbContext.GetChatUserOnlineView(u));
             ChatHub.Clients.All.UpdateOnlineUsers(users);
@@ -203,17 +182,11 @@ namespace GOP.Controllers
 
         private void ClearNickname()
         {
-            var ipAddress = HttpContext.Connection.RemoteIpAddress.ToString();
-            var nick = DbContext.Nicknames.SingleOrDefault(e => e.IpAddress == ipAddress);
-            if (nick != null)
-            {
-                DbContext.Nicknames.Remove(nick);
-                DbContext.SaveChanges();
+            Utilities.ClearNickname(HttpContext, DbContext);
 
-                var users = Hubs.ChatHub.UniqueOnlineUsers.Select(u => DbContext.GetChatUserOnlineView(u));
-                ChatHub.Clients.All.UpdateOnlineUsers(users);
-                ChatHub.Clients.All.UpdateMessages();
-            }
+            var users = Hubs.ChatHub.UniqueOnlineUsers.Select(u => DbContext.GetChatUserOnlineView(u));
+            ChatHub.Clients.All.UpdateOnlineUsers(users);
+            ChatHub.Clients.All.UpdateMessages();
         }
 
         private void EditLastMessage(string newMessage, bool force = false)
