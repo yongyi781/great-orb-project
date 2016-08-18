@@ -1,4 +1,7 @@
 ﻿namespace Utils {
+    export const youTubeRegex = /^(?:https?:\/{2})?(?:w{3}\.|m\.)?youtu(?:be)?\.(?:com|be)(?:\/watch\?v=|\/)([^\s&"]+)(?:&amp;feature=youtu\.be)?$/;
+    export const urlRegex = /\b(?:https?|ftp):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;*(){}\[\]]*[-A-Z0-9+&@#\/%=~_|;*(){}\[\]]/gim;
+
     /**
      * Returns a random integer between minValue (inclusive) and maxValue (exclusive).
      */
@@ -206,5 +209,54 @@
                 }
             }
         });
+    }
+
+    /**
+     * Transforms a YouTube video link into a link containing the title of the YouTube video.
+     * @param text The message text.
+     */
+    export function transformYouTubeVideoLink(text: string) {
+        let deferred = $.Deferred<string>();
+
+        let matches = text.match(youTubeRegex);
+        if (matches == null) {
+            deferred.resolve(null);
+        } else {
+            let id = matches[1];
+            $.ajax({
+                url: `https://www.googleapis.com/youtube/v3/videos?id=${id}&key=AIzaSyBSyv4ZxBcMN7o2nvFc5XCZ6hzxq3ANeRU&fields=items(snippet(title))&part=snippet`,
+                success: data => {
+                    if (data.items.length > 0) {
+                        deferred.resolve(`<a target="_blank" href="${text}">[YouTube: ${data.items[0].snippet.title}]</a>`);
+                    } else {
+                        deferred.resolve(`<a target="_blank" href="${text}">[Unknown YouTube video]</a>`);
+                    }
+                },
+                error: () => {
+                    deferred.resolve(null);
+                }
+            });
+        }
+
+        return deferred.promise();
+    }
+
+    /**
+     * Formats a chat message text.
+     * @param text The text to format.
+     */
+    export function formatMessageText(text: string) {
+        let matches = text.match(urlRegex);
+        if (matches != null) {
+            let links: { [id: string]: string } = {};
+            let promises = matches.map(value => transformYouTubeVideoLink(value).done(result => {
+                links[value] = result != null ? result : `<a href="${value}" target="_blank">${value}</a>`;
+            }));
+
+            return ($.when.apply($, promises) as JQueryPromise<string>).then(() => {
+                return text.replace(urlRegex, substring => links[substring]);
+            });
+        }
+        return $.Deferred<string>().resolve(text).promise();
     }
 }

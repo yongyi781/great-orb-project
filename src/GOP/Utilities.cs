@@ -4,6 +4,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Text.Encodings.Web;
 using System.Text.RegularExpressions;
 
 namespace GOP
@@ -16,20 +17,7 @@ namespace GOP
 
         public static string FormatChatMessage(string message)
         {
-            var elements = message.Split(' ');
-            for (int i = 0; i < elements.Length; ++i)
-            {
-                Uri uri;
-                if (Uri.TryCreate(elements[i], UriKind.Absolute, out uri) && new string[] { "http", "https", "ftp" }.Any(s => uri.Scheme.Equals(s)))
-                {
-                    elements[i] = string.Format("<a href=\"{0}\" target=\"_blank\">{1}</a>", elements[i], uri);
-                }
-                else
-                {
-                    elements[i] = WebUtility.HtmlEncode(elements[i]);
-                }
-            }
-            return string.Join(" ", elements);
+            return HtmlEncoder.Default.Encode(message);
         }
 
         public static string FormatValue(double? value, string format)

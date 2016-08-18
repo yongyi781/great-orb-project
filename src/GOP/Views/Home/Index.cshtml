@@ -210,94 +210,118 @@ These are duo angles for feeding orbs quickly.
     </environment>
     <environment names="Staging,Production">
         <script src="https://cdnjs.cloudflare.com/ajax/libs/knockout/3.4.0/knockout-min.js"></script>
-        <script src="https://ajax.aspnetcdn.com/ajax/signalr/jquery.signalr-2.2.0.min.js"></script>
+        <script src="https://ajax.aspnetcdn.com/ajax/signalr/jquery.signalr-2.2.1.min.js"></script>
     </environment>
     <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <script src="~/js/utils.js"></script>
     <script src="~/signalr/hubs"></script>
     <script>
-        $(function () {
-            var baseTitle = document.title,
-                newMessages = 0,
-                hub = $.connection.chatHub,
-                lastMessage,
-                viewModel = new ChatViewModel(),
-                hidden = "hidden",
-                forceScrollThreshold = 100;
+        var baseTitle = document.title,
+            newMessages = 0,
+            hub = $.connection.chatHub,
+            lastMessage,
+            viewModel = new ChatViewModel(),
+            hidden = "hidden",
+            forceScrollThreshold = 100;
 
-            function ChatViewModel() {
-                var self = this;
+        function ChatViewModel() {
+            var self = this;
 
-                this.search = ko.observable();
-                this.messages = ko.observableArray();
-                this.onlineUsers = ko.observableArray();
-                this.numMessagesToShow = ko.observable(150);
+            this.search = ko.observable();
+            this.messages = ko.observableArray();
+            this.onlineUsers = ko.observableArray();
+            this.numMessagesToShow = ko.observable(150);
 
-                this.search.subscribe(function () {
+            this.search.subscribe(function () {
+                self.getFromServer();
+            });
+
+            this.numMessagesToShow.subscribe(function (value) {
+                if (self.messages().length < value && $.connection.hub.state === $.signalR.connectionState.connected)
                     self.getFromServer();
+            });
+
+            this.getFromServer = function () {
+                $.getJSON("/api/chat", { search: self.search(), numMessages: self.numMessagesToShow() }, function (data) {
+                    self.messages(data);
+                    self.processMessages();
+                    reScroll(true);
+                    MathJax.Hub.Queue(["Typeset", MathJax.Hub, "chatbox"], ["Typeset", MathJax.Hub, "chatboxOnlineUsers"], [reScroll, true]);
                 });
+            };
 
-                this.numMessagesToShow.subscribe(function (value) {
-                    if (self.messages().length < value && $.connection.hub.state === $.signalR.connectionState.connected)
-                        self.getFromServer();
+            this.processMessage = function (i) {
+                var text = self.messages()[i].text;
+                Utils.formatMessageText(text).done(function (newText) {
+                    if (text !== newText) {
+                        self.replaceMessageText(i, newText);
+                    }
                 });
-
-                this.getFromServer = function () {
-                    $.getJSON("/api/chat", { search: self.search(), numMessages: self.numMessagesToShow() }, function (data) {
-                        self.messages(data);
-                        reScroll(true);
-                        MathJax.Hub.Queue(["Typeset", MathJax.Hub, "chatbox"], ["Typeset", MathJax.Hub, "chatboxOnlineUsers"], [reScroll, true]);
-                    });
-                };
-
-                this.formatTime = function (timeStr) {
-                    return new Date(timeStr).toLocaleString();
-                };
             }
 
-            function reScroll(forceScroll) {
-                if (forceScroll)
-                    chatbox.scrollTop = chatbox.scrollHeight;
-            }
-
-            function updateTitle() {
-                var newMessagesStr = "";
-                if (newMessages > 0)
-                    newMessagesStr = "(" + newMessages + ") ";
-                setTimeout(function () { document.title = newMessagesStr + baseTitle; }, 100);
-            }
-
-            function handleVisibilityChange() {
-                if (!document[hidden]) {
-                    newMessages = 0;
-                    updateTitle();
+            this.processMessages = function () {
+                if (!Utils.getQueryAsBoolean("noprocess")) {
+                    for (var i = 0; i < self.messages().length; i++) {
+                        self.processMessage(i);
+                    }
                 }
             }
 
-            var ChatStatus = { CONNECTED: 0, SLOW: 1, DISCONNECTED: 2 };
-
-            function setChatStatus(status) {
-                switch (status) {
-                    case ChatStatus.CONNECTED:
-                        $("#connectionStatus").text("Connected").attr("class", "label label-success");
-                        break;
-                    case ChatStatus.SLOW:
-                        $("#connectionStatus").text("Slow").attr("class", "label label-warning");
-                        break;
-                    case ChatStatus.DISCONNECTED:
-                        $("#connectionStatus").text("Disconnected").attr("class", "label label-danger");
-                        break;
-                }
+            this.replaceMessageText = function (index, newText) {
+                var newMessage = $.extend(false, {}, self.messages()[index]);
+                newMessage.text = newText;
+                viewModel.messages.splice(index, 1, newMessage);
             }
 
-            function startConnection() {
-                $.connection.hub.start().done(function () {
-                    setChatStatus(ChatStatus.CONNECTED);
-                    viewModel.getFromServer();
-                    $("#connectionErrors").hide();
-                });
-            }
+            this.formatTime = function (timeStr) {
+                return new Date(timeStr).toLocaleString();
+            };
+        }
 
+        function reScroll(forceScroll) {
+            if (forceScroll)
+                chatbox.scrollTop = chatbox.scrollHeight;
+        }
+
+        function updateTitle() {
+            var newMessagesStr = "";
+            if (newMessages > 0)
+                newMessagesStr = "(" + newMessages + ") ";
+            setTimeout(function () { document.title = newMessagesStr + baseTitle; }, 100);
+        }
+
+        function handleVisibilityChange() {
+            if (!document[hidden]) {
+                newMessages = 0;
+                updateTitle();
+            }
+        }
+
+        var ChatStatus = { CONNECTED: 0, SLOW: 1, DISCONNECTED: 2 };
+
+        function setChatStatus(status) {
+            switch (status) {
+                case ChatStatus.CONNECTED:
+                    $("#connectionStatus").text("Connected").attr("class", "label label-success");
+                    break;
+                case ChatStatus.SLOW:
+                    $("#connectionStatus").text("Slow").attr("class", "label label-warning");
+                    break;
+                case ChatStatus.DISCONNECTED:
+                    $("#connectionStatus").text("Disconnected").attr("class", "label label-danger");
+                    break;
+            }
+        }
+
+        function startConnection() {
+            $.connection.hub.start().done(function () {
+                setChatStatus(ChatStatus.CONNECTED);
+                viewModel.getFromServer();
+                $("#connectionErrors").hide();
+            });
+        }
+
+        $(function () {
             if (Utils.getQueryAsBoolean("debug")) {
                 $.connection.hub.logging = true;
             }
@@ -327,6 +351,7 @@ These are duo angles for feeding orbs quickly.
             hub.client.addMessage = function (message) {
                 var forceScroll = chatbox.scrollHeight - chatbox.scrollTop - chatbox.clientHeight < forceScrollThreshold;
                 viewModel.messages.push(message);
+                viewModel.processMessage(viewModel.messages().length - 1);
                 reScroll(forceScroll);
                 MathJax.Hub.Queue(["Typeset", MathJax.Hub, $("#chatbox [data-jax=true]").last()[0]], [reScroll, forceScroll]);
 
@@ -344,6 +369,7 @@ These are duo angles for feeding orbs quickly.
                 message.user = selected.user;
                 var index = viewModel.messages.indexOf(selected);
                 viewModel.messages.splice(index, 1, message);
+                viewModel.processMessage(index);
                 MathJax.Hub.Queue(["Typeset", MathJax.Hub, $("#chatbox [data-jax=true]").last()[0]], [reScroll, forceScroll]);
             };
 
@@ -429,7 +455,7 @@ These are duo angles for feeding orbs quickly.
             });
 
             $(window).on("beforeunload", function () {
-                 setTimeout(function () { $.connection.hub.stop(); }, 0);
+                setTimeout(function () { $.connection.hub.stop(); }, 0);
             });
 
             $("#messageForm").submit(function (e) {
