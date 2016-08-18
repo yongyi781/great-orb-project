@@ -650,7 +650,7 @@ class GopUI {
         if (str == null) {
             return 0;
         }
-        
+
         if (str in GopUI.keyCodes) {
             return GopUI.keyCodes[str];
         }

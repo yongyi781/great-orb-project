@@ -1,5 +1,5 @@
 ﻿class GopUI3D {
-    static WaterZOffset = 0.02;
+    static waterZOffset = 0.02;
 
     playerColors = ["#08f", "#871450", "#148718", "#630D0D"];
     orbColor = "#dddd00";
@@ -310,7 +310,7 @@
                     geometries[1].mergeMesh(mesh);
                 } else if (tile === Tile.Water) {
                     mesh = new THREE.Mesh(waterGeom);
-                    mesh.position.set(x, y, GopUI3D.WaterZOffset);
+                    mesh.position.set(x, y, GopUI3D.waterZOffset);
                     geometries[2].mergeMesh(mesh);
                 }
                 // Walls
@@ -1354,7 +1354,7 @@ class OrbObject {
                 depthWrite: false
             })
         );
-        this.circle.position.z = -z + 2 * GopUI3D.WaterZOffset;
+        this.circle.position.z = -z + 2 * GopUI3D.waterZOffset;
         this.mesh.add(this.circle);
 
         let c = new THREE.Color(color as string);
