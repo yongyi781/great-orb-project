@@ -120,11 +120,6 @@ namespace GOP.Models
             });
         }
 
-        protected override void OnModelCreating(ModelBuilder builder)
-        {
-            base.OnModelCreating(builder);
-        }
-
         private string GetNameForIpAddress(string ipAddress) =>
             Nicknames.AsNoTracking().FirstOrDefault(n => n.IpAddress == ipAddress)?.Name ?? ipAddress;
     }
