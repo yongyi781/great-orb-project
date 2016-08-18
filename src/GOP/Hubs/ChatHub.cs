@@ -1,6 +1,7 @@
 ﻿using GOP.Models;
 using GOP.ViewModels;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.Extensions.DependencyInjection;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,12 +11,12 @@ namespace GOP.Hubs
 {
     public class ChatHub : Hub
     {
-        public ChatHub(ApplicationDbContext context)
-        {
-            DbContext = context;
-        }
+        private IServiceScopeFactory serviceScopeFactory;
 
-        public ApplicationDbContext DbContext { get; set; }
+        public ChatHub(IServiceScopeFactory serviceScopeFactory)
+        {
+            this.serviceScopeFactory = serviceScopeFactory;
+        }
 
         public static ConcurrentDictionary<string, ChatUser> ConnectedUsers { get; } = new ConcurrentDictionary<string, ChatUser>();
         public static IEnumerable<ChatUser> UniqueOnlineUsers => ConnectedUsers.Values
@@ -52,9 +53,10 @@ namespace GOP.Hubs
 
         private void BroadcastOnlineUsers()
         {
-            if (DbContext != null)
+            using (var scope = serviceScopeFactory.CreateScope())
             {
-                var users = UniqueOnlineUsers.Select(u => DbContext.GetChatUserOnlineView(u));
+                var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+                var users = UniqueOnlineUsers.Select(u => db.GetChatUserOnlineView(u));
                 Clients.All.UpdateOnlineUsers(users);
             }
         }
