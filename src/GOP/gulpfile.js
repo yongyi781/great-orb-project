@@ -1,4 +1,3 @@
-/// <binding />
 var gulp = require("gulp"),
     rimraf = require("rimraf"),
     concat = require("gulp-concat"),
@@ -6,62 +5,50 @@ var gulp = require("gulp"),
     rename = require("gulp-rename"),
     uglify = require("gulp-uglify");
 
-var paths = {
-    webroot: "./wwwroot/",
-    emulatorScripts: [
-        //"./wwwroot/js/polyfills.js",
-        "./wwwroot/js/Engine/Enums.js",
-        "./wwwroot/js/Engine/Point.js",
-        "./wwwroot/js/Engine/MersenneTwister.js",
-        "./wwwroot/js/Engine/AltarData.js",
-        "./wwwroot/js/Engine/GopObject.js",
-        "./wwwroot/js/Engine/GameAction.js",
-        "./wwwroot/js/Engine/GopBoard.js",
-        "./wwwroot/js/Engine/Orb.js",
-        "./wwwroot/js/Engine/Player.js",
-        "./wwwroot/js/Engine/GameState.js",
-        "./wwwroot/js/Engine/GopCanvas.js",
-        "./wwwroot/js/Engine/GameplayData.js"],
-    scripts: ["./Scripts/*.js", "./Scripts/tests/*.js"]
-};
+// Order is essential here.
+var engineScripts = [
+    "./wwwroot/js/Engine/Enums.js",
+    "./wwwroot/js/Engine/Point.js",
+    "./wwwroot/js/Engine/MersenneTwister.js",
+    "./wwwroot/js/Engine/AltarData.js",
+    "./wwwroot/js/Engine/GopObject.js",
+    "./wwwroot/js/Engine/GameAction.js",
+    "./wwwroot/js/Engine/GopBoard.js",
+    "./wwwroot/js/Engine/Orb.js",
+    "./wwwroot/js/Engine/Player.js",
+    "./wwwroot/js/Engine/GameState.js",
+    "./wwwroot/js/Engine/GopCanvas.js",
+    "./wwwroot/js/Engine/GameplayData.js"
+];
 
-paths.jsDest = paths.webroot + "js/";
-paths.emulatorJsDest = paths.webroot + "js/gop.js";
-paths.emulatorJsMinDest = paths.webroot + "js/gop.min.js";
-paths.js = paths.webroot + "js/**/*.js";
-paths.minJs = paths.webroot + "js/**/*.min.js";
-paths.css = paths.webroot + "css/**/*.css";
-paths.minCss = paths.webroot + "css/**/*.min.css";
-paths.concatJsDest = paths.webroot + "js/site.min.js";
-paths.concatCssDest = paths.webroot + "css/site.min.css";
-paths.gop3d = paths.webroot + "js/GopUI3D.js";
-paths.minGop3d = paths.webroot + "js/GopUI3D.min.js";
+var gopui3dScripts = "./wwwroot/js/GopUI3D/*.js";
 
-gulp.task("clean:js", cb => {
-    rimraf(paths.concatJsDest, cb);
-});
-
-gulp.task("clean:css", cb => {
-    rimraf(paths.concatCssDest, cb);
-});
-
-gulp.task("clean", ["clean:js", "clean:css"]);
+var filesToMinify = [
+    "./wwwroot/js/anglemap.js",
+    "./wwwroot/js/gop.js",
+    "./wwwroot/js/gopui.js",
+    "./wwwroot/js/gopui3d.js",
+    "./wwwroot/js/multiplayer.js",
+    "./wwwroot/js/utils.js"
+];
 
 gulp.task("engine:js", () => {
-    gulp.src(paths.emulatorScripts)
-        .pipe(concat(paths.emulatorJsDest))
-        .pipe(gulp.dest("."))
-        .pipe(rename(paths.emulatorJsMinDest))
-        .pipe(uglify())
+    gulp.src(engineScripts)
+        .pipe(concat("./wwwroot/js/gop.js"))
         .pipe(gulp.dest("."));
 });
 
-gulp.task("copy:js", ["engine:js"], () => {
-    //gulp.src(paths.scripts, { base: "Scripts" }).pipe(gulp.dest(paths.jsDest));
+gulp.task("gopui3d:js", () => {
+    gulp.src(gopui3dScripts)
+        .pipe(concat("./wwwroot/js/gopui3d.js"))
+        .pipe(gulp.dest("."));
 });
 
-gulp.task("min:gop3d", () => {
-    gulp.src(paths.gop3d).pipe(rename(paths.minGop3d)).pipe(uglify()).pipe(gulp.dest("."));
+gulp.task("min:js", () => {
+    gulp.src(filesToMinify)
+        .pipe(rename({ suffix: ".min" }))
+        .pipe(uglify())
+        .pipe(gulp.dest("./wwwroot/js/"));
 });
 
-gulp.task("default", ["engine:js", "min:gop3d"]);
+gulp.task("default", ["engine:js", "gopui3d:js"]);
