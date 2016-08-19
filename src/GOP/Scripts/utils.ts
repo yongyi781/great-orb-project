@@ -1,5 +1,5 @@
 ﻿namespace Utils {
-    export const youTubeRegex = /^(?:https?:\/{2})?(?:w{3}\.|m\.)?youtu(?:be)?\.(?:com|be)(?:\/watch\?v=|\/)([^\s&"]+)(?:&amp;feature=youtu\.be)?$/;
+    export const youTubeRegex = /^(?:https?:\/\/)?(?:www\.)?(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))((\w|-){11})(?:\S+)?$/;
     export const urlRegex = /\b(?:https?|ftp):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;*(){}\[\]]*[-A-Z0-9+&@#\/%=~_|;*(){}\[\]]/gim;
 
     /**
@@ -227,9 +227,9 @@
                 url: `https://www.googleapis.com/youtube/v3/videos?id=${id}&key=AIzaSyBSyv4ZxBcMN7o2nvFc5XCZ6hzxq3ANeRU&fields=items(snippet(title))&part=snippet`,
                 success: data => {
                     if (data.items.length > 0) {
-                        deferred.resolve(`<a target="_blank" href="${text}">[YouTube: ${data.items[0].snippet.title}]</a>`);
+                        deferred.resolve(`<a target="_blank" class="youtube" href="${text}">${data.items[0].snippet.title} - YouTube</a>`);
                     } else {
-                        deferred.resolve(`<a target="_blank" href="${text}">[Unknown YouTube video]</a>`);
+                        deferred.resolve(null);
                     }
                 },
                 error: () => {

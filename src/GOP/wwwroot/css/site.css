@@ -51,6 +51,10 @@ a:visited {
     color: #fff;
 }
 
+a.youtube {
+    color: #e89d9d;
+}
+
 label > input {
     font-weight: initial;
 }
