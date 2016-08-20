@@ -242,12 +242,14 @@ These are duo angles for feeding orbs quickly.
             });
 
             this.getFromServer = function () {
-                $.getJSON("/api/chat", { search: self.search(), numMessages: self.numMessagesToShow() }, function (data) {
-                    self.messages(data);
-                    self.processMessages();
-                    reScroll(true);
-                    MathJax.Hub.Queue(["Typeset", MathJax.Hub, "chatbox"], ["Typeset", MathJax.Hub, "chatboxOnlineUsers"], [reScroll, true]);
-                });
+                if (!Utils.isSearchCrawler()) {
+                    $.getJSON("/api/chat", { search: self.search(), numMessages: self.numMessagesToShow() }, function (data) {
+                        self.messages(data);
+                        self.processMessages();
+                        reScroll(true);
+                        MathJax.Hub.Queue(["Typeset", MathJax.Hub, "chatbox"], ["Typeset", MathJax.Hub, "chatboxOnlineUsers"], [reScroll, true]);
+                    });
+                }
             };
 
             this.processMessage = function (i) {
@@ -314,11 +316,13 @@ These are duo angles for feeding orbs quickly.
         }
 
         function startConnection() {
-            $.connection.hub.start().done(function () {
-                setChatStatus(ChatStatus.CONNECTED);
-                viewModel.getFromServer();
-                $("#connectionErrors").hide();
-            });
+            if (!Utils.isSearchCrawler()) {
+                $.connection.hub.start().done(function () {
+                    setChatStatus(ChatStatus.CONNECTED);
+                    viewModel.getFromServer();
+                    $("#connectionErrors").hide();
+                });
+            }
         }
 
         $(function () {

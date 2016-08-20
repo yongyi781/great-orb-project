@@ -112,9 +112,9 @@ namespace GOP.Controllers
             throw new Exception();
         }
 
-        public IActionResult Error()
+        public IActionResult Error(int id)
         {
-            return View("~/Views/Shared/Error.cshtml");
+            return View($"~/Views/Error/{id}.cshtml");
         }
     }
 }

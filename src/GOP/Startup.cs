@@ -64,7 +64,7 @@ namespace GOP
             loggerFactory.AddConsole(Configuration.GetSection("Logging"));
             loggerFactory.AddDebug();
 
-            //app.UseStatusCodePages();
+            app.UseStatusCodePagesWithReExecute("/Home/Error/{0}");
             // Add the following to the request pipeline only in development environment.
             if (env.IsDevelopment())
             {
@@ -75,7 +75,7 @@ namespace GOP
             {
                 // Add Error handling middleware which catches all application specific errors and
                 // sends the request to the following path or controller action.
-                app.UseStatusCodePages();
+                app.UseExceptionHandler("/Home/Error/500");
             }
 
             // Add cookie-based authentication to the request pipeline.
