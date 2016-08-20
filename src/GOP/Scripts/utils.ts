@@ -1,6 +1,6 @@
 ﻿namespace Utils {
-    export const youTubeRegex = /^(?:https?:\/\/)?(?:www\.)?(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))((\w|-){11})(?:\S+)?$/;
-    export const urlRegex = /\b(?:https?|ftp):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;*(){}\[\]]*[-A-Z0-9+&@#\/%=~_|;*(){}\[\]]/gim;
+    const youTubeRegex = /^(?:https?:\/\/)?(?:www\.)?(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))((\w|-){11})(?:\S+)?$/;
+    const urlRegex = /\b(?:https?|ftp):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;*(){}\[\]]*[-A-Z0-9+&@#\/%=~_|;*(){}\[\]]/gim;
 
     /**
      * Returns a random integer between minValue (inclusive) and maxValue (exclusive).
@@ -258,5 +258,12 @@
             });
         }
         return $.Deferred<string>().resolve(text).promise();
+    }
+
+    /**
+     * Tests if the current user agent is a search crawler.
+     */
+    export function isSearchCrawler() {
+        return /bot|googlebot|crawler|spider|robot|crawling/i.test(navigator.userAgent);
     }
 }
