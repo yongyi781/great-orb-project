@@ -218,6 +218,7 @@ artifacts/
 /src/GOP/wwwroot/images/**/
 /src/GOP/wwwroot/uploads/
 /src/GOP/wwwroot/uploads_old/
+/src/GOP/wwwroot/audio/
 /src/GOP/scripts/**/*.js
 /src/GOP/typings/
 /src/GOP/Views/Tools/Test.cshtml
