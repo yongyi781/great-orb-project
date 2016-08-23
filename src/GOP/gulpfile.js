@@ -44,11 +44,11 @@ gulp.task("gopui3d:js", () => {
         .pipe(gulp.dest("."));
 });
 
-gulp.task("min:js", () => {
+gulp.task("min:js", ["engine:js", "gopui3d:js"], () => {
     gulp.src(filesToMinify)
         .pipe(rename({ suffix: ".min" }))
         .pipe(uglify())
         .pipe(gulp.dest("./wwwroot/js/"));
 });
 
-gulp.task("default", ["engine:js", "gopui3d:js"]);
+gulp.task("default", ["min:js"]);
