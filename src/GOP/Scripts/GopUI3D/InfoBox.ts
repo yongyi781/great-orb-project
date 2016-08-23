@@ -7,6 +7,8 @@ class InfoBox {
     saveButton: HTMLButtonElement;
     saveTimeoutHandle: number;
 
+    private hasSaved = false;
+
     constructor(private gopui: GopUI3D, public allowSave = false) { }
 
     init() {
@@ -61,9 +63,10 @@ class InfoBox {
      * @param delay The amount of milliseconds to delay resetting the save state by.
      */
     resetSaveState(delay: number) {
-        if (this.saveButton != null && this.saveButton.disabled && this.saveTimeoutHandle == null) {
+        if (this.hasSaved && this.saveTimeoutHandle == null) {
             this.saveTimeoutHandle = setTimeout(() => {
                 this.saveTimeoutHandle = null;
+                this.hasSaved = false;
                 this.saveButton.disabled = false;
                 this.saveButton.textContent = "Save";
             }, delay);
@@ -71,6 +74,7 @@ class InfoBox {
     }
 
     tick() {
+        this.hasSaved = true;
         this.resetSaveState(60000);
     }
 
