@@ -790,9 +790,8 @@
                 altar: this.gameState.altar,
                 score: this.gameState.score,
                 code: this.game.gameplayData.toString()
-            }, function (data) {
+            }, function () {
                 button.textContent = "Saved";
-                data.timestamp = new Date(data.timestamp);
             });
         } else {
             $.post("/api/multiplayer/solo", {

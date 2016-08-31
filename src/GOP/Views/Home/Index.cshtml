@@ -43,7 +43,10 @@
     <div class="panel-body">
         <div class="chat-top-panel">
             <div class="form-inline">
-                <input type="search" id="search" class="form-control" placeholder="Search messages" data-bind="value: search" />
+                @if (User.Identity.IsAuthenticated)
+                {
+                    <input type="search" id="search" class="form-control" placeholder="Search messages" data-bind="value: search" />
+                }
                 <select id="showLastMessagesSelect" class="form-control" data-bind="value: numMessagesToShow">
                     <option value="150" selected>Show last 150 messages</option>
                     <option value="500">Show last 500 messages</option>

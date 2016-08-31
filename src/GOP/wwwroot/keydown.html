@@ -1,13 +1,35 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<title>Keydown analyzing</title>
+	<title>Keydown Testing</title>
 </head>
 <body>
+    <h1>Keydown Testing</h1>
     <input id="input" />
+    <div id="time"></div>
+    <div id="keydown"></div>
+    <div id="keyup"></div>
     <script>
+        var keydownTime;
+        var keyupTime;
+
+        function updateDisplay() {
+            var diff = keyupTime - keydownTime;
+            document.querySelector("#time").textContent = diff.toPrecision(4) + " ms";
+        }
+
         document.querySelector("#input").addEventListener("keydown", function (e) {
-            console.dir(e);
+            e.preventDefault();
+            keydownTime = performance.now();
+            //console.dir("Key down: " + e);
+            document.querySelector("#keydown").textContent += "!";
+        });
+        document.querySelector("#input").addEventListener("keyup", function (e) {
+            e.preventDefault();
+            keyupTime = performance.now();
+            updateDisplay();
+            //console.dir("Key up: " + e);
+            document.querySelector("#keydown").textContent = "";
         });
     </script>
 </body>

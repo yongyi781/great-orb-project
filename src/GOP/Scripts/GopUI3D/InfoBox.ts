@@ -63,7 +63,7 @@ class InfoBox {
      * @param delay The amount of milliseconds to delay resetting the save state by.
      */
     resetSaveState(delay: number) {
-        if (this.hasSaved && this.saveTimeoutHandle == null) {
+        if (this.saveTimeoutHandle == null) {
             this.saveTimeoutHandle = setTimeout(() => {
                 this.saveTimeoutHandle = null;
                 this.hasSaved = false;
@@ -74,11 +74,13 @@ class InfoBox {
     }
 
     tick() {
-        this.hasSaved = true;
-        this.resetSaveState(60000);
+        if (this.hasSaved) {
+            this.resetSaveState(3000);
+        }
     }
 
     onSaveClicked(e: MouseEvent) {
+        this.hasSaved = true;
         this.gopui.onSaveClicked();
     }
 }
