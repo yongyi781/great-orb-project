@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>XP Decimals</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" />
+    <style>
+        #xpValues {
+            width: 100px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>XP Decimals</h1>
+        <label for="xpValues">Enter XP values here:</label> <textarea id="xpValues" class="form-control" rows="11"></textarea>
+        <p id="result"></p>
+    </div>
+    <script src="https://code.jquery.com/jquery-3.1.0.min.js"></script>
+    <script>
+        var floorSequences = [];
+        /**
+         * Gets the sequence { [(start + n*increment)/10] } from n=1 to length.
+         */
+        function getFloorSeq(length, increment, start) {
+            var arr = [];
+            start %= 10;
+            for (var i = 0; i < length; i++) {
+                start += increment;
+                arr.push(Math.floor(start / 10));
+                start %= 10;
+            }
+            return arr;
+        }
+
+        function getAllFloorSeqs(length) {
+            var arrs = [];
+
+            for (var inc = 0; inc < 10; inc++) {
+                var arr = [];
+                for (var start = 0; start < 10; start++) {
+                    arr.push(getFloorSeq(length, inc, start));
+                }
+                arrs.push(arr);
+            }
+
+            return arrs;
+        }
+
+        function isArrayPrefix(largerArray, smallerArray) {
+            if (smallerArray.length > largerArray.length)
+                return false;
+
+            for (var i = 0; i < smallerArray.length; i++)
+                if (smallerArray[i] !== largerArray[i])
+                    return false;
+            return true;
+        }
+
+        floorSequences = getAllFloorSeqs(10);
+
+        document.querySelector("#xpValues").addEventListener("keyup", function (e) {
+            var text = e.currentTarget.value;
+            var lines = text.split("\n");
+            // Remove the last line (this is for enhanced user experience), remove all remaining empty lines,
+            // and take first 10.
+            lines.splice(-1, 1);
+            lines = lines.filter(function (x) { return x.length > 0; }).slice(0, 10);
+
+            var xps = lines.map(function (x) { return +x; });
+            if (xps.findIndex(function (x) { return isNaN(x); }) !== -1) {
+                document.querySelector("#result").textContent = "Non-numeric data";
+                return;
+            }
+            var min = Math.min.apply(null, xps);
+            var xps2 = xps.map(function (x) { return x - min; });
+            if (xps2.findIndex(function (x) { return x !== 0 && x !== 1; }) !== -1) {
+                document.querySelector("#result").textContent = "Values are too far apart";
+                return;
+            }
+
+            // Find possible increments!
+            var possibilities = [];
+            for (var inc = 0; inc < 10; inc++) {
+                if (floorSequences[inc].findIndex(function (seq) { return isArrayPrefix(seq, xps2); }) !== -1) {
+                    possibilities.push(min + inc / 10);
+                }
+            }
+
+            if (possibilities.length === 0) {
+                document.querySelector("#result").textContent = "No possible XPs!";
+            } else {
+                document.querySelector("#result").textContent = "Possible XPs: " + possibilities.join(", ");
+            }
+        });
+    </script>
+</body>
+</html>

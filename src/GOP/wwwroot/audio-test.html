@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Audio Test Page</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" />
+    <style>
+        .container input[type=number] {
+            width: 100px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Audio Test</h1>
+        <div>
+            <div class="form-group form-inline">
+                <label for="volume1">Frequency 1:</label> <input type="number" id="freq1" class="form-control" value="698" />
+                <label for="volume1">Volume 1:</label> <input type="number" id="volume1" class="form-control" value="-20" min="-100" max="0" />
+            </div>
+            <div class="form-group form-inline">
+                <label for="volume1">Frequency 2:</label> <input type="number" id="freq2" class="form-control" value="740" />
+                <label for="volume2">Volume 2:</label> <input type="number" id="volume2" class="form-control" value="-24" min="-100" max="0" />
+            </div>
+        </div>
+        <button id="play" class="btn btn-lg btn-primary">Play</button>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.1.1.min.js" integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8=" crossorigin="anonymous"></script>
+    <script src="lib/tone/build/Tone.js"></script>
+    <script type="text/javascript">
+        var rampTime = 0.025;
+        var synth, merge;
+
+        function playTwoNotes(freq1, freq2, db1, db2, onTime, offTime, now, repetitions) {
+            if (now == null) now = Tone.now();
+            if (repetitions == null) repetitions = 1;
+
+            var delay = 0.01;
+            now += delay;
+            for (var i = 0; i < repetitions; i++) {
+                synth.triggerAttackRelease(freq1, onTime, now + 2 * i * (onTime + offTime), synth.dbToGain(db1));
+                synth.triggerAttackRelease(freq2, onTime, now + (2 * i + 1) * (onTime + offTime), synth.dbToGain(db2));
+            }
+        }
+
+        function init() {
+            if (synth != null)
+                return;
+
+            synth = new Tone.Synth({
+                oscillator: { type: "sine" },
+                envelope: {
+                    attack: rampTime,
+                    attackCurve: "sine",
+                    decay: 0,
+                    sustain: 1,
+                    release: rampTime,
+                    releaseCurve: "sine"
+                }
+            });
+            merge = new Tone.Merge().toMaster();
+            synth.connect(merge.left);
+        }
+
+        var onTime = 0.25;
+        var offTime = 0.05;
+        var offset = 2 * (onTime + offTime);
+
+        function playPattern(freq1, freq2, volume1, volume2, time) {
+            if (time == null) time = Tone.now();
+
+            init();
+
+            playTwoNotes(freq1, freq2, volume1, volume2, onTime, offTime, time, 2);
+            playTwoNotes(freq2, freq1, volume1, volume2, onTime, offTime, time + 2 * offset, 2);
+        }
+
+        document.querySelector("#play").addEventListener("click", function() {
+            playPattern(+$("#freq1").val(), +$("#freq2").val(), +$("#volume1").val(), +$("#volume2").val());
+            // var freq = 440;
+            // var f = Math.pow(2, 1/12);
+            // for (var time = Tone.now() + 10; freq < 1760; freq *= f, time += 4 * offset) {
+            //     playPattern(freq, freq * f, -20, -24, time);
+            // }
+        });
+    </script>
+</body>
+</html>

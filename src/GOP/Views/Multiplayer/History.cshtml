@@ -1,5 +1,4 @@
-﻿@model MultiplayerHistoryViewModel
-@{
+﻿@{
     ViewData["Title"] = "Multiplayer History";
     ViewData["UseDataTable"] = true;
 }
@@ -31,21 +30,20 @@
     <script src="~/js/gop.min.js"></script>
     <script src="~/js/utils.min.js"></script>
     <script>
-        var games, table;
+        var table;
 
-        $(function () {
-            var GameModes = ["Nobody", "Solo", "Duo", "Trio", "Quad"];
+        var GameModes = ["Nobody", "Solo", "Duo", "Trio", "Quad"];
 
-            $("#gamesTable").on("click", "tbody > tr", function () {
-                window.open("/Watch/Multiplayer/" + $(this).children("td:first").text());
-            });
+        $("#gamesTable").on("click", "tbody > tr", function () {
+            window.open("/Watch/Multiplayer/" + $(this).children("td:first").text());
+        });
 
-            games = @Json.Serialize(Model.Games);
+        $.getJSON("/api/multiplayer", function (games) {
             games.forEach(function (game) {
                 game.timestamp = new Date(game.timestamp);
             });
             $.fn.dataTable.ext.search.push(
-                function(settings, data, dataIndex) {
+                function (settings, data, dataIndex) {
                     var username = $("#userSearch").val().toLowerCase();
                     var numOrbs = parseInt($("#numOrbsSearch").val(), 10);
                     var seed = parseInt($("#seedSearch").val(), 10);
@@ -102,7 +100,7 @@
                     ]
                 });
 
-                $("#searchDiv > input").on("input", function() { table.draw(); });
+                $("#searchDiv > input").on("input", function () { table.draw(); });
             });
         });
     </script>

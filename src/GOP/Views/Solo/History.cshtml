@@ -34,62 +34,64 @@
             window.open("/Watch/Solo/" + $(this).children("td:first").text());
         });
 
-        var games = @Json.Serialize(Model.Games);
-        games.forEach(function (game) {
-            game.timestamp = new Date(game.timestamp);
-        });
 
-        $.fn.dataTable.ext.search.push(
-            function(settings, data, dataIndex) {
-                var username = $("#userSearch").val().toLowerCase();
-                var numOrbs = parseInt($("#numOrbsSearch").val(), 10);
-                var seed = parseInt($("#seedSearch").val(), 10);
-                var altar = parseInt($("#altarSearch").val(), 10);
-                var dataUsername = data[2].toLowerCase();
-                var dataNumOrbs = parseInt(data[3], 10);
-                var dataSeed = parseInt(data[4], 10);
-                var dataAltar = parseInt(data[5], 10);
-                return dataUsername.indexOf(username) > -1 &&
-                    (isNaN(numOrbs) || dataNumOrbs == numOrbs) &&
-                    (isNaN(seed) || dataSeed === seed) &&
-                    (isNaN(altar) || dataAltar === altar);
-            }
-        );
-
-        Utils.loadAltarNames().always(function () {
-            table = $("#gamesTable").DataTable({
-                data: games,
-                deferRender: true,
-                columns: [
-                    { data: "id" },
-                    {
-                        data: "timestamp",
-                        render: function (data, type, row) {
-                            if (type === "display")
-                                return data.toLocaleString();
-                            return data;
-                        }
-                    },
-                    { data: "username" },
-                    { data: "numberOfOrbs" },
-                    { data: "seed" },
-                    {
-                        data: "altar",
-                        render: function (data, type, row) {
-                            if (type === "display") {
-                                if (AltarData[data] != null) {
-                                    return AltarData[data].name;
-                                }
-                                return data + " (custom)";
-                            }
-                            return data;
-                        }
-                    },
-                    { data: "score" }
-                ]
+        $.getJSON("/api/solo", function (games) {
+            games.forEach(function (game) {
+                game.timestamp = new Date(game.timestamp);
             });
 
-            $("#searchDiv > input").on("input", function() { table.draw(); });
-        })
+            $.fn.dataTable.ext.search.push(
+                function(settings, data, dataIndex) {
+                    var username = $("#userSearch").val().toLowerCase();
+                    var numOrbs = parseInt($("#numOrbsSearch").val(), 10);
+                    var seed = parseInt($("#seedSearch").val(), 10);
+                    var altar = parseInt($("#altarSearch").val(), 10);
+                    var dataUsername = data[2].toLowerCase();
+                    var dataNumOrbs = parseInt(data[3], 10);
+                    var dataSeed = parseInt(data[4], 10);
+                    var dataAltar = parseInt(data[5], 10);
+                    return dataUsername.indexOf(username) > -1 &&
+                        (isNaN(numOrbs) || dataNumOrbs == numOrbs) &&
+                        (isNaN(seed) || dataSeed === seed) &&
+                        (isNaN(altar) || dataAltar === altar);
+                }
+            );
+
+            Utils.loadAltarNames().always(function () {
+                table = $("#gamesTable").DataTable({
+                    data: games,
+                    deferRender: true,
+                    columns: [
+                        { data: "id" },
+                        {
+                            data: "timestamp",
+                            render: function (data, type, row) {
+                                if (type === "display")
+                                    return data.toLocaleString();
+                                return data;
+                            }
+                        },
+                        { data: "username" },
+                        { data: "numberOfOrbs" },
+                        { data: "seed" },
+                        {
+                            data: "altar",
+                            render: function (data, type, row) {
+                                if (type === "display") {
+                                    if (AltarData[data] != null) {
+                                        return AltarData[data].name;
+                                    }
+                                    return data + " (custom)";
+                                }
+                                return data;
+                            }
+                        },
+                        { data: "score" }
+                    ]
+                });
+
+                $("#searchDiv > input").on("input", function() { table.draw(); });
+            })
+        });
     </script>
 }

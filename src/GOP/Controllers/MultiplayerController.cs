@@ -31,14 +31,15 @@ namespace GOP.Controllers
 
         public IActionResult History()
         {
-            var multiplayerGames = GetMultiplayerGames();
-
-            return View(new MultiplayerHistoryViewModel { Games = multiplayerGames });
+            return View();
         }
 
         [HttpGet("api/[controller]")]
         public IQueryable<MultiplayerGameView> Get()
         {
+            DbContext.CacheViewUsers = true;
+            DbContext.LoadUsersIntoCache();
+
             return GetMultiplayerGames();
         }
 

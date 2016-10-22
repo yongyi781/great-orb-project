@@ -350,7 +350,7 @@ class GopUI {
     restartGame(code?: string, seed?: number, altar?: Altar, playerIndex = 0, redraw = true) {
         this.isGameRunning = false;
 
-        if (code !== void 0) {
+        if (code != null) {
             this.gameplayData = GameplayData.parse(code);
             let startInfo = this.gameplayData.startInfo;
             this.gameState.altar = startInfo.altar;
@@ -363,7 +363,7 @@ class GopUI {
             });
             this.isGameRunning = true;
         } else {
-            if (seed !== void 0) {
+            if (seed != null) {
                 this.gameState.seed = seed;
             }
             if (altar in AltarData) {

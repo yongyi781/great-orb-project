@@ -1,91 +1,97 @@
 ﻿<!DOCTYPE html>
 <html>
 <head>
-    <title>Adaptive Frequency Discrimination Experiment</title>
-    <link href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" rel="stylesheet" />
+    <meta charset="utf-8" />
+    <title>Frequency Discrimination Testing</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" />
     <style>
-        input,
-        select,
-        textarea {
-            max-width: 150px;
+        .container input[type=number] {
+            width: 100px;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Adaptive Frequency Discrimination Experiment</h1>
-
-        <form id="parameters" class="form-horizontal" role="form" action="javascript:void(0)" data-bind="visible: isConfiguring, with: parameters">
+        <h1>Frequency Discrimination Testing</h1>
+        <div class="form-horizontal" data-bind="visible: isConfiguring, with: parameters">
             <h2>Instructions</h2>
-            <p>Enter parameters in the fields below, then click begin.</p>
-            <h2>Parameters</h2>
+            <p>Enter parameters in the fields below, then click begin. It is recommended to test only one ear at a time.</p>
             <div class="form-group">
-                <label class="control-label col-md-4">Ear:</label>
-                <select class="form-control" id="ear" data-bind="value: ear">
-                    <option value="b">Both</option>
-                    <option value="l">Left</option>
-                    <option value="r">Right</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label class="control-label col-md-4">Calibration (dB):</label>
-                <input class="form-control" type="number" data-bind="value: calibration" autocomplete="off" />
-            </div>
-            <div class="form-group">
-                <label class="control-label col-md-4">Frequency (Hz):</label>
-                <input class="form-control" type="number" data-bind="value: frequency" min="10" max="20000" step="0.01" autocomplete="off" />
-            </div>
-            <div class="form-group">
-                <label class="control-label col-md-4">Initial difference (Hz):</label>
-                <input class="form-control" type="number" data-bind="value: initialFreqDiff" min="0" step="0.01" autocomplete="off" />
-            </div>
-            <div class="form-group">
-                <label class="control-label col-md-4">Use random level?</label>
-                <input class="checkbox checkbox-inline" type="checkbox" data-bind="checked: useRandomLevel" />
-            </div>
-            <div class="form-group">
-                <label class="control-label col-md-4" data-bind="text: toneLevelLabel1()"></label>
-                <input class="form-control" type="number" data-bind="value: toneMinLevel, attr: { min: minLevel() - calibration(), max: maxLevel() - calibration() }" autocomplete="off" />
-            </div>
-            <div class="form-group">
-                <label class="control-label col-md-4" data-bind="text: toneLevelLabel2()"></label>
-                <input class="form-control" type="number" data-bind="value: toneMaxLevel, attr: { min: minLevel() - calibration(), max: maxLevel() - calibration() }" autocomplete="off" />
-            </div>
-            <div class="form-group">
-                <label class="control-label col-md-4">Duration (ms):</label>
-                <input class="form-control" type="number" data-bind="value: duration" min="0" max="20000" autocomplete="off" />
-            </div>
-            <!--<div class="form-group">
-                    <label class="control-label col-md-4">Noise level (dB SPL):</label>
-                    <input class="form-control" type="number" data-bind="value: noiseLevel, attr: { min: minLevel() - calibration(), max: maxLevel() - calibration() }" autocomplete="off" />
-            </div>
-            <div class="form-group">
-                <label class="control-label col-md-4">Noise low pass cutoff (Hz):</label>
-                <input class="form-control" type="number" data-bind="value: noiseLpf" min="-1" max="20000" autocomplete="off" />
-            </div>
-            <div class="form-group">
-                <label class="control-label col-md-4">Noise high pass cutoff (Hz):</label>
-                <input class="form-control" type="number" data-bind="value: noiseHpf" min="-1" max="20000" autocomplete="off" />
-            </div>-->
-            <div class="form-group">
-                <label class="control-label col-md-4">Show feedback?</label>
-                <input class="checkbox checkbox-inline" type="checkbox" data-bind="checked: showFeedback" />
-            </div>
-            <div class="form-group">
-                <label class="control-label col-md-4">Show audio player?</label>
-                <input class="checkbox checkbox-inline" type="checkbox" data-bind="checked: showAudioPlayer" />
-            </div>
-            <div class="form-group">
-                <div class="col-md-offset-4 col-md-8">
-                    <button class="btn btn-default" id="beginButton">Begin</button>
+                <label class="control-label col-sm-3">Ear:</label>
+                <div id="ear" class="form-inline col-sm-9">
+                    <div class="checkbox">
+                        <label>
+                            <input type="checkbox" data-bind="checked: leftEar">
+                            Left
+                        </label>
+                    </div>
+                    <div class="checkbox">
+                        <label>
+                            <input type="checkbox" data-bind="checked: rightEar">
+                            Right
+                        </label>
+                    </div>
                 </div>
             </div>
-        </form>
+            <div class="form-group">
+                <label class="control-label col-sm-3">Calibration (dB):</label>
+                <div class="col-sm-9">
+                    <input class="form-control" type="number" data-bind="value: calibration" autocomplete="off" />
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-sm-3">Frequency (Hz):</label>
+                <div class="col-sm-9">
+                    <input class="form-control" type="number" data-bind="value: frequency" min="10" max="20000" step="0.01" autocomplete="off" />
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-sm-3">Initial difference (Hz):</label>
+                <div class="col-sm-9">
+                    <input class="form-control" type="number" data-bind="value: initialFreqDiff" min="0" step="0.01" autocomplete="off" />
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-sm-3">Use random level?</label>
+                <div class="col-sm-9">
+                    <input class="checkbox checkbox-inline" type="checkbox" data-bind="checked: useRandomLevel" />
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-sm-3" data-bind="text: toneLevelLabel1()"></label>
+                <div class="col-sm-9">
+                    <input class="form-control" type="number" data-bind="value: toneMinLevel, attr: { min: minLevel() - calibration(), max: maxLevel() - calibration() }" autocomplete="off" />
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-sm-3" data-bind="text: toneLevelLabel2()"></label>
+                <div class="col-sm-9">
+                    <input class="form-control" type="number" data-bind="value: toneMaxLevel, attr: { min: minLevel() - calibration(), max: maxLevel() - calibration() }" autocomplete="off" />
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-sm-3">Duration (ms):</label>
+                <div class="col-sm-9">
+                    <input class="form-control" type="number" data-bind="value: duration" min="0" max="20000" autocomplete="off" />
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-sm-3">Show feedback?</label>
+                <div class="col-sm-9">
+                    <input class="checkbox checkbox-inline" type="checkbox" data-bind="checked: showFeedback" />
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-sm-offset-3 col-sm-9">
+                    <button class="btn btn-primary" id="beginButton" data-bind="enable: leftEar() || rightEar()">Begin</button>
+                </div>
+            </div>
+        </div>
         <div id="experiment" data-bind="visible: running" style="display: none">
             <h2>Which tone was higher?</h2>
             <div>
-                <button id="lowerButton" class="btn btn-primary" data-bind="disable: isProcessing" value="first">First</button>
-                <button id="higherButton" class="btn btn-primary" data-bind="disable: isProcessing" value="second">Second</button>
+                <button id="lowerButton" class="btn btn-primary" value="first">First</button>
+                <button id="higherButton" class="btn btn-primary" value="second">Second</button>
             </div>
         </div>
         <div id="results" data-bind="visible: showResults, with: results" style="display: none">
@@ -134,9 +140,9 @@
                 <tbody data-bind="foreach: results.history.slice(0).reverse()">
                     <tr>
                         <td data-bind="text: id + 1"></td>
-                        <td data-bind="text: freqDiff"></td>
-                        <td data-bind="text: toneDb1"></td>
-                        <td data-bind="text: toneDb2"></td>
+                        <td data-bind="text: freqDiff.toFixed(3)"></td>
+                        <td data-bind="text: toneDb1.toFixed(3)"></td>
+                        <td data-bind="text: toneDb2.toFixed(3)"></td>
                         <td data-bind="text: correctAnswer"></td>
                         <td data-bind="text: correct ? 'Correct' : 'Incorrect'"></td>
                         <td data-bind="text: turnedAround ? 'Yes' : ''"></td>
@@ -148,266 +154,254 @@
             <h2>Experiment JSON</h2>
             <pre data-bind="text: ko.toJSON(results, null, 2)"></pre>
         </div>
-        <div data-bind="visible: running" style="display: none">
-            <h2>Sound Generator Result</h2>
-            <div id="serverResult"></div>
-            <div id="soundspan"></div>
-        </div>
     </div>
 
-    <script src="http://code.jquery.com/jquery-1.11.0.min.js"></script>
-    <script src="http://cdnjs.cloudflare.com/ajax/libs/knockout/3.3.0/knockout-min.js"></script>
-    <script src="http://balsatree.mit.edu/SoundProcessor/SoundProcessorBeta.js"></script>
-    <script src="http://balsatree.mit.edu/SoundProcessor/soundgen2.js"></script>
+    <script src="https://code.jquery.com/jquery-3.1.1.min.js" integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8=" crossorigin="anonymous"></script>
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/knockout/3.4.0/knockout-min.js"></script>
+    <script src="https://tonejs.github.io/CDN/latest/Tone.js"></script>
+
     <script>
-        var soundgen_callback = (function ($) {
-            function soundgen_callback(obj) {
-                if (obj.result === "success") {
-                    // $("#soundspan").html("<embed src='" + obj.sound + "' volume='0'" + (experimentViewModel.parameters.showAudioPlayer() ? "" : " width='1' height='1' ") + "autostart='true' loop='false' />");
-                    $("#soundspan").html("<audio src='" + obj.sound + "' volume='1'" + (experimentViewModel.parameters.showAudioPlayer() ? " controls " : "") + "autoplay />");
-                    $("#serverResult").html("Success! Server processing time: " + obj.statistics.gentime);
-                    experimentViewModel.isProcessing(false);
+        var rampTime = 0.01;
+        var merge = new Tone.Merge().toMaster();
+        var synth = new Tone.Synth({
+            oscillator: { type: "sine" },
+            envelope: {
+                attack: rampTime,
+                attackCurve: "sine",
+                decay: 0,
+                sustain: 1,
+                release: rampTime,
+                releaseCurve: "sine"
+            }
+        });
+
+        function randomFloat(min, max) {
+            return min + Math.random() * (max - min);
+        }
+
+        function playTwoNotes(freq1, freq2, db1, db2, onTime, offTime, repetitions) {
+            var delay = 0.01;
+            var now = Tone.now() + delay;
+            for (var i = 0; i < repetitions; i++) {
+                synth.triggerAttackRelease(freq1, onTime, now + 2 * i * (onTime + offTime), synth.dbToGain(db1));
+                synth.triggerAttackRelease(freq2, onTime, now + (2 * i + 1) * (onTime + offTime), synth.dbToGain(db2));
+            }
+        }
+
+        // This is to force numbers entered in text fields to be interpreted as JavaScript numbers.
+        ko.numericObservable = function (initialValue) {
+            var actual = ko.observable(initialValue);
+            var result = ko.dependentObservable({
+                read: function () {
+                    return actual();
+                },
+                write: function (newValue) {
+                    var parsedValue = parseFloat(newValue);
+                    actual(isNaN(parsedValue) ? newValue : parsedValue);
                 }
-                else
-                    $("#serverResult").html(obj.result);
-            }
+            });
 
-            function randomFloat(min, max) {
-                return min + Math.random() * (max - min);
-            }
+            return result;
+        };
 
-            function randomInt(min, max) {
-                return Math.floor(randomFloat(min, max));
-            }
+        function ParameterViewModel() {
+            var self = this;
 
-            // This is to force numbers entered in text fields to be interpreted as JavaScript numbers.
-            ko.numericObservable = function (initialValue) {
-                var actual = ko.observable(initialValue);
-                var result = ko.dependentObservable({
-                    read: function () {
-                        return actual();
-                    },
-                    write: function (newValue) {
-                        var parsedValue = parseFloat(newValue);
-                        actual(isNaN(parsedValue) ? newValue : parsedValue);
-                    }
-                });
+            this.leftEar = ko.observable(true);
+            this.rightEar = ko.observable(false);
+            this.calibration = ko.numericObservable(-115);
+            this.frequency = ko.numericObservable(1000);
+            this.initialFreqDiff = ko.numericObservable(250);
+            this.useRandomLevel = ko.observable(true);
+            this.toneMinLevel = ko.numericObservable(98);
+            this.toneMaxLevel = ko.numericObservable(102);
+            this.skipTurnarounds = 3;
+            this.maxTurnarounds = 9;
+            this.duration = ko.numericObservable(250);
+            this.showFeedback = ko.observable(true);
 
-                return result;
+            // Unused for now
+            this.noiseLevel = ko.numericObservable(0);
+            this.noiseLpf = ko.numericObservable(4000);
+            this.noiseHpf = ko.numericObservable(100);
+
+            this.riseTime = function () { return Math.min(25, this.duration() / 2); };
+            this.onTime = function () { return this.duration(); };
+            this.fallTime = function () { return Math.min(25, this.duration() / 2); };
+
+            this.minLevel = function () { return -300; };
+            this.maxLevel = function () { return 0; };
+
+            this.toneLevelLabel1 = function () {
+                return self.useRandomLevel() ? "Tone min level (dB SPL)" : "Tone level 1 (dB SPL)";
             };
 
-            function ParameterViewModel() {
-                var self = this;
+            this.toneLevelLabel2 = function () {
+                return self.useRandomLevel() ? "Tone max level (dB SPL)" : "Tone level 2 (dB SPL)";
+            };
 
-                this.ear = 'l';
-                this.calibration = ko.numericObservable(-115);
-                this.frequency = ko.numericObservable(1000);
-                this.initialFreqDiff = ko.numericObservable(1000);
-                this.useRandomLevel = ko.observable(true);
-                this.toneMinLevel = ko.numericObservable(98);
-                this.toneMaxLevel = ko.numericObservable(102);
-                this.skipTurnarounds = 3;
-                this.maxTurnarounds = 9;
-                this.duration = ko.numericObservable(40);
-                this.showFeedback = ko.observable(true);
-                this.showAudioPlayer = ko.observable(false);
+            this.toneDuration = function () { return this.riseTime() + this.onTime() + this.fallTime(); };
+            this.gapDuration = function () { return 400; };
+            this.sampleRate = function () { return 22050; };
+        }
 
-                // Unused for now
-                this.noiseLevel = ko.numericObservable(0);
-                this.noiseLpf = ko.numericObservable(4000);
-                this.noiseHpf = ko.numericObservable(100);
+        function ResultsViewModel(parameters) {
+            var self = this;
 
-                this.riseTime = function () { return Math.min(25, this.duration() / 10); };
-                this.onTime = function () { return this.duration(); };
-                this.fallTime = function () { return Math.min(25, this.duration() / 10); };
+            this.parameters = parameters;
+            this.history = ko.observableArray();
 
-                this.minLevel = function () { return -300; };
-                this.maxLevel = function () { return 0; };
+            // Skips the first 'skipTurnarounds' turnarounds.
+            this.turnaroundValues = ko.computed(function () {
+                var turnarounds = self.history().filter(function (x) { return x.turnedAround; });
+                return turnarounds.slice(parameters.skipTurnarounds, turnarounds.length).map(function (x) { return x.freqDiff; });
+            });
 
-                this.toneLevelLabel1 = function () {
-                    return self.useRandomLevel() ? "Tone min level (dB SPL)" : "Tone level 1 (dB SPL)";
-                };
+            this.jnd = ko.computed(function () {
+                var values = self.turnaroundValues();
+                if (values.length === 0)
+                    return undefined;
+                return values.reduce(function (prev, curr) { return prev + curr; }) / values.length;
+            });
 
-                this.toneLevelLabel2 = function () {
-                    return self.useRandomLevel() ? "Tone max level (dB SPL)" : "Tone level 2 (dB SPL)";
-                };
+            this.stddev = ko.computed(function () {
+                var values = self.turnaroundValues();
+                if (values.length <= 1)
+                    return undefined;
 
-                this.toneDuration = function () { return this.riseTime() + this.onTime() + this.fallTime(); };
-                this.gapDuration = function () { return 400; };
-                this.sampleRate = function () { return 22050; };
-            }
+                var avg = self.jnd();
+                return Math.sqrt(values.reduce(function (prev, curr) { return prev + (curr - avg) * (curr - avg); }, 0) / (values.length - 1));
+            });
+        }
 
-            function ResultsViewModel(parameters) {
-                var self = this;
+        function ExperimentViewModel() {
+            this.parameters = new ParameterViewModel();
+            this.results = new ResultsViewModel(this.parameters);
 
-                this.parameters = parameters;
-                this.history = ko.observableArray();
+            this.toneDb1 = 0;
+            this.toneDb2 = 0;
+            this.currentFreqDiff = 0;
+            // freqDiff_(n+1)/freqDiff_n = 2^(+/- stepSize)
+            this.numTurns = 0;
+            this.numCorrectSinceChange = 0;
 
-                // Skips the first 'skipTurnarounds' turnarounds.
-                this.turnaroundValues = ko.computed(function () {
-                    var turnarounds = self.history().filter(function (x) { return x.turnedAround; });
-                    return turnarounds.slice(parameters.skipTurnarounds, turnarounds.length).map(function (x) { return x.freqDiff; });
-                });
+            this.correctAnswer = "";
+            this.lastChangeDir = 0;    // 1 is easier, -1 is harder.
 
-                this.jnd = ko.computed(function () {
-                    var values = self.turnaroundValues();
-                    if (values.length === 0)
-                        return undefined;
-                    return values.reduce(function (prev, curr) { return prev + curr; }) / values.length;
-                });
+            this.isConfiguring = ko.observable(true);
+            this.running = ko.observable(false);
+            this.showResults = ko.observable(false);
 
-                this.stddev = ko.computed(function () {
-                    var values = self.turnaroundValues();
-                    if (values.length <= 1)
-                        return undefined;
+            this.playSound = function () {
+                var reverse = this.correctAnswer === "first";
+                var xToneDb1 = this.toneDb1 + this.parameters.calibration();
+                var xToneDb2 = this.toneDb2 + this.parameters.calibration();
+                //var xNoiseLevel = this.parameters.noiseLevel() + this.parameters.calibration();
 
-                    var avg = self.jnd();
-                    return Math.sqrt(values.reduce(function (prev, curr) { return prev + (curr - avg) * (curr - avg); }, 0) / (values.length - 1));
-                });
-            }
+                var freq2 = this.parameters.frequency() + this.currentFreqDiff;
+                var xToneFreq1 = reverse ? freq2 : this.parameters.frequency();
+                var xToneFreq2 = reverse ? this.parameters.frequency() : freq2;
 
-            function ExperimentViewModel() {
-                this.parameters = new ParameterViewModel();
-                this.results = new ResultsViewModel(this.parameters);
+                playTwoNotes(xToneFreq1, xToneFreq2, xToneDb1, xToneDb2,
+                    this.parameters.onTime() / 1000, this.parameters.gapDuration() / 1000, 1);
+            };
 
-                this.toneDb1 = 0;
-                this.toneDb2 = 0;
-                this.currentFreqDiff = 0;
-                // freqDiff_(n+1)/freqDiff_n = 2^(+/- stepSize)
-                this.numTurns = 0;
-                this.numCorrectSinceChange = 0;
+            this.stepFactor = function () { return Math.pow(2, 1.0 / (this.numTurns + 1)); };
 
-                this.correctAnswer = "";
-                this.lastChangeDir = 0;    // 1 is easier, -1 is harder.
+            this.begin = function () {
+                this.currentFreqDiff = this.parameters.initialFreqDiff();
+                this.isConfiguring(false);
+                this.running(true);
 
-                this.isConfiguring = ko.observable(true);
-                this.isProcessing = ko.observable(false);
-                this.running = ko.observable(false);
-                this.showResults = ko.observable(false);
+                synth.disconnect();
+                if (this.parameters.leftEar()) {
+                    synth.connect(merge.left);
+                }
+                if (this.parameters.rightEar()) {
+                    synth.connect(merge.right);
+                }
+                synth.envelope.attack = this.parameters.riseTime() / 1000;
+                synth.envelope.release = this.parameters.fallTime() / 1000;
 
-                this.getSoundArray = function () {
-                    var reverse = this.correctAnswer === "first";
-                    var xToneDb1 = this.toneDb1 + this.parameters.calibration();
-                    var xToneDb2 = this.toneDb2 + this.parameters.calibration();
-                    var xNoiseLevel = this.parameters.noiseLevel() + this.parameters.calibration();
+                this.sample();
+            };
 
-                    var freq2 = this.parameters.frequency() + this.currentFreqDiff;
-                    var xToneFreq1 = reverse ? freq2 : this.parameters.frequency();
-                    var xToneFreq2 = reverse ? this.parameters.frequency() : freq2;
+            this.done = function () {
+                this.running(false);
+                this.showResults(true);
+            };
 
-                    var soundArray = [
-                        new Tone(0,
-                            this.parameters.riseTime(), this.parameters.onTime(), this.parameters.fallTime(),
-                            xToneDb1, xToneFreq1, 0, this.parameters.ear),
-                        new Tone(this.parameters.toneDuration() + this.parameters.gapDuration(),
-                            this.parameters.riseTime(), this.parameters.onTime(), this.parameters.fallTime(),
-                            xToneDb2, xToneFreq2, 0, this.parameters.ear)
-                    ];
+            this.sample = function () {
+                this.toneDb1 = this.parameters.toneMinLevel();
+                this.toneDb2 = this.parameters.toneMaxLevel();
 
-                    if (xNoiseLevel >= -100) {
-                        soundArray.push(
-                            new Noise(this.parameters.toneDuration() + this.parameters.gapDuration(),
-                                this.parameters.riseTime(), this.parameters.onTime(), this.parameters.fallTime(),
-                                xNoiseLevel, this.parameters.noiseLpf(), this.parameters.noiseHpf(), 2, 2, -1, this.parameters.ear),
-                            new Noise(0,
-                                this.parameters.riseTime(), this.parameters.onTime(), this.parameters.fallTime(),
-                                xNoiseLevel, this.parameters.noiseLpf(), this.parameters.noiseHpf(), 2, 2, -1, this.parameters.ear));
-                    }
+                if (this.parameters.useRandomLevel()) {
+                    this.toneDb1 = randomFloat(this.parameters.toneMinLevel(), this.parameters.toneMaxLevel());
+                    this.toneDb2 = randomFloat(this.parameters.toneMinLevel(), this.parameters.toneMaxLevel());
+                }
 
-                    return soundArray;
-                };
+                this.correctAnswer = Math.random() < 0.5 ? "first" : "second";
+                this.playSound();
+            };
 
-                this.stepFactor = function () { return Math.pow(2, 1.0 / (this.numTurns + 1)); };
+            this.answered = function (answer) {
+                var correct = answer === this.correctAnswer;
 
-                this.begin = function () {
-                    this.currentFreqDiff = this.parameters.initialFreqDiff();
-                    this.isConfiguring(false);
-                    this.running(true);
-                    this.sample();
-                };
-
-                this.done = function () {
-                    this.running(false);
-                    this.showResults(true);
-                };
-
-                this.sample = function () {
-                    this.toneDb1 = this.parameters.toneMinLevel();
-                    this.toneDb2 = this.parameters.toneMaxLevel();
-
-                    if (this.parameters.useRandomLevel()) {
-                        this.toneDb1 = randomFloat(this.parameters.toneMinLevel(), this.parameters.toneMaxLevel());
-                        this.toneDb2 = randomFloat(this.parameters.toneMinLevel(), this.parameters.toneMaxLevel());
-                    }
-
-                    this.correctAnswer = Math.random() < 0.5 ? "first" : "second";
-                    soundgen(this.getSoundArray(), this.parameters.sampleRate());
-                    this.isProcessing(true);
-                };
-
-                this.answered = function (answer) {
-                    var correct = answer === this.correctAnswer;
-
-                    var newFreqDiff = this.currentFreqDiff;
-                    var turnedAround = false;
-                    if (correct) {
-                        ++this.numCorrectSinceChange;
-                        if (this.numCorrectSinceChange >= 2) {
-                            if (this.lastChangeDir === -1) {
-                                // Turnaround
-                                ++this.numTurns;
-                                turnedAround = true;
-                            }
-                            this.numCorrectSinceChange = 0;
-                            newFreqDiff = this.currentFreqDiff / this.stepFactor();
-                            this.lastChangeDir = 1;
-                        }
-                    } else {
-                        this.numCorrectSinceChange = 0;
-                        if (this.lastChangeDir === 1) {
+                var newFreqDiff = this.currentFreqDiff;
+                var turnedAround = false;
+                if (correct) {
+                    ++this.numCorrectSinceChange;
+                    if (this.numCorrectSinceChange >= 2) {
+                        if (this.lastChangeDir === -1) {
                             // Turnaround
                             ++this.numTurns;
                             turnedAround = true;
                         }
-                        newFreqDiff = this.currentFreqDiff * this.stepFactor();
-                        this.lastChangeDir = -1;
+                        this.numCorrectSinceChange = 0;
+                        newFreqDiff = this.currentFreqDiff / this.stepFactor();
+                        this.lastChangeDir = 1;
                     }
+                } else {
+                    this.numCorrectSinceChange = 0;
+                    if (this.lastChangeDir === 1) {
+                        // Turnaround
+                        ++this.numTurns;
+                        turnedAround = true;
+                    }
+                    newFreqDiff = this.currentFreqDiff * this.stepFactor();
+                    this.lastChangeDir = -1;
+                }
 
-                    this.results.history.push({
-                        id: this.results.history().length,
-                        freqDiff: this.currentFreqDiff,
-                        toneDb1: this.toneDb1,
-                        toneDb2: this.toneDb2,
-                        correctAnswer: this.correctAnswer,
-                        correct: correct,
-                        turnedAround: turnedAround
-                    });
-
-                    this.currentFreqDiff = newFreqDiff;
-
-                    if (this.numTurns < this.parameters.maxTurnarounds)
-                        this.sample();
-                    else
-                        this.done();
-                };
-            }
-
-            var experimentViewModel = new ExperimentViewModel();
-
-            $(function () {
-                $("#parameters").submit(function () {
-                    experimentViewModel.begin();
+                this.results.history.push({
+                    id: this.results.history().length,
+                    freqDiff: this.currentFreqDiff,
+                    toneDb1: this.toneDb1,
+                    toneDb2: this.toneDb2,
+                    correctAnswer: this.correctAnswer,
+                    correct: correct,
+                    turnedAround: turnedAround
                 });
 
-                $("#experiment button").click(function () {
-                    experimentViewModel.answered($(this).val());
-                });
+                this.currentFreqDiff = newFreqDiff;
 
-                ko.applyBindings(experimentViewModel);
-            });
+                if (this.numTurns < this.parameters.maxTurnarounds)
+                    this.sample();
+                else
+                    this.done();
+            };
+        }
 
-            return soundgen_callback;
-        })(jQuery);
+        var experimentViewModel = new ExperimentViewModel();
+
+        $("#beginButton").click(function () {
+            experimentViewModel.begin();
+        });
+
+        $("#experiment button").click(function () {
+            experimentViewModel.answered($(this).val());
+        });
+
+        ko.applyBindings(experimentViewModel);
     </script>
 </body>
 </html>

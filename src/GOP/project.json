@@ -30,11 +30,11 @@
     "Microsoft.Extensions.Logging.Console": "1.1.0-*",
     "Microsoft.Extensions.Logging.Debug": "1.1.0-*",
     "Microsoft.VisualStudio.Web.CodeGeneration.Tools": {
-      "version": "1.0.0-preview2-final",
+      "version": "1.0.0-preview2-update1",
       "type": "build"
     },
     "Microsoft.VisualStudio.Web.CodeGenerators.Mvc": {
-      "version": "1.0.0-preview2-final",
+      "version": "1.0.0-preview2-update1",
       "type": "build"
     }
   },

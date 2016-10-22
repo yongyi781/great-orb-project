@@ -91,43 +91,42 @@
         <td></td>
     </tr>
 </table>
+<input id="data" type="hidden" value="@Newtonsoft.Json.JsonConvert.SerializeObject(Model)" />
 
 @section scripts {
     <script>
-        var data, table;
+        var table;
 
-        $(function () {
-            data = @Json.Serialize(Model);
-            var $checkboxes = $("#hiscoresTable input:checkbox");
-            
-            $.fn.dataTable.ext.search.push(
-                function(settings, data, dataIndex) {
-                    for (var i = 0; i < $checkboxes.length; i++)
-                        if ($checkboxes[i].checked && data[i+1] === "")
-                            return false;
-                    return true;
-                }
-            );
+        var data = JSON.parse($("#data").val());
+        var $checkboxes = $("#hiscoresTable input:checkbox");
 
-            table = $("#hiscoresTable").DataTable({
-                data: data.rows,
-                deferRender: true,
-                columns: [
-                    { data: "seed" },
-                    { data: "scores.0" },
-                    { data: "scores.1" },
-                    { data: "scores.2" },
-                    { data: "scores.3" },
-                    { data: "scores.4" },
-                    { data: "scores.5" },
-                    { data: "sum" }
-                ]
-            });
+        $.fn.dataTable.ext.search.push(
+            function(settings, data, dataIndex) {
+                for (var i = 0; i < $checkboxes.length; i++)
+                    if ($checkboxes[i].checked && data[i+1] === "")
+                        return false;
+                return true;
+            }
+        );
 
-            $checkboxes.click(function (e) {
-                e.stopPropagation();
-                table.draw();
-            });
+        table = $("#hiscoresTable").DataTable({
+            data: data.Rows,
+            deferRender: true,
+            columns: [
+                { data: "Seed" },
+                { data: "Scores.0" },
+                { data: "Scores.1" },
+                { data: "Scores.2" },
+                { data: "Scores.3" },
+                { data: "Scores.4" },
+                { data: "Scores.5" },
+                { data: "Sum" }
+            ]
+        });
+
+        $checkboxes.click(function (e) {
+            e.stopPropagation();
+            table.draw();
         });
     </script>
 }

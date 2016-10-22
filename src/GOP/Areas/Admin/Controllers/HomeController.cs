@@ -37,7 +37,7 @@ namespace GOP.Areas.Admin.Controllers
 
         public IActionResult Puzzles(int lastId = int.MaxValue)
         {
-            return View(GetPuzzleSubmissions());
+            return View();
         }
 
         [Route("api/[area]/Puzzles")]

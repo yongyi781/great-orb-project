@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>XP Lamp Optimization</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" />
+    <style>
+        #xpValues {
+            width: 100px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>XP Lamp Optimization</h1>
+        <div class="form-horizontal">
+            <div class="form-group">
+                <label class="control-label col-sm-3">Current XP:</label>
+                <div class="col-sm-9">
+                    <input id="currentXP" type="number" class="form-control" value="0" />
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-sm-3">Small lamps:</label>
+                <div class="col-sm-9">
+                    <input id="smallLamps" type="number" class="form-control" value="0" />
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-sm-3">Medium lamps:</label>
+                <div class="col-sm-9">
+                    <input id="mediumLamps" type="number" class="form-control" value="0" />
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-sm-3">Small meteorites +25%:</label>
+                <div class="col-sm-9">
+                    <input id="smallMeteorites25" type="number" class="form-control" value="0" />
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-sm-3">Medium meteorites +25%:</label>
+                <div class="col-sm-9">
+                    <input id="mediumMeteorites25" type="number" class="form-control" value="0" />
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-sm-3">Small lamps +60%:</label>
+                <div class="col-sm-9">
+                    <input id="smallLamps60" type="number" class="form-control" value="0" />
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-sm-3">Medium lamps +60%:</label>
+                <div class="col-sm-9">
+                    <input id="mediumLamps60" type="number" class="form-control" value="0" />
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-sm-offset-3 col-sm-9">
+                    <button class="btn btn-primary" id="optimizeButton">Optimize</button>
+                </div>
+            </div>
+            <p id="result"></p>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
+
+    <script>
+        var levelXPTable = [0, 83, 174, 276, 388, 512, 650, 801, 969, 1154, 1358, 1584, 1833, 2107, 2411, 2746, 3115, 3523, 3973, 4470, 5018, 5624, 6291, 7028, 7842, 8740, 9730, 10824, 12031, 13363, 14833, 16456, 18247, 20224, 22406, 24815, 27473, 30408, 33648, 37224, 41171, 45529, 50339, 55649, 61512, 67983, 75127, 83014, 91721, 101333, 111945, 123660, 136594, 150872, 166636, 184040, 203254, 224466, 247886, 273742, 302288, 333804, 368599, 407015, 449428, 496254, 547953, 605032, 668051, 737627, 814445, 899257, 992895, 1096278, 1210421, 1336443, 1475581, 1629200, 1798808, 1986068, 2192818, 2421087, 2673114, 2951373, 3258594, 3597792, 3972294, 4385776, 4842295, 5346332, 5902831, 6517253, 7195629, 7944614, 8771558, 9684577, 10692629, 11805606, 13034431];
+        var lampXPTable = [undefined, 63.25, 69.25, 77.5, 85, 94, 104.5, 114.25, 127, 138, 153, 170, 188, 205, 229, 252, 261, 274, 285, 298, 310, 324, 337, 352, 367, 384, 399, 405, 414, 453, 473, 493, 514, 536, 559, 583, 608, 635, 662, 691.8, 720.9, 752, 784, 818, 853, 889, 929, 970, 1012, 1055, 1101, 1148, 1200, 1249, 1304, 1362, 1422, 1485, 1546, 1616, 1684, 1757, 1835, 1911, 2004, 2108, 2171, 2269, 2379, 2470, 2592, 2693, 2809, 2946, 3082, 3213, 3339, 3495, 3646, 3792, 3980, 4166, 4347, 4521, 4762, 4918, 5033, 5375, 5592, 5922, 6121, 6451, 6614, 6928, 7236, 7532, 8064, 8347, 8602];
+
+        var lampTypes = [
+            {
+                id: 1,
+                name: "smallLamps",
+                offset: 0,
+                multiplier: 1
+            },
+            {
+                id: 2,
+                name: "mediumLamps",
+                offset: -1,
+                multiplier: 2
+            },
+            {
+                id: 3,
+                name: "smallMeteorites25",
+                offset: 0,
+                multiplier: 1.25
+            },
+            {
+                id: 4,
+                name: "mediumMeteorites25",
+                offset: -1,
+                multiplier: 2.5
+            },
+            {
+                id: 5,
+                name: "smallLamps60",
+                offset: 0,
+                multiplier: 1.6
+            },
+            {
+                id: 6,
+                name: "mediumLamps60",
+                offset: -1,
+                multiplier: 3.2
+            }
+        ];
+
+        function permutations(inputArr) {
+            var results = [];
+
+            function permuteHelper(arr, memo) {
+                var cur, memo = memo || [];
+
+                for (var i = 0; i < arr.length; i++) {
+                    cur = arr.splice(i, 1);
+                    if (arr.length === 0) {
+                        results.push(memo.concat(cur));
+                    }
+                    permuteHelper(arr.slice(), memo.concat(cur));
+                    arr.splice(i, 0, cur[0]);
+                }
+
+                return results;
+            }
+
+            return permuteHelper(inputArr);
+        }
+
+        function getLevel(xp) {
+            var l = 1;
+            for (; l < levelXPTable.length; l++) {
+                if (levelXPTable[l] > xp)
+                    break;
+            }
+            return l;
+        }
+
+        function rubLamp(currentXP, lampType) {
+            var newXP = currentXP + lampType.multiplier * (lampXPTable[getLevel(currentXP)] + lampType.offset);
+            return Math.floor(10 * newXP) / 10;
+        }
+
+        $("#optimizeButton").click(function () {
+            var results = [];
+            var filteredLampTypes = lampTypes.filter(function (lampType) { return +$("#" + lampType.name).val() > 0; });
+            permutations(filteredLampTypes).forEach(function (permutation) {
+                var xp = +$("#currentXP").val();
+                permutation.forEach(function (lampType) {
+                    var count = +$("#" + lampType.name).val();
+                    for (var i = 0; i < count; i++) {
+                        xp = rubLamp(xp, lampType);
+                    }
+                });
+                results.push({ permutation: permutation.map(function (x) { return x.id; }).toString(), finalXP: xp });
+            });
+            console.log(results);
+            $("#result").html(results
+                .sort(function (x, y) { return y.finalXP - x.finalXP; })
+                .map(function (x) { return x.permutation + ": " + x.finalXP; })
+                .join("<br/>"));
+        });
+    </script>
+</body>
+</html>

@@ -20,10 +20,7 @@
 
 @section Scripts {
     <script>
-        var data;
-
-        $(function () {
-            data = @Json.Serialize(Model);
+        $.getJSON("/api/admin/puzzles", function (data) {
             data.forEach(function (s) {
                 s.submission.timestamp = new Date(s.submission.timestamp);
             });
@@ -52,6 +49,6 @@
                 var data = table.row(this).data();
                 window.open("/Puzzle/" + data.submission.puzzleId + "?code=" + data.submission.code);
             });
-        })
+        });
     </script>
 }

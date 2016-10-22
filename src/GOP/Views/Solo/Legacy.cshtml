@@ -199,10 +199,8 @@
         }
 
         function restartGame(code, seed, altar) {
-            Utils.loadAltar(altar).fail(function () { altar = Altar.None; }).always(function () {
-                gopui.restartGame(code, seed, altar);
-                updateSeedAltarDisplay();
-            })
+            gopui.restartGame(code, seed, altar);
+            updateSeedAltarDisplay();
         }
 
         function updateShareLink() {

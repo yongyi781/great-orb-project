@@ -47,20 +47,15 @@ namespace GOP.Controllers
 
         public IActionResult History()
         {
-            DbContext.CacheViewUsers = true;
-            DbContext.LoadUsersIntoCache();
-
-            var soloGames = GetSoloGames();
-
-            return View(new SoloHistoryViewModel
-            {
-                Games = soloGames
-            });
+            return View();
         }
 
         [HttpGet("api/[controller]")]
         public IEnumerable<SoloGameView> Get()
         {
+            DbContext.CacheViewUsers = true;
+            DbContext.LoadUsersIntoCache();
+
             return GetSoloGames();
         }
 
