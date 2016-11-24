@@ -13,20 +13,75 @@
 <body>
     <div class="container">
         <h1>Audio Test</h1>
-        <div>
+
+        <div id="test1">
+            <h2>Frequency vs loudness</h2>
             <div class="form-group form-inline">
-                <label for="volume1">Frequency 1:</label> <input type="number" id="freq1" class="form-control" value="698" />
-                <label for="volume1">Volume 1:</label> <input type="number" id="volume1" class="form-control" value="-20" min="-100" max="0" />
+                <label for="freq1">Frequency 1:</label> <input type="number" id="freq1" class="form-control" value="698.456"
+                />
+                <label for="volume1">Volume 1:</label> <input type="number" id="volume1" class="form-control" value="-22"
+                    min="-100" max="0" />
             </div>
             <div class="form-group form-inline">
-                <label for="volume1">Frequency 2:</label> <input type="number" id="freq2" class="form-control" value="740" />
-                <label for="volume2">Volume 2:</label> <input type="number" id="volume2" class="form-control" value="-24" min="-100" max="0" />
+                <label for="freq2">Frequency 2:</label> <input type="number" id="freq2" class="form-control" value="739.989"
+                />
+                <label for="volume2">Volume 2:</label> <input type="number" id="volume2" class="form-control" value="-27"
+                    min="-100" max="0" />
             </div>
+            <div>
+                <button class="btn btn-default" data-semitones="-0.5">-0.5</button>
+                <button class="btn btn-default" data-semitones="0.5">+0.5</button>
+                <button class="btn btn-default" data-semitones="-1">-1</button>
+                <button class="btn btn-default" data-semitones="1">+1</button>
+                <button class="btn btn-default" data-semitones="-12">-12</button>
+                <button class="btn btn-default" data-semitones="12">+12</button>
+            </div>
+            <button id="test1_play" class="btn btn-lg btn-primary">Play</button>
         </div>
-        <button id="play" class="btn btn-lg btn-primary">Play</button>
+        <div id="test2">
+            <h2>Frequency vs loudness 2</h2>
+            <div class="form-group form-inline">
+                <label for="test2_freq">Frequency:</label> <input type="number" id="test2_freq" class="form-control" value="698"
+                />
+                <label for="test2_minvol">Min volume:</label> <input type="number" id="test2_minvol" class="form-control"
+                    value="-40" min="-100" max="0" />
+                <label for="test2_maxvol">Max volume:</label> <input type="number" id="test2_maxvol" class="form-control"
+                    value="-10" min="-100" max="0" />
+            </div>
+            <button id="test2_play" class="btn btn-lg btn-primary">Play</button>
+        </div>
+        <div id="test3">
+            <h2>Frequency vs loudness 3</h2>
+            <div class="form-group form-inline">
+                <label for="test3_freq1">Frequency 1:</label> <input type="number" id="test3_freq1" class="form-control"
+                    value="932.33" />
+                <label for="test3_volume1">Volume 1:</label> <input type="number" id="test3_volume1" class="form-control"
+                    value="-23" min="-100" max="0" />
+            </div>
+            <div class="form-group form-inline">
+                <label for="test3_freq2">Frequency 2:</label> <input type="number" id="test3_freq2" class="form-control"
+                    value="739.989" />
+                <label for="test3_volume2">Volume 2:</label> <input type="number" id="test3_volume2" class="form-control"
+                    value="-20" min="-100" max="0" />
+            </div>
+            <div>
+                <button class="btn btn-default" data-semitones="-0.5">-0.5</button>
+                <button class="btn btn-default" data-semitones="0.5">+0.5</button>
+                <button class="btn btn-default" data-semitones="-1">-1</button>
+                <button class="btn btn-default" data-semitones="1">+1</button>
+                <button class="btn btn-default" data-semitones="-12">-12</button>
+                <button class="btn btn-default" data-semitones="12">+12</button>
+            </div>
+            <div class="form-group form-inline">
+                <label for="test3_ontime">On-time:</label>
+                <input type="number" id="test3_ontime" class="form-control" value="0.01" min="0.00001" max="2" step="0.01" />
+            </div>
+            <button id="test3_play" class="btn btn-lg btn-primary">Play</button>
+        </div>
     </div>
 
-    <script src="https://code.jquery.com/jquery-3.1.1.min.js" integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8=" crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.1.1.min.js" integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8="
+        crossorigin="anonymous"></script>
     <script src="lib/tone/build/Tone.js"></script>
     <script type="text/javascript">
         var rampTime = 0.025;
@@ -36,7 +91,7 @@
             if (now == null) now = Tone.now();
             if (repetitions == null) repetitions = 1;
 
-            var delay = 0.01;
+            var delay = 0.1;
             now += delay;
             for (var i = 0; i < repetitions; i++) {
                 synth.triggerAttackRelease(freq1, onTime, now + 2 * i * (onTime + offTime), synth.dbToGain(db1));
@@ -72,17 +127,74 @@
 
             init();
 
+            var freq0 = freq1 * freq1 / freq2;
+
             playTwoNotes(freq1, freq2, volume1, volume2, onTime, offTime, time, 2);
-            playTwoNotes(freq2, freq1, volume1, volume2, onTime, offTime, time + 2 * offset, 2);
+            playTwoNotes(freq0, freq1, volume1, volume2, onTime, offTime, time + 2 * offset, 2);
+            playTwoNotes(freq2, freq1, volume2, volume1, onTime, offTime, time + 4 * offset, 2);
+            playTwoNotes(freq1, freq0, volume2, volume1, onTime, offTime, time + 6 * offset, 2);
         }
 
-        document.querySelector("#play").addEventListener("click", function() {
+        document.querySelector("#test1_play").addEventListener("click", function() {
             playPattern(+$("#freq1").val(), +$("#freq2").val(), +$("#volume1").val(), +$("#volume2").val());
             // var freq = 440;
             // var f = Math.pow(2, 1/12);
             // for (var time = Tone.now() + 10; freq < 1760; freq *= f, time += 4 * offset) {
             //     playPattern(freq, freq * f, -20, -24, time);
             // }
+        });
+
+        document.querySelector("#test2_play").addEventListener("click", function () {
+            init();
+
+            var now = Tone.now() + 0.1;
+            var freq = +$("#test2_freq").val();
+            var minVol = +$("#test2_minvol").val();
+            var maxVol = +$("#test2_maxvol").val();
+            var onTime = 0.6;
+
+            for (var i = 0; i < 10; i++) {
+                var vol = (i/9) * maxVol + (1 - i/9) * minVol;
+                synth.triggerAttackRelease(freq, onTime, now + i * onTime, synth.dbToGain(vol));
+            }
+        });
+
+        document.querySelector("#test3_play").addEventListener("click", function () {
+            init();
+            synth.envelope.attack = 0;
+
+            var now = Tone.now() + 0.1;
+            var freq1 = +$("#test3_freq1").val();
+            var freq2 = +$("#test3_freq2").val();
+            var onTime = +$("#test3_ontime").val();
+
+            synth.triggerAttackRelease(freq1, onTime, now, synth.dbToGain(+$("#test3_volume1").val()));
+            synth.triggerAttackRelease(freq2, onTime, now + onTime, synth.dbToGain(+$("#test3_volume2").val()));
+            synth.triggerAttackRelease(freq1, onTime, now + 2 * onTime, synth.dbToGain(+$("#test3_volume1").val()));
+            synth.triggerAttackRelease(freq2, onTime, now + 3 * onTime, synth.dbToGain(+$("#test3_volume2").val()));
+            synth.triggerAttackRelease(freq1, onTime, now + 4 * onTime, synth.dbToGain(+$("#test3_volume1").val()));
+            synth.triggerAttackRelease(freq2, onTime, now + 5 * onTime, synth.dbToGain(+$("#test3_volume2").val()));
+        });
+
+        $("#test1 button[data-semitones]").click(function () {
+            var semitones = $(this).data("semitones");
+            $("#freq1").val(+$("#freq1").val() * Math.pow(2, semitones/12));
+            $("#freq2").val(+$("#freq2").val() * Math.pow(2, semitones/12));
+        });
+
+        $("#test3 button[data-semitones]").click(function () {
+            var semitones = $(this).data("semitones");
+            $("#test3_freq1").val(+$("#test3_freq1").val() * Math.pow(2, semitones/12));
+            $("#test3_freq2").val(+$("#test3_freq2").val() * Math.pow(2, semitones/12));
+        });
+
+        ["#test1", "#test2", "#test3"].forEach(function (x) {
+            $(x).keydown(function (e) {
+                if (e.key === "Enter") {
+                    e.preventDefault();
+                    $(x + "_play").click();
+                }
+            });
         });
     </script>
 </body>

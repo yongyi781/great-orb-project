@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Chinese Characters</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" />
+    <style>
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Chinese Characters</h1>
+        <label for="xpValues">Enter Chinese text here:</label> <textarea id="text" class="form-control" rows="11"></textarea>
+        <div>
+            <h2>Results</h2>
+            <span id="resultSummary"></span>
+            <table id="result" class="table table-condensed">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Char</th>
+                        <th>Pronunciation</th>
+                        <th>Frequency</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+    <script src="https://code.jquery.com/jquery-3.1.1.js"></script>
+    <script>
+        var chars = {};
+
+        var lastChar = "";
+        $.get("data/chinese-character-frequency.txt", function (data) {
+            var arr = data.split("\n");
+            for (var i = 1; i < arr.length; i++) {
+                var cells = arr[i].split("\t");
+                if (cells[0] != "") {
+                    lastChar = cells[1][0];
+                    var pronunciation = cells[2].split(" ", 1)[0];
+                    pronunciation = pronunciation.substring(1, pronunciation.length - 1);
+                    chars[lastChar] = { frequency: +cells[0], pronunciation: pronunciation };
+                }
+            }
+        });
+
+        $("#text").change(function () {
+            var str = $("#text").val().replace(/[^\u3400-\u9FBF]/g, "");
+            $("#result > tbody > tr").remove();
+            var tableBody = document.querySelector("#result").getElementsByTagName("tbody")[0];
+            var objArr = [];
+            for (var i = 0; i < str.length; i++) {
+                var obj = chars[str[i]];
+                var row = tableBody.insertRow();
+                row.insertCell().appendChild(document.createTextNode(i + 1));
+                row.insertCell().appendChild(document.createTextNode(str[i]));
+                var cell3 = row.insertCell(), cell4 = row.insertCell();
+                if (obj != null) {
+                    cell3.appendChild(document.createTextNode(obj.pronunciation));
+                    cell4.appendChild(document.createTextNode(obj.frequency));
+                }
+
+                objArr.push(obj);
+            }
+
+            var recognized = objArr.filter(function (x) { return x != null; });
+            var cutoffs = [3000, 2000, 1000, 500, 300, 200, 100, 50];
+            var summary = "";
+            cutoffs.forEach(function (t, i) {
+                var top = recognized.filter(function (x) { return x.frequency <= t; });
+                summary += top.length + " out of " + objArr.length + " characters are in top " + t + " (" + (100 * top.length / objArr.length).toPrecision(4) + "%)";
+                if (i < cutoffs.length - 1)
+                    summary += "<br/>";
+            });
+            $("#resultSummary").html(summary);
+        });
+    </script>
+</body>
+</html>

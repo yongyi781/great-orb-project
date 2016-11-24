@@ -225,3 +225,5 @@ artifacts/
 /src/GOP/Views/Tools/Test3D.cshtml
 /src/GOP/Areas/Admin/Views/Home/Uploads.cshtml
 /src/GOP/Areas/Admin/Views/Home/Test.cshtml
+/src/GOP/wwwroot/freqdl_results
+/src/GOP/wwwroot/data

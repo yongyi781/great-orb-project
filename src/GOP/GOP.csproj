@@ -1,0 +1,217 @@
+﻿<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" />
+  <PropertyGroup>
+    <TargetFramework>net461</TargetFramework>
+    <PreserveCompilationContext>true</PreserveCompilationContext>
+    <AssemblyName>GOP</AssemblyName>
+    <OutputType>Exe</OutputType>
+    <UserSecretsId>aspnet5-GOP-b861afa2-78db-4387-a3bc-393f99145638</UserSecretsId>
+    <RuntimeIdentifier>win7-x86</RuntimeIdentifier>
+  </PropertyGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="compiler\resources\**\*" />
+    <Content Include="wwwroot\**\*;Views\**\*;appsettings.json;web.config">
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Sdk">
+      <Version>1.0.0-alpha-20161104-2</Version>
+      <PrivateAssets>All</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.NET.Sdk.Web">
+      <Version>1.0.0-alpha-20161104-2</Version>
+      <PrivateAssets>All</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.Cookies">
+      <Version>1.1.0-*</Version>
+    </PackageReference>
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.Facebook">
+      <Version>1.1.0-*</Version>
+    </PackageReference>
+    <PackageReference Include="Microsoft.AspNetCore.Diagnostics">
+      <Version>1.1.0-*</Version>
+    </PackageReference>
+    <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore">
+      <Version>1.1.0-*</Version>
+    </PackageReference>
+    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore">
+      <Version>1.1.0-*</Version>
+    </PackageReference>
+    <PackageReference Include="Microsoft.AspNetCore.Mvc">
+      <Version>1.1.0-*</Version>
+    </PackageReference>
+    <PackageReference Include="Microsoft.AspNetCore.Server.IISIntegration">
+      <Version>1.1.0-*</Version>
+    </PackageReference>
+    <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel">
+      <Version>1.1.0-*</Version>
+    </PackageReference>
+    <PackageReference Include="Microsoft.AspNetCore.SignalR.Server">
+      <Version>0.2.0-*</Version>
+    </PackageReference>
+    <PackageReference Include="Microsoft.AspNetCore.StaticFiles">
+      <Version>1.1.0-*</Version>
+    </PackageReference>
+    <PackageReference Include="Microsoft.AspNetCore.WebSockets">
+      <Version>0.2.0-*</Version>
+    </PackageReference>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design">
+      <Version>1.0.0-preview2-final</Version>
+      <PrivateAssets>All</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer">
+      <Version>1.1.0-*</Version>
+    </PackageReference>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools">
+      <Version>1.0.0-msbuild1-final</Version>
+      <PrivateAssets>All</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.Extensions.Configuration.CommandLine">
+      <Version>1.1.0-*</Version>
+    </PackageReference>
+    <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables">
+      <Version>1.1.0-*</Version>
+    </PackageReference>
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json">
+      <Version>1.1.0-*</Version>
+    </PackageReference>
+    <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets">
+      <Version>1.1.0-*</Version>
+    </PackageReference>
+    <PackageReference Include="Microsoft.Extensions.Logging">
+      <Version>1.1.0-*</Version>
+    </PackageReference>
+    <PackageReference Include="Microsoft.Extensions.Logging.Console">
+      <Version>1.1.0-*</Version>
+    </PackageReference>
+    <PackageReference Include="Microsoft.Extensions.Logging.Debug">
+      <Version>1.1.0-*</Version>
+    </PackageReference>
+    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design">
+      <Version>1.0.0-msbuild1-final</Version>
+      <PrivateAssets>All</PrivateAssets>
+    </PackageReference>
+  </ItemGroup>
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net461' ">
+    <Reference Include="System" />
+    <Reference Include="Microsoft.CSharp" />
+  </ItemGroup>
+  <ItemGroup>
+    <DotNetCliToolReference Include="Microsoft.EntityFrameworkCore.Tools.DotNet">
+      <Version>1.0.0-msbuild1-final</Version>
+    </DotNetCliToolReference>
+    <DotNetCliToolReference Include="Microsoft.Extensions.SecretManager.Tools">
+      <Version>1.0.0-msbuild1-final</Version>
+    </DotNetCliToolReference>
+    <DotNetCliToolReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Tools">
+      <Version>1.0.0-msbuild1-final</Version>
+    </DotNetCliToolReference>
+  </ItemGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+    <DefineConstants>$(DefineConstants);RELEASE</DefineConstants>
+  </PropertyGroup>
+  <Target Name="PrepublishScript" BeforeTargets="Publish" Condition=" '$(IsCrossTargetingBuild)' != 'true' ">
+    <Exec Command="npm install" />
+    <Exec Command="bower install" />
+    <Exec Command="gulp default" />
+  </Target>
+  <Target Name="PostpublishScript" AfterTargets="Publish" Condition=" '$(IsCrossTargetingBuild)' != 'true' ">
+    <Exec Command="dotnet publish-iis --publish-folder $(TargetDir) --framework $(TargetFrameworkIdentifier),Version=$(TargetFrameworkVersion)" />
+  </Target>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <ItemGroup>
+    <Content Remove="%2a%2a\**" />
+    <Content Remove="backup\**" />
+    <Content Remove="wwwroot\uploads\**" />
+    <Content Remove="wwwroot\uploads_old\**" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Areas\Admin\Controllers\HomeController.cs" />
+    <Compile Include="Areas\Admin\Models\AdminViewModels.cs" />
+    <Compile Include="Controllers\AccountController.cs" />
+    <Compile Include="Controllers\AltarsController.cs" />
+    <Compile Include="Controllers\ChatController.cs" />
+    <Compile Include="Controllers\DeadPracticeController.cs" />
+    <Compile Include="Controllers\HiscoresController.cs" />
+    <Compile Include="Controllers\HomeController.cs" />
+    <Compile Include="Controllers\ManageController.cs" />
+    <Compile Include="Controllers\MultiplayerController.cs" />
+    <Compile Include="Controllers\PuzzlesController.cs" />
+    <Compile Include="Controllers\SoloController.cs" />
+    <Compile Include="Controllers\TestsController.cs" />
+    <Compile Include="Controllers\ToolsController.cs" />
+    <Compile Include="Controllers\WatchController.cs" />
+    <Compile Include="EnumerableExtensions.cs" />
+    <Compile Include="FromServices.cs" />
+    <Compile Include="Hubs\ChatHub.cs" />
+    <Compile Include="Hubs\MultiplayerHub.cs" />
+    <Compile Include="KickCounter.cs" />
+    <Compile Include="Migrations\20160808225231_Initial.cs" />
+    <Compile Include="Migrations\20160808225231_Initial.Designer.cs" />
+    <Compile Include="Migrations\20160808230005_RenameGopAltar.cs" />
+    <Compile Include="Migrations\20160808230005_RenameGopAltar.Designer.cs" />
+    <Compile Include="Migrations\20160808231540_GopAltarForeignKeys.cs" />
+    <Compile Include="Migrations\20160808231540_GopAltarForeignKeys.Designer.cs" />
+    <Compile Include="Migrations\20160814063204_RemoveGopControls.cs" />
+    <Compile Include="Migrations\20160814063204_RemoveGopControls.Designer.cs" />
+    <Compile Include="Migrations\ApplicationDbContextModelSnapshot.cs" />
+    <Compile Include="Models\ApplicationDbContext.cs" />
+    <Compile Include="Models\DeadPracticeResult.cs" />
+    <Compile Include="Models\GopAltar.cs" />
+    <Compile Include="Models\GopGame.cs" />
+    <Compile Include="Models\GopUser.cs" />
+    <Compile Include="Models\IdentityModels.cs" />
+    <Compile Include="Models\Puzzle.cs" />
+    <Compile Include="Models\PuzzleSubmission.cs" />
+    <Compile Include="MultiplayerManager.cs" />
+    <Compile Include="Program.cs" />
+    <Compile Include="RequestLoggerMiddleware.cs" />
+    <Compile Include="Startup.cs" />
+    <Compile Include="UserExtensions.cs" />
+    <Compile Include="Utilities.cs" />
+    <Compile Include="ViewModels\AccountViewModels.cs" />
+    <Compile Include="ViewModels\ChatViewModels.cs" />
+    <Compile Include="ViewModels\DeadPracticeViewModels.cs" />
+    <Compile Include="ViewModels\HiscoresViewModels.cs" />
+    <Compile Include="ViewModels\ManageViewModels.cs" />
+    <Compile Include="ViewModels\MultiplayerViewModels.cs" />
+    <Compile Include="ViewModels\PuzzleViewModels.cs" />
+    <Compile Include="ViewModels\SoloViewModels.cs" />
+    <Compile Include="ViewModels\WatchViewModels.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="app.config" />
+    <None Include="Scripts\anglemap.ts" />
+    <None Include="Scripts\Engine\AltarData.ts" />
+    <None Include="Scripts\Engine\Enums.ts" />
+    <None Include="Scripts\Engine\GameAction.ts" />
+    <None Include="Scripts\Engine\GameplayData.ts" />
+    <None Include="Scripts\Engine\GameState.ts" />
+    <None Include="Scripts\Engine\GopBoard.ts" />
+    <None Include="Scripts\Engine\GopCanvas.ts" />
+    <None Include="Scripts\Engine\GopObject.ts" />
+    <None Include="Scripts\Engine\MersenneTwister.ts" />
+    <None Include="Scripts\Engine\Orb.ts" />
+    <None Include="Scripts\Engine\Player.ts" />
+    <None Include="Scripts\Engine\Point.ts" />
+    <None Include="Scripts\gopui.ts" />
+    <None Include="Scripts\GopUI3D\AttractDot.ts" />
+    <None Include="Scripts\GopUI3D\ClickIndicator.ts" />
+    <None Include="Scripts\GopUI3D\FollowCamera.ts" />
+    <None Include="Scripts\GopUI3D\Game.ts" />
+    <None Include="Scripts\GopUI3D\GopUI3D.ts" />
+    <None Include="Scripts\GopUI3D\InfoBox.ts" />
+    <None Include="Scripts\GopUI3D\OptionsMenu.ts" />
+    <None Include="Scripts\GopUI3D\OrbObject.ts" />
+    <None Include="Scripts\GopUI3D\PlayerObject.ts" />
+    <None Include="Scripts\multiplayer.ts" />
+    <None Include="Scripts\tests\engine.ts" />
+    <None Include="Scripts\tests\parsingFormatting.ts" />
+    <None Include="Scripts\utils.ts" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="System.ComponentModel.DataAnnotations" />
+    <Reference Include="System.Data" />
+  </ItemGroup>
+</Project>

@@ -122,6 +122,8 @@
                     <td data-bind="text: history().length"></td>
                 </tr>
             </table>
+            <button id="newExperiment" class="btn btn-primary">New experiment</button>
+            <button id="copyData" class="btn btn-default">Copy data</button>
         </div>
         <div id="history" data-bind="visible: (parameters.showFeedback() || showResults()) && results.history().length > 0" style="display: none">
             <h2>History</h2>
@@ -152,13 +154,15 @@
         </div>
         <div data-bind="visible: showResults" style="display: none">
             <h2>Experiment JSON</h2>
-            <pre data-bind="text: ko.toJSON(results, null, 2)"></pre>
+            <button id="selectAll" class="btn btn-default btn-sm">Select all</button>
+            <pre id="jsonData" data-bind="text: ko.toJSON(results, null, 2)"></pre>
         </div>
     </div>
 
     <script src="https://code.jquery.com/jquery-3.1.1.min.js" integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8=" crossorigin="anonymous"></script>
     <script src="http://cdnjs.cloudflare.com/ajax/libs/knockout/3.4.0/knockout-min.js"></script>
     <script src="https://tonejs.github.io/CDN/latest/Tone.js"></script>
+    <script src="js/utils.min.js"></script>
 
     <script>
         var rampTime = 0.01;
@@ -180,11 +184,36 @@
         }
 
         function playTwoNotes(freq1, freq2, db1, db2, onTime, offTime, repetitions) {
-            var delay = 0.01;
+            if (repetitions == null) repetitions = 1;
+
+            var delay = 0.1;
             var now = Tone.now() + delay;
             for (var i = 0; i < repetitions; i++) {
                 synth.triggerAttackRelease(freq1, onTime, now + 2 * i * (onTime + offTime), synth.dbToGain(db1));
                 synth.triggerAttackRelease(freq2, onTime, now + (2 * i + 1) * (onTime + offTime), synth.dbToGain(db2));
+            }
+        }
+
+        function a() {
+            var db1 = randomFloat(-11, -17);
+            var db2 = randomFloat(-11, -17);
+            var lowerDb = Math.min(db1, db2);
+            var upperDb = Math.max(db1, db2);
+
+            playTwoNotes(800, 850, db1, db2, 0.25, 0.1, 1);
+        }
+
+        function selectText(containerid) {
+            var range;
+            if (document.selection) {
+                range = document.body.createTextRange();
+                range.moveToElementText(document.getElementById(containerid));
+                range.select();
+            } else if (window.getSelection) {
+                range = document.createRange();
+                range.selectNode(document.getElementById(containerid));
+                window.getSelection().removeAllRanges();
+                window.getSelection().addRange(range);
             }
         }
 
@@ -210,20 +239,20 @@
             this.leftEar = ko.observable(true);
             this.rightEar = ko.observable(false);
             this.calibration = ko.numericObservable(-115);
-            this.frequency = ko.numericObservable(1000);
-            this.initialFreqDiff = ko.numericObservable(250);
+            this.frequency = ko.numericObservable(Utils.getQueryAsNumber("freq", 1000));
+            this.initialFreqDiff = ko.numericObservable(Utils.getQueryAsNumber("diff", 100));
             this.useRandomLevel = ko.observable(true);
-            this.toneMinLevel = ko.numericObservable(98);
-            this.toneMaxLevel = ko.numericObservable(102);
+            this.toneMinLevel = ko.numericObservable(Utils.getQueryAsNumber("mindb", 98));
+            this.toneMaxLevel = ko.numericObservable(Utils.getQueryAsNumber("maxdb", 102));
             this.skipTurnarounds = 3;
             this.maxTurnarounds = 9;
-            this.duration = ko.numericObservable(250);
+            this.duration = ko.numericObservable(Utils.getQueryAsNumber("dur", 250));
             this.showFeedback = ko.observable(true);
 
             // Unused for now
-            this.noiseLevel = ko.numericObservable(0);
-            this.noiseLpf = ko.numericObservable(4000);
-            this.noiseHpf = ko.numericObservable(100);
+            // this.noiseLevel = ko.numericObservable(0);
+            // this.noiseLpf = ko.numericObservable(4000);
+            // this.noiseHpf = ko.numericObservable(100);
 
             this.riseTime = function () { return Math.min(25, this.duration() / 2); };
             this.onTime = function () { return this.duration(); };
@@ -240,8 +269,8 @@
                 return self.useRandomLevel() ? "Tone max level (dB SPL)" : "Tone level 2 (dB SPL)";
             };
 
+            this.gapDuration = Utils.getQueryAsNumber("gap", 100);
             this.toneDuration = function () { return this.riseTime() + this.onTime() + this.fallTime(); };
-            this.gapDuration = function () { return 400; };
             this.sampleRate = function () { return 22050; };
         }
 
@@ -287,6 +316,9 @@
 
             this.correctAnswer = "";
             this.lastChangeDir = 0;    // 1 is easier, -1 is harder.
+            this.maxStepSize = 1;
+            this.stepSize = 1;
+            this.stepFactor = 2;
 
             this.isConfiguring = ko.observable(true);
             this.running = ko.observable(false);
@@ -303,10 +335,8 @@
                 var xToneFreq2 = reverse ? this.parameters.frequency() : freq2;
 
                 playTwoNotes(xToneFreq1, xToneFreq2, xToneDb1, xToneDb2,
-                    this.parameters.onTime() / 1000, this.parameters.gapDuration() / 1000, 1);
+                    this.parameters.onTime() / 1000, this.parameters.gapDuration / 1000, 1);
             };
-
-            this.stepFactor = function () { return Math.pow(2, 1.0 / (this.numTurns + 1)); };
 
             this.begin = function () {
                 this.currentFreqDiff = this.parameters.initialFreqDiff();
@@ -331,6 +361,18 @@
                 this.showResults(true);
             };
 
+            this.newExperiment = function () {
+                this.running(false);
+                this.showResults(false);
+                this.isConfiguring(true);
+                this.currentFreqDiff = 0;
+                this.numTurns = 0;
+                this.numCorrectSinceChange = 0;
+                this.lastChangeDir = 0;
+                this.stepSize = 1;
+                this.results.history([]);
+            };
+
             this.sample = function () {
                 this.toneDb1 = this.parameters.toneMinLevel();
                 this.toneDb2 = this.parameters.toneMaxLevel();
@@ -350,15 +392,15 @@
                 var newFreqDiff = this.currentFreqDiff;
                 var turnedAround = false;
                 if (correct) {
-                    ++this.numCorrectSinceChange;
-                    if (this.numCorrectSinceChange >= 2) {
+                    if (++this.numCorrectSinceChange >= 2) {
                         if (this.lastChangeDir === -1) {
                             // Turnaround
                             ++this.numTurns;
+                            this.stepSize /= this.stepFactor;
                             turnedAround = true;
                         }
                         this.numCorrectSinceChange = 0;
-                        newFreqDiff = this.currentFreqDiff / this.stepFactor();
+                        newFreqDiff = this.currentFreqDiff / Math.pow(2, this.stepSize);
                         this.lastChangeDir = 1;
                     }
                 } else {
@@ -367,8 +409,10 @@
                         // Turnaround
                         ++this.numTurns;
                         turnedAround = true;
+                    } else {
+                        this.stepSize = Math.min(this.maxStepSize, this.stepSize * this.stepFactor);
                     }
-                    newFreqDiff = this.currentFreqDiff * this.stepFactor();
+                    newFreqDiff = this.currentFreqDiff * Math.pow(2, this.stepSize);
                     this.lastChangeDir = -1;
                 }
 
@@ -399,6 +443,19 @@
 
         $("#experiment button").click(function () {
             experimentViewModel.answered($(this).val());
+        });
+
+        $("#newExperiment").click(function () {
+            experimentViewModel.newExperiment();
+        });
+
+        $("#selectAll").click(function (e) {
+            selectText("jsonData");
+        });
+
+        $("#copyData").click(function (e) {
+            selectText("jsonData");
+            document.execCommand("copy");
         });
 
         ko.applyBindings(experimentViewModel);
