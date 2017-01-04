@@ -227,3 +227,4 @@ artifacts/
 /src/GOP/Areas/Admin/Views/Home/Test.cshtml
 /src/GOP/wwwroot/freqdl_results
 /src/GOP/wwwroot/data
+/test/
