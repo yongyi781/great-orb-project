@@ -17,21 +17,23 @@
     <h5>Elements</h5>
     <div class="btn-group">
         <label class="btn btn-default active"><input type="radio" name="tool" id="pointerTool" value="0" checked />Pointer</label>
-        <label class="btn btn-default"><input type="radio" name="tool" id="spawnTool" value="11" />Spawn</label>
+        <label class="btn btn-default"><input type="radio" name="tool" id="spawnTool" value="13" />Spawn</label>
         <label class="btn btn-default"><input type="radio" name="tool" id="barrierTool" value="1" />Barrier</label>
         <label class="btn btn-default"><input type="radio" name="tool" id="rockTool" value="2" />Rock</label>
         <label class="btn btn-default"><input type="radio" name="tool" id="waterTool" value="3" />Water</label>
         <label class="btn btn-default"><input type="radio" name="tool" id="wallWTool" value="4" />West wall</label>
         <label class="btn btn-default"><input type="radio" name="tool" id="wallSTool" value="5" />South wall</label>
         <label class="btn btn-default"><input type="radio" name="tool" id="wallSWTool" value="6" />Southwest wall</label>
+        <label class="btn btn-default"><input type="radio" name="tool" id="minipillar1Tool" value="7" />Minipillar 1 (SW-NE)</label>
+        <label class="btn btn-default"><input type="radio" name="tool" id="minipillar1Tool" value="8" />Minipillar 2 (SE-NW)</label>
     </div>
     <h5>Utilities</h5>
     <div class="btn-group">
-        <label class="btn btn-default"><input type="radio" name="tool" id="lineOfSightTool" value="7" />Draw line of sight</label>
-        <label class="btn btn-default"><input type="radio" name="tool" id="pathToolRunning" value="8" />Draw path (running)</label>
-        <label class="btn btn-default"><input type="radio" name="tool" id="pathToolWalking" value="9" />Draw path (walking)</label>
-        <label class="btn btn-default"><input type="radio" name="tool" id="findClosestTool" value="10" />Find best positions from which to attract an orb</label>
-        <label class="btn btn-default"><input type="radio" name="tool" id="colorDistanceTool" value="12" />Distance color gradient</label>
+        <label class="btn btn-default"><input type="radio" name="tool" id="lineOfSightTool" value="9" />Draw line of sight</label>
+        <label class="btn btn-default"><input type="radio" name="tool" id="pathToolRunning" value="10" />Draw path (running)</label>
+        <label class="btn btn-default"><input type="radio" name="tool" id="pathToolWalking" value="11" />Draw path (walking)</label>
+        <label class="btn btn-default"><input type="radio" name="tool" id="findClosestTool" value="12" />Find best positions from which to attract an orb</label>
+        <label class="btn btn-default"><input type="radio" name="tool" id="colorDistanceTool" value="14" />Distance color gradient</label>
     </div>
 </div>
 <p id="coordsParagraph" class="align-center">Mouse coordinates: <span id="coords">(0,&nbsp;0)</span> | Player coordinates: <span id="playerCoords">N/A</span> | Orb coordinates: <span id="orbCoords">N/A</span> | Distance from orb to altar: <span id="orbDistance">Infinity</span></p>
@@ -69,7 +71,7 @@
         }
 
         function getSpawnsJSON() {
-            return JSON.stringify(AltarData[anglemap.currentAltar].spawns.map(p =>[p.x, p.y]));
+            return JSON.stringify(AltarData[anglemap.currentAltar].spawns.map(function (p) { return [p.x, p.y]; }));
         }
 
         $("#gameCanvas").mousedown(function (e) {

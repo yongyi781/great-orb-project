@@ -6,6 +6,8 @@
     WallW,
     WallS,
     WallSW,
+    Minipillar1,
+    Minipillar2,
     LineOfSight,
     PathRunning,
     PathWalking,
@@ -36,7 +38,7 @@ class Anglemap {
                     this.playerY = p.y;
                     this.orbX = this.orbY = NaN;
                 }
-            } else if (this.currentTool >= Tool.Barrier && this.currentTool <= Tool.WallSW) {
+            } else if (this.currentTool >= Tool.Barrier && this.currentTool <= Tool.Minipillar2) {
                 if (<number>this.gopBoard.get(p) === <number>this.currentTool) {
                     let defaultGridState = this.getDefaultGridState(p);
                     this.setTile(p, defaultGridState === this.currentTool ? Tile.Floor : defaultGridState);
