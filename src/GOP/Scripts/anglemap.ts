@@ -170,17 +170,18 @@ class Anglemap {
     // Sets the grid at point p to the new tile.
     setTile(p: Point, tile: Tile) {
         if (this.gopBoard.get(p) !== tile) {
-            if (!this.gopBoard.canMoveWest(p, PathMode.Sight)) {
+            let old = this.gopBoard.get(p);
+            if (old === Tile.WallW) {
                 this.invalidatedSquares.push(new Point(p.x - 1, p.y));
-            }
-            if (!this.gopBoard.canMoveSouth(p, PathMode.Sight)) {
+            } else if (old === Tile.WallS) {
                 this.invalidatedSquares.push(new Point(p.x, p.y - 1));
-            }
-            if (this.gopBoard.get(p) === Tile.WallSW) {
+            } else if (old === Tile.WallSW || old === Tile.Minipillar1 || Tile.Minipillar2) {
+                this.invalidatedSquares.push(new Point(p.x - 1, p.y));
+                this.invalidatedSquares.push(new Point(p.x, p.y - 1));
                 this.invalidatedSquares.push(new Point(p.x - 1, p.y - 1));
             }
-            this.gopBoard.set(p, tile);
             this.invalidatedSquares.push(p);
+            this.gopBoard.set(p, tile);
         }
     }
 
