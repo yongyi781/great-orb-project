@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+    <title>Pitch Spectrum Analyzer</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.5/css/bootstrap.min.css" />
+    <style>
+        canvas {
+            background-color: black;
+        }
+
+        .container input[type=number] {
+            width: 100px;
+        }
+
+        .full-width {
+            width: 100%;
+        }
+
+        .overflow-scroll {
+            overflow-x: hidden;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Pitch spectrum analyzer</h1>
+        <div id="pureTone" class="form-inline">
+            <label for="frequency">Pure tone frequency:</label> <input type="number" class="form-control" id="frequency" value="880" />
+            <button class="btn btn-outline-primary" data-semitones="-1">-1</button>
+            <button class="btn btn-outline-primary" data-semitones="1">+1</button>
+            <button class="btn btn-outline-primary" data-semitones="-12">-12</button>
+            <button class="btn btn-outline-primary" data-semitones="12">+12</button>
+            <input type="number" class="form-control" id="volume" value="-25" />
+            <button id="play" class="btn btn-primary">Play</button>
+            <button id="record" class="btn btn-primary">Start recording</button>
+        </div>
+        <div>
+            <input id="audioFile" type="file" class="full-width" />
+            <audio id="audio" class="full-width" controls></audio>
+        </div>
+        <div class="form-inline">
+            <button id="analyze" class="btn btn-primary">Stop analyzing</button>
+            <button id="clear" class="btn btn-danger">Clear</button>
+            <label for="maxFrequency">Max frequency:</label> <input type="number" class="form-control" id="maxFrequency" value="4000" />
+            <label for="falloff">Half-intensity falloff:</label> <input type="number" class="form-control" id="falloff" value="6" min="0" step="0.5" />
+            <span id="pitch"></span>
+        </div>
+        <div id="analysisContainer">
+            <canvas id="analysisCanvas" width="0" height="576"></canvas>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.1.1.min.js" integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8=" crossorigin="anonymous"></script>
+    <script src="https://tonejs.github.io/CDN/latest/Tone.js"></script>
+    <script>
+        // Fix for close not working for external input > 0
+
+        /**
+         *  Close the media stream
+         *  @return {Tone.ExternalInput} this
+         */
+        Tone.ExternalInput.prototype.close = function(){
+            if(this._stream){
+                var track = this._stream.getTracks()[0];
+                if (!this.isUndef(track)){
+                    track.stop();
+                } 
+                this._stream = null;
+            }
+            return this;
+        };
+    </script>
+    <script src="https://d3js.org/d3.v4.min.js"></script>
+
+    <script>
+        var rampTime = 0.025;
+        var C0 = 16.351597831287414667365624595207;
+        var isPureTonePlaying = false;
+
+        var synth = new Tone.Synth({
+            oscillator: { type: "fmsine", modulationType: "sine", modulationIndex: 0.05946, harmonicity: 0 },
+            envelope: {
+                attack: rampTime,
+                attackCurve: "sine",
+                decay: 0,
+                sustain: 1,
+                release: rampTime,
+                releaseCurve: "sine"
+            }
+        });
+        synth.toMaster();
+        synth.frequency.value = $("#frequency").val();
+        synth.volume.value = $("#volume").val();
+
+        var analyser = new Tone.Analyser(undefined, 4096);
+        analyser.returnType = Tone.Analyser.ReturnType.Float;
+        analyser.smoothing = 0;
+
+        var mic = new Tone.ExternalInput(null);
+        var isMicOpened = false;
+        mic.connect(analyser);
+        synth.connect(analyser);
+
+        var audio = document.querySelector("#audio");
+        var audioSrc = Tone.context.createMediaElementSource(audio);
+        audioSrc.connect(analyser._analyser);
+        audioSrc.connect(Tone.context.destination);
+
+        // Frequency analysis
+
+        var maxAnalyserFrequency = 0.5 / analyser.sampleTime;
+        var pitches = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
+        var isAnalyzing = true;
+
+        var canvas = document.querySelector("canvas"),
+            context = canvas.getContext("2d"),
+            width = canvas.width,
+            height = canvas.height,
+            frame = 0;
+
+        function getColor(pitch, intensity) {
+            var hue = (pitch + 1 / 4) % 1;
+            return d3.cubehelix(360 * hue, 1, 0.65 * intensity).toString();
+        }
+
+        function getPitch(frequency) {
+            var pitch = Math.log2(frequency / C0);
+            return { octave: Math.floor(pitch), pitch: pitch - Math.floor(pitch) };
+        }
+
+        function getPitchStr(frequency) {
+            var obj = getPitch(frequency);
+            var p = Math.round(12 * obj.pitch);
+            if (p >= 12) {
+                p -= 12;
+                ++obj.octave;
+            }
+            return pitches[p] + obj.octave;
+        }
+
+        function hann(x, N) {
+            return x <= 0 || x >= N ? 0 : 1/N * (1 - Math.cos(2*Math.PI*(x-(N-1)/2)/(N-1)));
+        }
+
+        // position "x" in data, interpolation.
+        function getIntensity(x, data, windowSize, gain, falloff) {
+            if (falloff == null) {
+                falloff = 6;
+            }
+
+            if (windowSize <= 4) {
+                // Return weighted average of neighbors
+                var t = x % 1;
+                var y = (1 - t) * data[Math.floor(x)] + t * data[Math.ceil(x)];
+                return Math.pow(2, (y + gain) / falloff);
+            }
+
+            var low = Math.floor(x - windowSize/2);
+            var high = Math.max(low + 1, Math.ceil(x + windowSize/2));
+
+            var avg = 0;
+            for (var i = low; i <= high; i++) {
+                avg += hann(i - x, windowSize) * Math.pow(2, (data[i] + gain) / falloff);
+            }
+
+            return avg;
+        }
+
+        function isAnythingPlaying() {
+            return isMicOpened || isPureTonePlaying || (audio.src !== "" && !audio.paused);
+        }
+
+        function paintSpectrum() {
+            requestAnimationFrame(paintSpectrum);
+
+            if (isAnalyzing && isAnythingPlaying()) {
+                /** @type {Float32Array} */
+                var data = analyser.analyse();
+                var maxDb = Math.max.apply(null, data);
+                var gain = Math.min(70, -maxDb);
+                var hzPerBin = maxAnalyserFrequency / data.length;
+                var dominantFrequency = (data.indexOf(maxDb) + 0.5) * maxAnalyserFrequency / data.length;
+                $("#pitch").text(getPitchStr(dominantFrequency) + ", " + (maxDb + 14).toFixed(0) + " dB");
+
+                var maxFrequency = $("#maxFrequency").val();
+                var hzPerPixel = maxFrequency / height;
+
+                var falloff = $("#falloff").val();
+                for (var y = 0; y < height; y++) {
+                    var intensity = getIntensity(y * hzPerPixel / hzPerBin, data, 2 * hzPerPixel / hzPerBin, gain, falloff);
+
+                    var frequency = (y + 0.5) * hzPerPixel;
+                    context.fillStyle = getColor(getPitch(frequency).pitch, intensity);
+                    context.fillRect(frame % width, height - 1 - y, 1, 1);
+                }
+
+                context.fillStyle = "red";
+                context.fillRect((frame + 1) % width, 0, 1, height);
+
+                ++frame;
+            }
+        }
+
+        function resizeCanvas() {
+            width = canvas.width = $("#analysisContainer").width();
+            frame = 0;
+        }
+
+        $(window).resize(resizeCanvas);
+
+        $("#frequency").on("input", function () {
+            synth.frequency.value = $(this).val();
+        });
+
+        $("#volume").on("input", function () {
+            synth.volume.value = $(this).val();
+        });
+
+        $("#play").click(function () {
+            if (isPureTonePlaying) {
+                isPureTonePlaying = false;
+                synth.triggerRelease();
+                $(this).text("Start");
+            } else {
+                isPureTonePlaying = true;
+                synth.triggerAttack(synth.frequency.value);
+                $(this).text("Stop");
+            }
+        });
+
+        $("#record").click(function () {
+            if (isMicOpened) {
+                isMicOpened = false;
+                mic.stop().close();
+                $(this).text("Start recording");
+            } else {
+                isMicOpened = true;
+                mic.start().open();
+                $(this).text("Stop recording");
+            }
+        });
+
+        $("#analyze").click(function () {
+            isAnalyzing = !isAnalyzing;
+            $(this).text((isAnalyzing ? "Stop" : "Start") + " analyzing");
+        });
+
+        $("#clear").click(function () {
+            frame = 0;
+            context.clearRect(0, 0, width, height);
+        });
+
+        $("#audioFile").change(function (e) {
+            if (e.currentTarget.files.length > 0) {
+                document.querySelector("audio").src = URL.createObjectURL(e.currentTarget.files[0]);
+            }
+        });
+
+        $("#pureTone button[data-semitones]").click(function () {
+            var newFreq = $("#frequency").val() * Math.pow(2, $(this).data("semitones") / 12);
+            synth.frequency.value = newFreq;
+            $("#frequency").val(newFreq);
+        });
+
+        resizeCanvas();
+        requestAnimationFrame(paintSpectrum);
+    </script>
+</body>
+</html>
