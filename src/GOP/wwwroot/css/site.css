@@ -1,17 +1,17 @@
-﻿html, body {
+html, body {
     height: 100%;
 }
 
 body {
-    background-image: url(/images/bg.jpg);
     background-attachment: fixed;
+    background-image: url(/images/bg.jpg);
 }
 
 footer {
-    border-top: 1px solid black;
     border-bottom: 1px solid black;
-    text-align: center;
+    border-top: 1px solid black;
     font-size: 8pt;
+    text-align: center;
 }
 
 footer, .push {
@@ -51,7 +51,7 @@ a:visited {
     color: #fff;
 }
 
-a.youtube {
+.youtube {
     color: #e89d9d;
 }
 
@@ -81,14 +81,14 @@ label > input {
 }
 
 .fill-height {
-    min-height: 100%;
     margin: 0 auto -20px;
+    min-height: 100%;
     padding-bottom: 20px;
 }
 
 .timestamp {
-    font-family: "Droid Sans","Helvetica Neue",Helvetica,Arial,sans-serif;
     color: #666;
+    font-family: "Droid Sans","Helvetica Neue",Helvetica,Arial,sans-serif;
 }
 
 .chatbox-container {
@@ -100,13 +100,13 @@ label > input {
     }
 
 .chat-top-panel {
-    padding: 10px;
     border-bottom: 1px solid #2a9fd6;
+    padding: 10px;
 }
 
 .chatbox-sidebar {
     margin: 10px;
-    min-width: 150px;
+    width: 150px;
 }
 
 .chatbox {
@@ -121,25 +121,25 @@ label > input {
 }
 
 .chat-font {
-    font-size: 13px;
     font-family: Verdana, Geneva, 'DejaVu Sans', sans-serif;
+    font-size: 13px;
     line-height: normal;
 }
 
 .context-menu {
+    background-color: #1b1b1b;
+    border: 1px solid #333333;
+    box-shadow: rgba(0, 0, 0, 0.5) 5px 5px 10px;
     margin: 0;
     padding: 2px 2px 2px 2px;
-    border: 1px solid #333333;
-    background-color: #1b1b1b;
-    box-shadow: rgba(0, 0, 0, 0.5) 5px 5px 10px;
 }
 
 .context-menu-item {
-    display: block;
-    padding: 3px 30px 3px 30px;
     color: #f0f0f0;
-    font-size: 9pt;
     cursor: pointer;
+    display: block;
+    font-size: 9pt;
+    padding: 3px 30px 3px 30px;
 }
 
     .context-menu-item:hover {
@@ -220,10 +220,10 @@ label > input {
 
 .attempted-tick {
     background: url(/images/icon-tick-yellow.png) no-repeat;
-    width: 18px;
+    display: inline-block;
     height: 16px;
     margin-bottom: -2px;
-    display: inline-block;
+    width: 18px;
 }
 
 .for-copying {
