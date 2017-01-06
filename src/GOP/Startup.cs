@@ -51,6 +51,8 @@ namespace GOP
             // Add MVC services to the services container.
             services.AddMvc();
 
+            services.AddResponseCompression();
+
             // Add my own services.
             services.AddSingleton<Random>();
             services.AddSingleton<KickCounter>();
@@ -77,6 +79,8 @@ namespace GOP
                 // sends the request to the following path or controller action.
                 app.UseExceptionHandler("/Home/Error/500");
             }
+
+            app.UseResponseCompression();
 
             // Add cookie-based authentication to the request pipeline.
             app.UseIdentity();

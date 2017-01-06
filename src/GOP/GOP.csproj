@@ -19,12 +19,14 @@
     <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="1.2.0-preview1-23015" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="1.2.0-preview1-23015" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="1.2.0-preview1-23015" />
+    <PackageReference Include="Microsoft.AspNetCore.ResponseCompression" Version="1.1.0-preview1-23015" />
     <PackageReference Include="Microsoft.AspNetCore.Server.IISIntegration" Version="1.2.0-preview1-23015" />
     <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel" Version="1.2.0-preview1-23015" />
     <PackageReference Include="Microsoft.AspNetCore.SignalR.Server" Version="0.2.0-preview2-22683" />
     <PackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="1.2.0-preview1-23015" />
     <PackageReference Include="Microsoft.AspNetCore.WebSockets" Version="1.1.0-preview1-23015" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="1.2.0-preview1-23015" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="1.2.0-preview1-23015" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="1.2.0-preview1-23015" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="1.2.0-preview4-23015" />
     <PackageReference Include="Microsoft.Extensions.Configuration.CommandLine" Version="1.2.0-preview1-23015" />
@@ -37,7 +39,7 @@
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="1.0.0-msbuild2-final" />
   </ItemGroup>
   <ItemGroup>
-    <DotNetCliToolReference Include="Microsoft.EntityFrameworkCore.Tools.DotNet" Version="1.0.0-msbuild1-final" />
+    <DotNetCliToolReference Include="Microsoft.EntityFrameworkCore.Tools.DotNet" Version="1.2.0-preview4-23015" />
     <DotNetCliToolReference Include="Microsoft.Extensions.SecretManager.Tools" Version="1.0.0-msbuild1-final" />
     <DotNetCliToolReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Tools" Version="1.0.0-msbuild1-final" />
   </ItemGroup>
