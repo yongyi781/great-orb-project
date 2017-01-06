@@ -4,6 +4,7 @@
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "noImplicitAny": true,
+    "lib": [ "dom", "es5", "es2015.promise" ],
     "outDir": "../wwwroot/js",
     "pretty": true,
     "target": "es5"

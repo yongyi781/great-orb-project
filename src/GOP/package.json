@@ -2,11 +2,15 @@
   "name": "gop",
   "version": "1.0.0",
   "devDependencies": {
-    "gulp": "*",
-    "gulp-concat": "*",
-    "gulp-cssmin": "*",
-    "gulp-rename": "*",
-    "gulp-uglify": "*",
-    "rimraf": "*"
+    "@types/jquery": "^2.0.39",
+    "@types/qunit": "^2.0.31",
+    "@types/stats": "^0.16.30",
+    "@types/three": "^0.81.0",
+    "gulp": "^3.9.1",
+    "gulp-concat": "^2.6.1",
+    "gulp-cssmin": "^0.1.7",
+    "gulp-rename": "^1.2.2",
+    "gulp-uglify": "^2.0.0",
+    "rimraf": "^2.5.4"
   }
 }
