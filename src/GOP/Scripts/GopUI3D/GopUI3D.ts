@@ -235,7 +235,7 @@
 
         this.skybox = new THREE.Mesh(
             new THREE.CubeGeometry(10000, 10000, 10000),
-            new THREE.MeshFaceMaterial(materialArray));
+            new THREE.MultiMaterial(materialArray));
         this.skybox.rotation.x = Math.PI / 2;
         this.scene.add(this.skybox);
     }
