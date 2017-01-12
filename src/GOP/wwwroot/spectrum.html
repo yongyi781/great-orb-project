@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html>
 <head>
     <meta charset="utf-8" />
@@ -53,8 +53,8 @@
     </div>
 
     <script src="https://code.jquery.com/jquery-3.1.1.min.js" integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8=" crossorigin="anonymous"></script>
-    <script src="https://tonejs.github.io/CDN/latest/Tone.js"></script>
-    <script>
+    <script src="https://tonejs.github.io/build/Tone.min.js"></script>
+    <!--<script>
         // Fix for close not working for external input > 0
 
         /**
@@ -71,7 +71,7 @@
             }
             return this;
         };
-    </script>
+    </script>-->
     <script src="https://d3js.org/d3.v4.min.js"></script>
 
     <script>
@@ -98,7 +98,7 @@
         analyser.returnType = Tone.Analyser.ReturnType.Float;
         analyser.smoothing = 0;
 
-        var mic = new Tone.ExternalInput(null);
+        var mic = new Tone.UserMedia(null);
         var isMicOpened = false;
         mic.connect(analyser);
         synth.connect(analyser);
@@ -233,11 +233,11 @@
         $("#record").click(function () {
             if (isMicOpened) {
                 isMicOpened = false;
-                mic.stop().close();
+                mic.close();
                 $(this).text("Start recording");
             } else {
                 isMicOpened = true;
-                mic.start().open();
+                mic.open();
                 $(this).text("Stop recording");
             }
         });
