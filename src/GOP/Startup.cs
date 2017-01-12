@@ -19,7 +19,7 @@ namespace GOP
                 .SetBasePath(env.ContentRootPath)
                 .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
                 .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true)
-                .AddUserSecrets();
+                .AddUserSecrets<Startup>();
             builder.AddEnvironmentVariables();
             Configuration = builder.Build();
         }
