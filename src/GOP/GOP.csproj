@@ -13,29 +13,29 @@
     <Reference Include="Microsoft.CSharp" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Authentication.Cookies" Version="1.2.0-preview1-23015" />
-    <PackageReference Include="Microsoft.AspNetCore.Authentication.Facebook" Version="1.2.0-preview1-23015" />
-    <PackageReference Include="Microsoft.AspNetCore.Diagnostics" Version="1.2.0-preview1-23015" />
-    <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="1.2.0-preview1-23015" />
-    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="1.2.0-preview1-23015" />
-    <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="1.2.0-preview1-23015" />
-    <PackageReference Include="Microsoft.AspNetCore.ResponseCompression" Version="1.1.0-preview1-23015" />
-    <PackageReference Include="Microsoft.AspNetCore.Server.IISIntegration" Version="1.2.0-preview1-23015" />
-    <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel" Version="1.2.0-preview1-23015" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.Cookies" Version="1.2.0-preview1-23125" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.Facebook" Version="1.2.0-preview1-23125" />
+    <PackageReference Include="Microsoft.AspNetCore.Diagnostics" Version="1.2.0-preview1-23125" />
+    <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="1.2.0-preview1-23125" />
+    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="1.2.0-preview1-23125" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="1.2.0-preview1-23125" />
+    <PackageReference Include="Microsoft.AspNetCore.ResponseCompression" Version="1.1.0-preview1-23125" />
+    <PackageReference Include="Microsoft.AspNetCore.Server.IISIntegration" Version="1.2.0-preview1-23125" />
+    <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel" Version="1.2.0-preview1-23125" />
     <PackageReference Include="Microsoft.AspNetCore.SignalR.Server" Version="0.2.0-preview2-22683" />
-    <PackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="1.2.0-preview1-23015" />
-    <PackageReference Include="Microsoft.AspNetCore.WebSockets" Version="1.1.0-preview1-23015" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="1.2.0-preview1-23015" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="1.2.0-preview1-23015" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="1.2.0-preview1-23015" />
+    <PackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="1.2.0-preview1-23125" />
+    <PackageReference Include="Microsoft.AspNetCore.WebSockets" Version="1.1.0-preview1-23125" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="1.2.0-preview1-23125" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="1.2.0-preview1-23125" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="1.2.0-preview1-23125" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="1.2.0-preview4-23015" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.CommandLine" Version="1.2.0-preview1-23015" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="1.2.0-preview1-23015" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="1.2.0-preview1-23015" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="1.2.0-preview1-23015" />
-    <PackageReference Include="Microsoft.Extensions.Logging" Version="1.2.0-preview1-23015" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="1.2.0-preview1-23015" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="1.2.0-preview1-23015" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.CommandLine" Version="1.2.0-preview1-23125" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="1.2.0-preview1-23125" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="1.2.0-preview1-23125" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="1.2.0-preview1-23125" />
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="1.2.0-preview1-23125" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="1.2.0-preview1-23125" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="1.2.0-preview1-23125" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="1.0.0-msbuild2-final" />
   </ItemGroup>
   <ItemGroup>
