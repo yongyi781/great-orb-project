@@ -37,7 +37,7 @@ namespace GOP
             {
                 options.User.AllowedUserNameCharacters += " ";
             })
-                .AddEntityFrameworkStores<ApplicationDbContext, int>()
+                .AddEntityFrameworkStores<ApplicationDbContext>()
                 .AddDefaultTokenProviders();
 
             // Configure the options for the authentication middleware.

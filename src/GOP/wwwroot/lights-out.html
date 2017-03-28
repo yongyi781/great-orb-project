@@ -166,6 +166,12 @@
             return equal(multiply(lightsOutMatrix, multiply(pseudoinverse, vector)), vector);
         }
 
+        function getAllSolutions(vector) {
+            // Multiply by solution matrix
+            var solVector = multiply(pseudoinverse, vector);
+            return nullOrFlipAllVectors.map(function (v) { return add(v, solVector); });
+        }
+
         function updateSolvable() {
             var solvable = isSolvable(vector);
             $("#solve, #unsolve").prop("disabled", !solvable);
@@ -191,11 +197,7 @@
         $("#board").contextmenu(function (e) { e.preventDefault(); });
 
         $("#solve").click(function () {
-            // Multiply by solution matrix
-            var solVector = multiply(pseudoinverse, vector);
-
-            var minSol = nullOrFlipAllVectors
-                .map(function (v) { return add(v, solVector); })
+        	var minSol = getAllSolutions(vector)
                 .map(function (v) { return { vector: v, total: totalOnes(v) }; })
                 .reduce(function (prev, curr) { return prev.total < curr.total ? prev : curr });
 
