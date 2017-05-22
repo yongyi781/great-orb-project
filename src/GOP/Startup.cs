@@ -40,6 +40,12 @@ namespace GOP
                 .AddEntityFrameworkStores<ApplicationDbContext>()
                 .AddDefaultTokenProviders();
 
+            services.AddFacebookAuthentication(options =>
+            {
+                options.AppId = Configuration["Authentication:Facebook:AppId"];
+                options.AppSecret = Configuration["Authentication:Facebook:AppSecret"];
+            });
+
             // Configure the options for the authentication middleware.
             // You can add options for Google, Twitter and other middleware as shown below.
             // For more information see http://go.microsoft.com/fwlink/?LinkID=532715
@@ -47,6 +53,8 @@ namespace GOP
             {
                 options.Hubs.EnableDetailedErrors = true;
             });
+
+            services.AddLogging();
 
             // Add MVC services to the services container.
             services.AddMvc();
@@ -62,10 +70,6 @@ namespace GOP
         // Configure is called after ConfigureServices is called.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
         {
-            // Add the console logger.
-            loggerFactory.AddConsole(Configuration.GetSection("Logging"));
-            loggerFactory.AddDebug();
-
             app.UseStatusCodePagesWithReExecute("/Home/Error/{0}");
             // Add the following to the request pipeline only in development environment.
             if (env.IsDevelopment())
@@ -83,12 +87,7 @@ namespace GOP
             app.UseResponseCompression();
 
             // Add cookie-based authentication to the request pipeline.
-            app.UseIdentity();
-            app.UseFacebookAuthentication(new FacebookOptions
-            {
-                AppId = Configuration["Authentication:Facebook:AppId"],
-                AppSecret = Configuration["Authentication:Facebook:AppSecret"]
-            });
+            app.UseAuthentication();
 
             app.UseMiddleware<RequestLoggerMiddleware>();
 
