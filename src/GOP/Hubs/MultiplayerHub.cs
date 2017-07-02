@@ -1,41 +1,40 @@
-﻿using Microsoft.AspNetCore.SignalR;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
+using System;
 using System.Threading.Tasks;
 
 namespace GOP.Hubs
 {
     public class MultiplayerHub : Hub
     {
-        public MultiplayerHub(MultiplayerManager manager, ILogger<MultiplayerHub> logger)
+        private readonly IHttpContextAccessor httpContextAccessor;
+
+        public MultiplayerHub(MultiplayerManager manager, ILogger<MultiplayerHub> logger, IHttpContextAccessor httpContextAccessor)
         {
             MultiplayerManager = manager;
             Logger = logger;
+            this.httpContextAccessor = httpContextAccessor;
         }
 
         public MultiplayerManager MultiplayerManager { get; set; }
         public ILogger<MultiplayerHub> Logger { get; set; }
 
-        public override async Task OnConnected()
+        public override async Task OnConnectedAsync()
         {
-            await MultiplayerManager.AddPlayer(Context);
-            await base.OnConnected();
+            await MultiplayerManager.AddPlayer(Context, Groups, httpContextAccessor.HttpContext);
+            await base.OnConnectedAsync();
         }
-
-        public override async Task OnReconnected()
-        {
-            await MultiplayerManager.AddPlayer(Context);
-            await base.OnReconnected();
-        }
-
-        public override async Task OnDisconnected(bool stopCalled)
+        
+        public override async Task OnDisconnectedAsync(Exception exception)
         {
             await MultiplayerManager.RemovePlayer(Context);
-            await base.OnDisconnected(stopCalled);
+            await base.OnDisconnectedAsync(exception);
         }
 
         public Task AddCurrentPlayer()
         {
-            return  MultiplayerManager.AddPlayer(Context);
+            return  MultiplayerManager.AddPlayer(Context, Groups, httpContextAccessor.HttpContext);
         }
 
         public Task SetReady(bool ready)
@@ -80,7 +79,7 @@ namespace GOP.Hubs
 
         public Task NotifySaved()
         {
-            return Clients.All.NotifySaved();
+            return Clients.All.InvokeAsync("NotifySaved");
         }
 
         public Task Rewind(int ticks)

@@ -1,7 +1,7 @@
 ﻿using GOP.Hubs;
 using GOP.Models;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.SignalR;
-using Microsoft.AspNetCore.SignalR.Hubs;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -42,8 +42,7 @@ namespace GOP
         public ApplicationDbContext DbContext { get; set; }
         public IHubContext<MultiplayerHub> HubContext { get; set; }
 
-        public IHubConnectionContext<dynamic> Clients { get { return HubContext.Clients; } }
-        public IGroupManager Groups { get { return HubContext.Groups; } }
+        public IHubConnectionContext<IClientProxy> Clients => HubContext.Clients;
         public dynamic PlayingClients { get { return Clients.Group(PlayingGroup); } }
 
         public Timer Timer { get { return timer; } }
@@ -54,19 +53,18 @@ namespace GOP
         public int Altar { get; set; } = 1;
         public int Seed { get; set; } = 5489;
 
-        public async Task AddPlayer(HubCallerContext context)
+        public async Task AddPlayer(HubCallerContext context, IGroupManager groups, HttpContext httpContext)
         {
-            var httpContext = context.Request.HttpContext;
             if (IsGameRunning)
             {
-                await Clients.Client(context.ConnectionId).Reject(players);
-                await Groups.Remove(context.ConnectionId, PlayingGroup);
-                await Groups.Add(context.ConnectionId, WaitlistGroup);
+                await Clients.Client(context.ConnectionId).InvokeAsync("Reject", players);
+                await groups.RemoveAsync(context.ConnectionId, PlayingGroup);
+                await groups.AddAsync(context.ConnectionId, WaitlistGroup);
             }
             else if (players.TrueForAll(p => p.ConnectionId != context.ConnectionId))
             {
-                await Groups.Remove(context.ConnectionId, WaitlistGroup);
-                await Groups.Add(context.ConnectionId, PlayingGroup);
+                await groups.RemoveAsync(context.ConnectionId, WaitlistGroup);
+                await groups.AddAsync(context.ConnectionId, PlayingGroup);
                 lock (playersLock)
                 {
                     players.Add(new Player
@@ -79,7 +77,7 @@ namespace GOP
                         StartLocation = DefaultStartingLocations[Math.Min(DefaultStartingLocations.Length - 1, players.Count)]
                     });
                 }
-                await Clients.Client(context.ConnectionId).SetGameParams(Altar, Seed);
+                await Clients.Client(context.ConnectionId).InvokeAsync("SetGameParams", Altar, Seed);
                 await PlayingClients.UpdatePlayers(players, true);
                 await UpdatePlayerIndices();
             }
@@ -123,7 +121,7 @@ namespace GOP
                 await StopGame();
 
             HasSaved = false;
-            await Clients.Group(WaitlistGroup).NotifyRejoin();
+            await Clients.Group(WaitlistGroup).InvokeAsync("NotifyRejoin");
 
             foreach (var p in players)
             {
@@ -192,14 +190,14 @@ namespace GOP
         {
             CurrentTick = Math.Max(0, CurrentTick - ticks);
             timer.Change(TickLength, TickLength);
-            return Clients.All.RewindTo(CurrentTick);
+            return Clients.All.InvokeAsync("RewindTo", CurrentTick);
         }
 
         public Task FastForward(int ticks)
         {
             CurrentTick = Math.Min(TicksPerAltar, CurrentTick + ticks);
             Timer.Change(TickLength, TickLength);
-            return Clients.All.FastForwardTo(CurrentTick);
+            return Clients.All.InvokeAsync("FastForwardTo", CurrentTick);
         }
 
         private Player GetPlayer(HubCallerContext context)
@@ -255,7 +253,7 @@ namespace GOP
         private Task UpdatePlayerIndices()
         {
             return Task.WhenAll(Enumerable.Range(0, players.Count).Select(
-                i => (Task)Clients.Client(players[i].ConnectionId).SetPlayerIndex(i)));
+                i => (Task)Clients.Client(players[i].ConnectionId).InvokeAsync("SetPlayerIndex", i)));
         }
 
         private bool IsAttractOrbAction(string action)

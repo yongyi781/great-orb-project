@@ -214,23 +214,30 @@ These are duo angles for feeding orbs quickly.
     </script>
     <environment names="Development">
         <script src="~/lib/knockout/build/knockout-raw.js"></script>
-        <script src="~/lib/signalr/jquery.signalR.js"></script>
     </environment>
     <environment names="Staging,Production">
         <script src="https://cdnjs.cloudflare.com/ajax/libs/knockout/3.4.0/knockout-min.js"></script>
-        <script src="https://ajax.aspnetcdn.com/ajax/signalr/jquery.signalr-2.2.1.min.js"></script>
     </environment>
-    <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <script src="~/js/utils.min.js"></script>
-    <script src="~/signalr/hubs"></script>
+    <script src="~/lib/signalr-client/signalr-client.js"></script>
     <script>
         var baseTitle = document.title,
             newMessages = 0,
-            hub = $.connection.chatHub,
+            hubUrl = "http://" + document.location.host + "/hubs/chat",
+            hub,
             lastMessage,
             viewModel = new ChatViewModel(),
             hidden = "hidden",
             forceScrollThreshold = 100;
+
+        var ConnectionState;
+        (function (ConnectionState) {
+            ConnectionState[ConnectionState["Initial"] = 0] = "Initial";
+            ConnectionState[ConnectionState["Connecting"] = 1] = "Connecting";
+            ConnectionState[ConnectionState["Connected"] = 2] = "Connected";
+            ConnectionState[ConnectionState["Disconnected"] = 3] = "Disconnected";
+        })(ConnectionState || (ConnectionState = {}));
 
         function ChatViewModel() {
             var self = this;
@@ -245,7 +252,7 @@ These are duo angles for feeding orbs quickly.
             });
 
             this.numMessagesToShow.subscribe(function (value) {
-                if (self.messages().length < value && $.connection.hub.state === $.signalR.connectionState.connected)
+                if (self.messages().length < value && hub.connection.connectionState === ConnectionState.Connected)
                     self.getFromServer();
             });
 
@@ -325,99 +332,96 @@ These are duo angles for feeding orbs quickly.
 
         function startConnection() {
             if (!Utils.isSearchCrawler()) {
-                $.connection.hub.start().done(function () {
+                hub = new signalR.HubConnection(hubUrl);
+
+                hub.onClosed = function (error) {
+                    $("#connectionErrors").text(error).show();
+                    setChatStatus(ChatStatus.DISCONNECTED);
+                    // Reconnect periodically
+                    console.log("Reconnecting from onClosed");
+                    startConnection();
+                };
+
+                hub.on("UpdateMessages", function () {
+                    viewModel.getFromServer();
+                });
+
+                hub.on("AddMessage", function (message) {
+                    var forceScroll = chatbox.scrollHeight - chatbox.scrollTop - chatbox.clientHeight < forceScrollThreshold;
+                    viewModel.messages.push(message);
+                    viewModel.processMessage(viewModel.messages().length - 1);
+                    reScroll(forceScroll);
+                    MathJax.Hub.Queue(["Typeset", MathJax.Hub, $("#chatbox [data-jax=true]").last()[0]], [reScroll, forceScroll]);
+
+                    if (document[hidden]) {
+                        ++newMessages;
+                        updateTitle();
+                    }
+                });
+
+                hub.on("EditLastMessage", function (message) {
+                    var forceScroll = chatbox.scrollHeight - chatbox.scrollTop - chatbox.clientHeight < forceScrollThreshold;
+                    var selected = ko.utils.arrayFirst(viewModel.messages(), function (m) {
+                        return m.id === message.id;
+                    });
+                    message.user = selected.user;
+                    var index = viewModel.messages.indexOf(selected);
+                    viewModel.messages.splice(index, 1, message);
+                    viewModel.processMessage(index);
+                    MathJax.Hub.Queue(["Typeset", MathJax.Hub, $("#chatbox [data-jax=true]").last()[0]], [reScroll, forceScroll]);
+                });
+
+                hub.on("DeleteLastMessage", function (id) {
+                    var index = viewModel.messages.indexOf(ko.utils.arrayFirst(viewModel.messages(), function (m) {
+                        return m.id === id;
+                    }));
+
+                    @if (User.IsInRole("Administrators"))
+                    {
+                    <text>
+                    var message = viewModel.messages()[index];
+                    message.deleted = true;
+                    viewModel.messages.splice(index, 1);
+                    viewModel.messages.splice(index, 0, message);
+                    </text>
+                    }
+                    else
+                    {
+                    <text>
+                    viewModel.messages.splice(index, 1);
+                    </text>
+                    }
+                });
+
+                hub.on("UpdateOnlineUsers", function (users) {
+                    viewModel.onlineUsers(users);
+                    MathJax.Hub.Typeset("chatboxOnlineUsers");
+                });
+
+                hub.on("ShowMessage", function (message) {
+                    $("#chatAlert").html(message).show();
+                });
+
+                hub.on("Refresh", function () {
+                    window.location.reload(true);
+                });
+
+                hub.start().then(function () {
                     setChatStatus(ChatStatus.CONNECTED);
                     viewModel.getFromServer();
                     $("#connectionErrors").hide();
+                }).catch(function (e) {
+                    setChatStatus(ChatStatus.DISCONNECTED);
+                    $("#connectionErrors").text("Failed to start the connection.").show();
+                    console.log("Reconnecting from start catch");
+                    setTimeout(startConnection, 1000);
                 });
             }
         }
 
         $(function () {
             if (Utils.getQueryAsBoolean("debug")) {
-                $.connection.hub.logging = true;
-            }
-            $.connection.hub.error(function (error) {
-                $("#connectionErrors").text(error).show();
-                $.connection.hub.stop();
-            });
-
-            $.connection.hub.disconnected(function () {
-                setChatStatus(ChatStatus.DISCONNECTED);
-                // Reconnect periodically
-                setTimeout(function () {
-                    console.log("Reconnecting");
-                    startConnection();
-                }, 2000);
-            });
-
-            $.connection.hub.reconnected(function () {
-                setChatStatus(ChatStatus.CONNECTED);
-                viewModel.getFromServer();
-            });
-
-            hub.client.updateMessages = function () {
-                viewModel.getFromServer();
-            };
-
-            hub.client.addMessage = function (message) {
-                var forceScroll = chatbox.scrollHeight - chatbox.scrollTop - chatbox.clientHeight < forceScrollThreshold;
-                viewModel.messages.push(message);
-                viewModel.processMessage(viewModel.messages().length - 1);
-                reScroll(forceScroll);
-                MathJax.Hub.Queue(["Typeset", MathJax.Hub, $("#chatbox [data-jax=true]").last()[0]], [reScroll, forceScroll]);
-
-                if (document[hidden]) {
-                    ++newMessages;
-                    updateTitle();
-                }
-            };
-
-            hub.client.editLastMessage = function (message) {
-                var forceScroll = chatbox.scrollHeight - chatbox.scrollTop - chatbox.clientHeight < forceScrollThreshold;
-                var selected = ko.utils.arrayFirst(viewModel.messages(), function (m) {
-                    return m.id === message.id;
-                });
-                message.user = selected.user;
-                var index = viewModel.messages.indexOf(selected);
-                viewModel.messages.splice(index, 1, message);
-                viewModel.processMessage(index);
-                MathJax.Hub.Queue(["Typeset", MathJax.Hub, $("#chatbox [data-jax=true]").last()[0]], [reScroll, forceScroll]);
-            };
-
-            hub.client.deleteLastMessage = function (id) {
-                var index = viewModel.messages.indexOf(ko.utils.arrayFirst(viewModel.messages(), function (m) {
-                    return m.id === id;
-                }));
-
-                @if (User.IsInRole("Administrators"))
-                {
-                <text>
-                var message = viewModel.messages()[index];
-                message.deleted = true;
-                viewModel.messages.splice(index, 1);
-                viewModel.messages.splice(index, 0, message);
-                </text>
-                }
-                else
-                {
-                <text>
-                viewModel.messages.splice(index, 1);
-                </text>
-                }
-            };
-
-            hub.client.updateOnlineUsers = function (users) {
-                viewModel.onlineUsers(users);
-                MathJax.Hub.Typeset("chatboxOnlineUsers");
-            };
-
-            hub.client.showMessage = function (message) {
-                $("#chatAlert").html(message).show();
-            };
-
-            hub.client.refresh = function () {
-                window.location.reload(true);
+                hub.logging = true;
             }
 
             $.ajaxSetup({
@@ -464,10 +468,6 @@ These are duo angles for feeding orbs quickly.
                 if (e.keyCode == 27) {
                     e.preventDefault();
                 }
-            });
-
-            $(window).on("beforeunload", function () {
-                setTimeout(function () { $.connection.hub.stop(); }, 0);
             });
 
             $("#messageForm").submit(function (e) {

@@ -1,7 +1,8 @@
 ﻿using GOP.Models;
 using GOP.ViewModels;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.SignalR;
-using Microsoft.Extensions.DependencyInjection;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,11 +12,13 @@ namespace GOP.Hubs
 {
     public class ChatHub : Hub
     {
-        private IServiceScopeFactory serviceScopeFactory;
+        private readonly ApplicationDbContext dbContext;
+        private readonly IHttpContextAccessor httpContextAccessor;
 
-        public ChatHub(IServiceScopeFactory serviceScopeFactory)
+        public ChatHub(ApplicationDbContext dbContext, IHttpContextAccessor httpContextAccessor)
         {
-            this.serviceScopeFactory = serviceScopeFactory;
+            this.dbContext = dbContext;
+            this.httpContextAccessor = httpContextAccessor;
         }
 
         public static ConcurrentDictionary<string, ChatUser> ConnectedUsers { get; } = new ConcurrentDictionary<string, ChatUser>();
@@ -29,36 +32,25 @@ namespace GOP.Hubs
                 IsMobile = g.Any(u => u.IsMobile)
             });
 
-        public override Task OnConnected()
+        public override Task OnConnectedAsync()
         {
-            ConnectedUsers[Context.ConnectionId] = ChatUser.GetCurrentUserNow(Context.Request.HttpContext);
+            ConnectedUsers[Context.ConnectionId] = ChatUser.GetCurrentUserNow(httpContextAccessor.HttpContext);
             BroadcastOnlineUsers();
-            return base.OnConnected();
+            return base.OnConnectedAsync();
         }
 
-        public override Task OnReconnected()
-        {
-            ConnectedUsers[Context.ConnectionId] = ChatUser.GetCurrentUserNow(Context.Request.HttpContext);
-            BroadcastOnlineUsers();
-            return base.OnReconnected();
-        }
-
-        public override Task OnDisconnected(bool stopCalled)
+        public override Task OnDisconnectedAsync(Exception exception)
         {
             ChatUser user;
             ConnectedUsers.TryRemove(Context.ConnectionId, out user);
             BroadcastOnlineUsers();
-            return base.OnDisconnected(stopCalled);
+            return base.OnDisconnectedAsync(exception);
         }
 
         private void BroadcastOnlineUsers()
         {
-            using (var scope = serviceScopeFactory.CreateScope())
-            {
-                var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-                var users = UniqueOnlineUsers.Select(u => db.GetChatUserOnlineView(u));
-                Clients.All.UpdateOnlineUsers(users);
-            }
+            var users = UniqueOnlineUsers.Select(u => dbContext.GetChatUserOnlineView(u));
+            Clients.All.InvokeAsync("UpdateOnlineUsers", users);
         }
     }
 }

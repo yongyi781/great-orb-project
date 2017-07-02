@@ -124,7 +124,7 @@ namespace GOP.Controllers
                                     var value = Random.Next();
                                     var username = DbContext.GetUsername(GopUser.GetCurrentUser(HttpContext));
                                     var randMessage = $"{username} has generated the random number {value}!";
-                                    ChatHub.Clients.All.ShowMessage(randMessage);
+                                    ChatHub.Clients.All.InvokeAsync("ShowMessage", randMessage);
                                     return Content(randMessage);
                                 }
                             case "kick":
@@ -132,14 +132,14 @@ namespace GOP.Controllers
                             case "refresh":
                                 if (User.IsInRole("Administrators"))
                                 {
-                                    ChatHub.Clients.All.Refresh();
+                                    ChatHub.Clients.All.InvokeAsync("Refresh");
                                 }
                                 break;
                             case "su":
                                 if (User.IsInRole("Administrators"))
                                 {
                                     const string updatedMessage = "The server has updated! Please refresh this page.";
-                                    ChatHub.Clients.All.ShowMessage(updatedMessage);
+                                    ChatHub.Clients.All.InvokeAsync("ShowMessage", updatedMessage);
                                     return Content(updatedMessage);
                                 }
                                 break;
@@ -165,7 +165,7 @@ namespace GOP.Controllers
 
                 DbContext.ChatMessages.Add(chatMessage);
                 DbContext.SaveChanges();
-                ChatHub.Clients.All.addMessage(DbContext.GetChatMessageView(chatMessage));
+                ChatHub.Clients.All.InvokeAsync("AddMessage", DbContext.GetChatMessageView(chatMessage));
             }
 
             return new EmptyResult();
@@ -176,8 +176,8 @@ namespace GOP.Controllers
             Utilities.UpdateNickname(HttpContext, DbContext, desiredName);
 
             var users = Hubs.ChatHub.UniqueOnlineUsers.Select(u => DbContext.GetChatUserOnlineView(u));
-            ChatHub.Clients.All.UpdateOnlineUsers(users);
-            ChatHub.Clients.All.UpdateMessages();
+            ChatHub.Clients.All.InvokeAsync("UpdateOnlineUsers", users);
+            ChatHub.Clients.All.InvokeAsync("UpdateMessages");
         }
 
         private void ClearNickname()
@@ -185,8 +185,8 @@ namespace GOP.Controllers
             Utilities.ClearNickname(HttpContext, DbContext);
 
             var users = Hubs.ChatHub.UniqueOnlineUsers.Select(u => DbContext.GetChatUserOnlineView(u));
-            ChatHub.Clients.All.UpdateOnlineUsers(users);
-            ChatHub.Clients.All.UpdateMessages();
+            ChatHub.Clients.All.InvokeAsync("UpdateOnlineUsers", users);
+            ChatHub.Clients.All.InvokeAsync("UpdateMessages");
         }
 
         private void EditLastMessage(string newMessage, bool force = false)
@@ -197,7 +197,7 @@ namespace GOP.Controllers
             last.Text = newMessage;
             last.Timestamp = DateTimeOffset.Now;
             DbContext.SaveChanges();
-            ChatHub.Clients.All.EditLastMessage(DbContext.GetChatMessageView(last));
+            ChatHub.Clients.All.InvokeAsync("EditLastMessage", DbContext.GetChatMessageView(last));
         }
 
         private void DeleteLastMessage(bool force = false)
@@ -210,7 +210,7 @@ namespace GOP.Controllers
                 throw new InvalidOperationException("The last message was written by someone else. You cannot delete someone else's message.");
             DbContext.ChatMessages.Remove(last);
             DbContext.SaveChanges();
-            ChatHub.Clients.All.DeleteLastMessage(lastId);
+            ChatHub.Clients.All.InvokeAsync("DeleteLastMessage", lastId);
         }
     }
 }

@@ -1,4 +1,6 @@
-﻿interface PlayerInfo {
+﻿import * as signalR from "../node_modules/signalr-client/dist/src/index"
+
+interface PlayerInfo {
     connectionId: string;
     ipAddress: string;
     username: string;
@@ -10,47 +12,12 @@
     startLocation: { x: number, y: number };
 }
 
-interface MultiplayerHubConnection extends SignalR.Hub.Connection {
-    client: {
-        updatePlayers(players: PlayerInfo[], arrayModified: boolean): void;
-        removePlayer(index: number): void;
-        setPlayerIndex(index: number): void;
-        setGameParams(altar: number, seed: number): void;
-        rewindTo(tick: number): void;
-        fastForwardTo(tick: number): void;
-        newGame(): void;
-        notifySaved(): void;
-        notifyRejoin(): void;
-        reject(players: PlayerInfo[]): void;
-        setCountdown(countdown: number): void;
-        tick(players: PlayerInfo[], currentTick: number): void;
-    };
-
-    server: {
-        addCurrentPlayer(): void;
-        notifySaved(): void;
-        sendAction(action: string): void;
-        sendNewGameSignal(): void;
-        sendRepel(repel: boolean): void;
-        sendRun(run: boolean): void;
-        sendSaveRequest(code: string, score: number): void;
-        setReady(ready: boolean): void;
-        setGameParams(altar: number, seed: number): void;
-        setPlayerLocation(x: number, y: number): void;
-        setWatching(watching: boolean): void;
-        rewind(ticks: number): void;
-        fastForward(ticks: number): void;
-    };
-}
-
-interface SignalR {
-    multiplayerHub: MultiplayerHubConnection;
-}
-
+enum ConnectionState { Initial, Connecting, Connected, Disconnected }
 enum RunningState { NotReady, Ready, Countdown, Started, Ended }
 
 class MultiplayerGopUI extends GopUI3D {
     sidePanel: MultiplayerSidePanel;
+    hub: signalR.HubConnection;
 
     constructor(container: HTMLDivElement, gameState: GameState, playerIndex: number, public multiplayer: Multiplayer) {
         super(container, gameState, playerIndex);
@@ -81,7 +48,7 @@ class MultiplayerGopUI extends GopUI3D {
         seed = Math.max(0, Math.min(2147483647, seed));
         // Does this altar exist? If not, load default altar.
         Utils.loadAltar(altar).fail(() => { altar = Altar.None; }).always(() => {
-            if ($.connection.hub.state === $.signalR.connectionState.connected) {
+            if (this.hub.connection.state === $.signalR.connectionState.connected) {
                 this.hub.server.setGameParams(altar, seed);
             }
         });
@@ -316,7 +283,7 @@ class MultiplayerGame extends Game {
 
 class Multiplayer {
     gopui: MultiplayerGopUI;
-    hub = $.connection.multiplayerHub;
+    hub: signalR.HubConnection;
     players: PlayerInfo[];
 
     private _runningState = RunningState.NotReady;

@@ -75,7 +75,7 @@ namespace GOP.Controllers
             if (file == null)
                 return BadRequest("There is no file.");
             var header = ContentDispositionHeaderValue.Parse(file.ContentDisposition);
-            var fileNameWithExt = header.FileName.Trim('"');
+            var fileNameWithExt = header.FileName.Value.Trim('"');
             var fileName = Path.GetFileNameWithoutExtension(fileNameWithExt);
             var ext = Path.GetExtension(fileNameWithExt);
             var targetDir = Path.Combine(ApplicationEnvironment.WebRootPath, "uploads");

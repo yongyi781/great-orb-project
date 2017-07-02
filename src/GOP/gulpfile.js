@@ -51,4 +51,8 @@ gulp.task("min:js", ["engine:js", "gopui3d:js"], () => {
         .pipe(gulp.dest("./wwwroot/js/"));
 });
 
-gulp.task("default", ["min:js"]);
+gulp.task("signalr", () => {
+    gulp.src("./node_modules/signalr-client/dist/browser/signalr-client.js").pipe(gulp.dest("./wwwroot/lib/signalr-client"));
+})
+
+gulp.task("default", ["signalr", "min:js"]);

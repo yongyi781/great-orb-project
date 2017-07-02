@@ -1,6 +1,8 @@
-﻿using GOP.Models;
+﻿using GOP.Hubs;
+using GOP.Models;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -49,10 +51,7 @@ namespace GOP
             // Configure the options for the authentication middleware.
             // You can add options for Google, Twitter and other middleware as shown below.
             // For more information see http://go.microsoft.com/fwlink/?LinkID=532715
-            services.AddSignalR(options =>
-            {
-                options.Hubs.EnableDetailedErrors = true;
-            });
+            services.AddSignalR();
 
             services.AddLogging();
 
@@ -93,8 +92,11 @@ namespace GOP
 
             app.UseStaticFiles(new StaticFileOptions { ServeUnknownFileTypes = true });
 
-            app.UseWebSockets();
-            app.UseSignalR();
+            app.UseSignalR(routes =>
+            {
+                routes.MapHub<ChatHub>("hubs/chat");
+                routes.MapHub<MultiplayerHub>("hubs/multiplayer");
+            });
 
             // Add MVC to the request pipeline.
             app.UseMvc(routes =>
