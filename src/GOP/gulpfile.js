@@ -32,6 +32,35 @@ var filesToMinify = [
     "./wwwroot/js/utils.js"
 ];
 
+gulp.task('copy-assets', function () {
+    var assets = {
+        lib: [
+            "./node_modules/bootstrap/dist/js/bootstrap.js",
+            "./node_modules/bootstrap/dist/js/bootstrap.min.js",
+            "./node_modules/tether/dist/js/tether.js",
+            "./node_modules/tether/dist/js/tether.min.js",
+            "./node_modules/jquery/dist/jquery.js",
+            "./node_modules/jquery/dist/jquery.min.js",
+            "./node_modules/knockout/build/output/knockout-latest.debug.js",
+            "./node_modules/knockout/build/output/knockout-latest.js",
+            "./node_modules/stats.js/build/stats.min.js",
+            "./node_modules/tone/build/Tone.js",
+            "./node_modules/tone/build/Tone.min.js"
+        ],
+        css: [
+            "./node_modules/bootswatch/cyborg/bootstrap.css",
+            "./node_modules/bootstrap-social/bootstrap-social.css",
+            "./node_modules/font-awesome/css/font-awesome.css"
+        ],
+        fonts: [
+            "./node_modules/font-awesome/fonts/*"
+       ]
+    };
+    for (var type in assets) {
+        gulp.src(assets[type]).pipe(gulp.dest('./wwwroot/' + type));
+    }
+});
+
 gulp.task("engine:js", () => {
     gulp.src(engineScripts)
         .pipe(concat("./wwwroot/js/gop.js"))

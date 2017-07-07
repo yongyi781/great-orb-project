@@ -42,7 +42,7 @@ namespace GOP
         public ApplicationDbContext DbContext { get; set; }
         public IHubContext<MultiplayerHub> HubContext { get; set; }
 
-        public IHubConnectionContext<IClientProxy> Clients => HubContext.Clients;
+        public IHubClients Clients => HubContext.Clients;
         public dynamic PlayingClients { get { return Clients.Group(PlayingGroup); } }
 
         public Timer Timer { get { return timer; } }

@@ -213,10 +213,10 @@ These are duo angles for feeding orbs quickly.
         MathJax.Hub.Config({ tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']], processEscapes: true} });
     </script>
     <environment names="Development">
-        <script src="~/lib/knockout/build/knockout-raw.js"></script>
+        <script src="~/lib/knockout-latest.debug.js"></script>
     </environment>
     <environment names="Staging,Production">
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/knockout/3.4.0/knockout-min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/knockout/3.4.2/knockout-min.js"></script>
     </environment>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <script src="~/js/utils.min.js"></script>
@@ -332,7 +332,8 @@ These are duo angles for feeding orbs quickly.
 
         function startConnection() {
             if (!Utils.isSearchCrawler()) {
-                hub = new signalR.HubConnection(hubUrl);
+                connection = new signalR.HttpConnection(hubUrl);
+                hub = new signalR.HubConnection(connection);
 
                 hub.onClosed = function (error) {
                     $("#connectionErrors").text(error).show();

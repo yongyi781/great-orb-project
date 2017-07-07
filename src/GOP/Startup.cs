@@ -39,10 +39,11 @@ namespace GOP
             {
                 options.User.AllowedUserNameCharacters += " ";
             })
-                .AddEntityFrameworkStores<ApplicationDbContext>()
+                .AddUserStore<UserStore<ApplicationUser, IdentityRole<int>, ApplicationDbContext, int>>()
+                .AddRoleStore<RoleStore<IdentityRole<int>, ApplicationDbContext, int>>()
                 .AddDefaultTokenProviders();
 
-            services.AddFacebookAuthentication(options =>
+            services.AddAuthentication().AddFacebook(options =>
             {
                 options.AppId = Configuration["Authentication:Facebook:AppId"];
                 options.AppSecret = Configuration["Authentication:Facebook:AppSecret"];
