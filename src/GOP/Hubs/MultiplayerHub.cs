@@ -79,7 +79,7 @@ namespace GOP.Hubs
 
         public Task NotifySaved()
         {
-            return Clients.All.InvokeAsync("NotifySaved");
+            return Clients.All.SendAsync("NotifySaved");
         }
 
         public Task Rewind(int ticks)

@@ -43,8 +43,8 @@
         <div class="form-inline">
             <button id="analyze" class="btn btn-primary">Stop analyzing</button>
             <button id="clear" class="btn btn-danger">Clear</button>
-            <label for="maxFrequency">Max frequency:</label> <input type="number" class="form-control" id="maxFrequency" value="4000" />
-            <label for="falloff">Half-intensity falloff:</label> <input type="number" class="form-control" id="falloff" value="6" min="0" step="0.5" />
+            <label for="maxFrequency">Max frequency:</label> <input type="number" class="form-control" id="maxFrequency" value="1500" />
+            <label for="falloff">Half-intensity falloff:</label> <input type="number" class="form-control" id="falloff" value="9" min="0" step="0.5" />
             <span id="pitch"></span>
         </div>
         <div id="analysisContainer">
@@ -72,6 +72,31 @@
             return this;
         };
     </script>-->
+    <script>
+        /**
+         *  Allows user select device
+         */
+        Tone.UserMedia.prototype.openAny = function() {
+            //do getUserMedia
+            var constraints = {
+                audio : {
+                    "echoCancellation": false,
+                    "sampleRate" : this.context.sampleRate
+                }
+            };
+            return navigator.mediaDevices.getUserMedia(constraints).then(function(stream){
+                //start a new source only if the previous one is closed
+                if (!this._stream){
+                    this._stream = stream;
+                    //Wrap a MediaStreamSourceNode around the live input stream.
+                    this._mediaStream = this.context.createMediaStreamSource(stream);
+                    //Connect the MediaStreamSourceNode to a gate gain node
+                    this._mediaStream.connect(this.output);
+                } 
+                return this;
+            }.bind(this));
+        };
+    </script>
     <script src="https://d3js.org/d3.v4.min.js"></script>
 
     <script>
@@ -95,10 +120,10 @@
         synth.volume.value = $("#volume").val();
 
         var analyser = new Tone.Analyser(undefined, 4096);
-        analyser.returnType = Tone.Analyser.ReturnType.Float;
+        //analyser.returnType = Tone.Analyser.ReturnType.Float;
         analyser.smoothing = 0;
 
-        var mic = new Tone.UserMedia(null);
+        var mic = new Tone.UserMedia();
         var isMicOpened = false;
         mic.connect(analyser);
         synth.connect(analyser);
@@ -177,7 +202,7 @@
 
             if (isAnalyzing && isAnythingPlaying()) {
                 /** @type {Float32Array} */
-                var data = analyser.analyse();
+                var data = analyser.getValue();
                 var maxDb = Math.max.apply(null, data);
                 var gain = Math.min(70, -maxDb);
                 var hzPerBin = maxAnalyserFrequency / data.length;
@@ -237,7 +262,7 @@
                 $(this).text("Start recording");
             } else {
                 isMicOpened = true;
-                mic.open();
+                mic.openAny();
                 $(this).text("Stop recording");
             }
         });

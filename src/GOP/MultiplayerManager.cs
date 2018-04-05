@@ -57,7 +57,7 @@ namespace GOP
         {
             if (IsGameRunning)
             {
-                await Clients.Client(context.ConnectionId).InvokeAsync("Reject", players);
+                await Clients.Client(context.ConnectionId).SendAsync("Reject", players);
                 await groups.RemoveAsync(context.ConnectionId, PlayingGroup);
                 await groups.AddAsync(context.ConnectionId, WaitlistGroup);
             }
@@ -77,7 +77,7 @@ namespace GOP
                         StartLocation = DefaultStartingLocations[Math.Min(DefaultStartingLocations.Length - 1, players.Count)]
                     });
                 }
-                await Clients.Client(context.ConnectionId).InvokeAsync("SetGameParams", Altar, Seed);
+                await Clients.Client(context.ConnectionId).SendAsync("SetGameParams", Altar, Seed);
                 await PlayingClients.UpdatePlayers(players, true);
                 await UpdatePlayerIndices();
             }
@@ -121,7 +121,7 @@ namespace GOP
                 await StopGame();
 
             HasSaved = false;
-            await Clients.Group(WaitlistGroup).InvokeAsync("NotifyRejoin");
+            await Clients.Group(WaitlistGroup).SendAsync("NotifyRejoin");
 
             foreach (var p in players)
             {
@@ -190,14 +190,14 @@ namespace GOP
         {
             CurrentTick = Math.Max(0, CurrentTick - ticks);
             timer.Change(TickLength, TickLength);
-            return Clients.All.InvokeAsync("RewindTo", CurrentTick);
+            return Clients.All.SendAsync("RewindTo", CurrentTick);
         }
 
         public Task FastForward(int ticks)
         {
             CurrentTick = Math.Min(TicksPerAltar, CurrentTick + ticks);
             Timer.Change(TickLength, TickLength);
-            return Clients.All.InvokeAsync("FastForwardTo", CurrentTick);
+            return Clients.All.SendAsync("FastForwardTo", CurrentTick);
         }
 
         private Player GetPlayer(HubCallerContext context)
@@ -253,7 +253,7 @@ namespace GOP
         private Task UpdatePlayerIndices()
         {
             return Task.WhenAll(Enumerable.Range(0, players.Count).Select(
-                i => (Task)Clients.Client(players[i].ConnectionId).InvokeAsync("SetPlayerIndex", i)));
+                i => (Task)Clients.Client(players[i].ConnectionId).SendAsync("SetPlayerIndex", i)));
         }
 
         private bool IsAttractOrbAction(string action)

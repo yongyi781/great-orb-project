@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8" />
     <title>Frequency Discrimination Testing</title>
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="css/bootstrap.min.css" />
     <style>
         .container input[type=number] {
             width: 100px;
@@ -127,7 +127,7 @@
         </div>
         <div id="history" data-bind="visible: (parameters.showFeedback() || showResults()) && results.history().length > 0" style="display: none">
             <h2>History</h2>
-            <table class="table table-striped">
+            <table id="historyTable" class="table table-striped">
                 <thead>
                     <tr>
                         <th>#</th>
@@ -137,6 +137,7 @@
                         <th>Correct answer</th>
                         <th>Correct?</th>
                         <th>Turnaround?</th>
+                        <th>Replay</th>
                     </tr>
                 </thead>
                 <tbody data-bind="foreach: results.history.slice(0).reverse()">
@@ -148,6 +149,7 @@
                         <td data-bind="text: correctAnswer"></td>
                         <td data-bind="text: correct ? 'Correct' : 'Incorrect'"></td>
                         <td data-bind="text: turnedAround ? 'Yes' : ''"></td>
+                        <td><button class="btn btn-primary btn-sm" data-bind="attr: { 'data-id': id }">Replay</button></td>
                     </tr>
                 </tbody>
             </table>
@@ -159,8 +161,8 @@
         </div>
     </div>
 
-    <script src="https://code.jquery.com/jquery-3.1.1.min.js" integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8=" crossorigin="anonymous"></script>
-    <script src="http://cdnjs.cloudflare.com/ajax/libs/knockout/3.4.0/knockout-min.js"></script>
+    <script src="lib/jquery.min.js"></script>
+    <script src="lib/knockout-latest.js"></script>
     <script src="lib/Tone.min.js"></script>
     <script src="js/utils.min.js"></script>
 
@@ -324,13 +326,13 @@
             this.running = ko.observable(false);
             this.showResults = ko.observable(false);
 
-            this.playSound = function () {
-                var reverse = this.correctAnswer === "first";
-                var xToneDb1 = this.toneDb1 + this.parameters.calibration();
-                var xToneDb2 = this.toneDb2 + this.parameters.calibration();
+            this.playSound = function (correctAnswer, freqDiff, toneDb1, toneDb2) {
+                var reverse = correctAnswer === "first";
+                var xToneDb1 = toneDb1 + this.parameters.calibration();
+                var xToneDb2 = toneDb2 + this.parameters.calibration();
                 //var xNoiseLevel = this.parameters.noiseLevel() + this.parameters.calibration();
 
-                var freq2 = this.parameters.frequency() + this.currentFreqDiff;
+                var freq2 = this.parameters.frequency() + freqDiff;
                 var xToneFreq1 = reverse ? freq2 : this.parameters.frequency();
                 var xToneFreq2 = reverse ? this.parameters.frequency() : freq2;
 
@@ -383,7 +385,7 @@
                 }
 
                 this.correctAnswer = Math.random() < 0.5 ? "first" : "second";
-                this.playSound();
+                this.playSound(this.correctAnswer, this.currentFreqDiff, this.toneDb1, this.toneDb2);
             };
 
             this.answered = function (answer) {
@@ -456,6 +458,11 @@
         $("#copyData").click(function (e) {
             selectText("jsonData");
             document.execCommand("copy");
+        });
+
+        $("#historyTable").on("click", "button", function (e) {
+            var entry = experimentViewModel.results.history()[$(this).data("id")];
+            experimentViewModel.playSound(entry.correctAnswer, entry.freqDiff, entry.toneDb1, entry.toneDb2);
         });
 
         ko.applyBindings(experimentViewModel);

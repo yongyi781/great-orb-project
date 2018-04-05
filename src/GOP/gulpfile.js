@@ -49,6 +49,7 @@ gulp.task('copy-assets', function () {
         ],
         css: [
             "./node_modules/bootswatch/cyborg/bootstrap.css",
+            "./node_modules/bootswatch/cyborg/bootstrap.min.css",
             "./node_modules/bootstrap-social/bootstrap-social.css",
             "./node_modules/font-awesome/css/font-awesome.css"
         ],
@@ -81,7 +82,7 @@ gulp.task("min:js", ["engine:js", "gopui3d:js"], () => {
 });
 
 gulp.task("signalr", () => {
-    gulp.src("./node_modules/signalr-client/dist/browser/signalr-client.js").pipe(gulp.dest("./wwwroot/lib/signalr-client"));
+    gulp.src("./node_modules/@aspnet/signalr-client/dist/browser/signalr-client.js").pipe(gulp.dest("./wwwroot/lib"));
 })
 
 gulp.task("default", ["signalr", "min:js"]);

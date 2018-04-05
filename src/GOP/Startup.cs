@@ -92,11 +92,11 @@ namespace GOP
             app.UseMiddleware<RequestLoggerMiddleware>();
 
             app.UseStaticFiles(new StaticFileOptions { ServeUnknownFileTypes = true });
-
+            app.UseWebSockets();
             app.UseSignalR(routes =>
             {
-                routes.MapHub<ChatHub>("hubs/chat");
-                routes.MapHub<MultiplayerHub>("hubs/multiplayer");
+                routes.MapHub<ChatHub>("/hubs/chat");
+                routes.MapHub<MultiplayerHub>("/hubs/multiplayer");
             });
 
             // Add MVC to the request pipeline.

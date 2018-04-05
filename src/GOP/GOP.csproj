@@ -1,7 +1,7 @@
 ﻿<Project ToolsVersion="15.0" Sdk="Microsoft.NET.Sdk.Web">
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net47</TargetFramework>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
     <MvcRazorCompileOnPublish>true</MvcRazorCompileOnPublish>
     <PackageTargetFallback>$(PackageTargetFallback);portable-net45+win8+wp8+wpa81;</PackageTargetFallback>
     <AssemblyName>GOP</AssemblyName>
@@ -11,34 +11,12 @@
     <TypeScriptToolsVersion>Latest</TypeScriptToolsVersion>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore" Version="2.0.0-rtm-26146" />
-    <PackageReference Include="Microsoft.AspNetCore.Authentication.Cookies" Version="2.0.0-rtm-26146" />
-    <PackageReference Include="Microsoft.AspNetCore.Authentication.Facebook" Version="2.0.0-rtm-26146" />
-    <PackageReference Include="Microsoft.AspNetCore.Diagnostics" Version="2.0.0-rtm-26146" />
-    <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="2.0.0-rtm-26146" />
-    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="2.0.0-rtm-26146" />
-    <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="2.0.0-rtm-26146" />
-    <PackageReference Include="Microsoft.AspNetCore.ResponseCompression" Version="2.0.0-rtm-26146" />
-    <PackageReference Include="Microsoft.AspNetCore.Server.IISIntegration" Version="2.0.0-rtm-26146" />
-    <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel" Version="2.0.0-rtm-26146" />
-    <PackageReference Include="Microsoft.AspNetCore.SignalR.Http" Version="1.0.0-alpha1-26146" />
-    <PackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="2.0.0-rtm-26146" />
-    <PackageReference Include="Microsoft.AspNetCore.WebSockets" Version="2.0.0-rtm-26146" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="2.0.0-rtm-26146" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="2.0.0-rtm-26146" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="2.0.0-rtm-26146" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.CommandLine" Version="2.0.0-rtm-26146" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="2.0.0-rtm-26146" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="2.0.0-rtm-26146" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="2.0.0-rtm-26146" />
-    <PackageReference Include="Microsoft.Extensions.Logging" Version="2.0.0-rtm-26146" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="2.0.0-rtm-26146" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="2.0.0-rtm-26146" />
+    <PackageReference Include="Microsoft.AspNetCore.All" Version="2.1.0-preview1-final" />
   </ItemGroup>
   <ItemGroup>
-    <DotNetCliToolReference Include="Microsoft.EntityFrameworkCore.Tools.DotNet" Version="2.0.0-rtm-26146" />
-    <DotNetCliToolReference Include="Microsoft.Extensions.SecretManager.Tools" Version="2.0.0-rtm-26146" />
-    <DotNetCliToolReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Tools" Version="2.0.0-rtm-26146" />
+    <DotNetCliToolReference Include="Microsoft.EntityFrameworkCore.Tools" Version="2.1.0-preview1-final" />
+    <DotNetCliToolReference Include="dotnet-user-secrets" Version="2.1.0-preview1-final" />
+    <DotNetCliToolReference Include="dotnet-aspnet-codegenerator" Version="2.1.0-preview1-final" />
   </ItemGroup>
   <ItemGroup>
     <Compile Remove="wwwroot\audio\**" />
@@ -63,5 +41,61 @@
   <ItemGroup>
     <None Remove="requests.log" />
     <None Remove="requests1.log" />
+    <None Remove="Scripts\anglemap.ts" />
+    <None Remove="Scripts\Engine\AltarData.ts" />
+    <None Remove="Scripts\Engine\Enums.ts" />
+    <None Remove="Scripts\Engine\GameAction.ts" />
+    <None Remove="Scripts\Engine\GameplayData.ts" />
+    <None Remove="Scripts\Engine\GameState.ts" />
+    <None Remove="Scripts\Engine\GopBoard.ts" />
+    <None Remove="Scripts\Engine\GopCanvas.ts" />
+    <None Remove="Scripts\Engine\GopObject.ts" />
+    <None Remove="Scripts\Engine\MersenneTwister.ts" />
+    <None Remove="Scripts\Engine\Orb.ts" />
+    <None Remove="Scripts\Engine\Player.ts" />
+    <None Remove="Scripts\Engine\Point.ts" />
+    <None Remove="Scripts\gopui.ts" />
+    <None Remove="Scripts\GopUI3D\AttractDot.ts" />
+    <None Remove="Scripts\GopUI3D\ClickIndicator.ts" />
+    <None Remove="Scripts\GopUI3D\FollowCamera.ts" />
+    <None Remove="Scripts\GopUI3D\Game.ts" />
+    <None Remove="Scripts\GopUI3D\GopUI3D.ts" />
+    <None Remove="Scripts\GopUI3D\InfoBox.ts" />
+    <None Remove="Scripts\GopUI3D\OptionsMenu.ts" />
+    <None Remove="Scripts\GopUI3D\OrbObject.ts" />
+    <None Remove="Scripts\GopUI3D\PlayerObject.ts" />
+    <None Remove="Scripts\multiplayer.ts" />
+    <None Remove="Scripts\tests\engine.ts" />
+    <None Remove="Scripts\tests\parsingFormatting.ts" />
+    <None Remove="Scripts\utils.ts" />
+  </ItemGroup>
+  <ItemGroup>
+    <TypeScriptCompile Include="Scripts\anglemap.ts" />
+    <TypeScriptCompile Include="Scripts\Engine\AltarData.ts" />
+    <TypeScriptCompile Include="Scripts\Engine\Enums.ts" />
+    <TypeScriptCompile Include="Scripts\Engine\GameAction.ts" />
+    <TypeScriptCompile Include="Scripts\Engine\GameplayData.ts" />
+    <TypeScriptCompile Include="Scripts\Engine\GameState.ts" />
+    <TypeScriptCompile Include="Scripts\Engine\GopBoard.ts" />
+    <TypeScriptCompile Include="Scripts\Engine\GopCanvas.ts" />
+    <TypeScriptCompile Include="Scripts\Engine\GopObject.ts" />
+    <TypeScriptCompile Include="Scripts\Engine\MersenneTwister.ts" />
+    <TypeScriptCompile Include="Scripts\Engine\Orb.ts" />
+    <TypeScriptCompile Include="Scripts\Engine\Player.ts" />
+    <TypeScriptCompile Include="Scripts\Engine\Point.ts" />
+    <TypeScriptCompile Include="Scripts\gopui.ts" />
+    <TypeScriptCompile Include="Scripts\GopUI3D\AttractDot.ts" />
+    <TypeScriptCompile Include="Scripts\GopUI3D\ClickIndicator.ts" />
+    <TypeScriptCompile Include="Scripts\GopUI3D\FollowCamera.ts" />
+    <TypeScriptCompile Include="Scripts\GopUI3D\Game.ts" />
+    <TypeScriptCompile Include="Scripts\GopUI3D\GopUI3D.ts" />
+    <TypeScriptCompile Include="Scripts\GopUI3D\InfoBox.ts" />
+    <TypeScriptCompile Include="Scripts\GopUI3D\OptionsMenu.ts" />
+    <TypeScriptCompile Include="Scripts\GopUI3D\OrbObject.ts" />
+    <TypeScriptCompile Include="Scripts\GopUI3D\PlayerObject.ts" />
+    <TypeScriptCompile Include="Scripts\multiplayer.ts" />
+    <TypeScriptCompile Include="Scripts\tests\engine.ts" />
+    <TypeScriptCompile Include="Scripts\tests\parsingFormatting.ts" />
+    <TypeScriptCompile Include="Scripts\utils.ts" />
   </ItemGroup>
 </Project>

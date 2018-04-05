@@ -32,25 +32,25 @@ namespace GOP.Hubs
                 IsMobile = g.Any(u => u.IsMobile)
             });
 
-        public override Task OnConnectedAsync()
+        public override async Task OnConnectedAsync()
         {
             ConnectedUsers[Context.ConnectionId] = ChatUser.GetCurrentUserNow(httpContextAccessor.HttpContext);
-            BroadcastOnlineUsers();
-            return base.OnConnectedAsync();
+            await BroadcastOnlineUsers();
+            await base.OnConnectedAsync();
         }
 
-        public override Task OnDisconnectedAsync(Exception exception)
+        public override async Task OnDisconnectedAsync(Exception exception)
         {
             ChatUser user;
             ConnectedUsers.TryRemove(Context.ConnectionId, out user);
-            BroadcastOnlineUsers();
-            return base.OnDisconnectedAsync(exception);
+            await BroadcastOnlineUsers();
+            await base.OnDisconnectedAsync(exception);
         }
 
-        private void BroadcastOnlineUsers()
+        private Task BroadcastOnlineUsers()
         {
-            var users = UniqueOnlineUsers.Select(u => dbContext.GetChatUserOnlineView(u));
-            Clients.All.InvokeAsync("UpdateOnlineUsers", users);
+            var users = UniqueOnlineUsers.Select(u => dbContext.GetChatUserOnlineView(u)).ToList();
+            return Clients.All.SendAsync("UpdateOnlineUsers", users);
         }
     }
 }

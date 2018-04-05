@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html>
 <head>
     <title>Test Page</title>
@@ -7,11 +7,18 @@
     <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" />
 </head>
 <body>
-    <button>a</button>
+    <button id="a">a</button>
+    <script src="lib/knockout-latest.debug.js"></script>
     <script>
         class Hello {
-
+            something() {
+                var y = 3;
+            }
         }
+
+        document.querySelector("#a").addEventListener("click", () => {
+            alert("Hm");
+        });
     </script>
 </body>
 </html>
