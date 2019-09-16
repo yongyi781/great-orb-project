@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>N-grams</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO"
+        crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49"
+        crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <style>
+        .ready {
+            background-color: #a8ffcc;
+        }
+
+        .notReady {
+            background-color: #eeeeee;
+            color: #808080;
+        }
+
+        .float-right {
+            float: right;
+            width: 650px;
+        }
+
+        .resizableTextBox {
+            overflow: hidden;
+            padding-left: 6px;
+            padding-right: 6px;
+        }
+
+        .resizableTextBox input {
+            width: 100%;
+        }
+
+        #sendButton {
+            float: right;
+        }
+
+        pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            height: 300px;
+        }
+
+    </style>
+</head>
+
+<body>
+    <div id="container">
+        <table class="table table-sm float-right">
+            <thead>
+                <tr>
+                    <th>Key</th>
+                    <th>Ability</th>
+                    <th>Range</th>
+                    <th>Mean</th>
+                    <th>DPT</th>
+                    <th>Cooldown</th>
+                    <th>Potential</th>
+                </tr>
+            </thead>
+            <tbody v-for="a in abilityView">
+                <tr v-bind:class="getRowClass(a)">
+                    <td><input v-model="a.keybind" maxlength="1" size="1"></td>
+                    <td>{{a.name}}</td>
+                    <td>{{damageRange(a)}}</td>
+                    <td>{{m.getMeanDamage(a).toFixed(1)}}</td>
+                    <td>{{m.getDamagePerTick(a).toFixed(1)}}</td>
+                    <td>{{a.cooldownTimer.currentCooldown}}</td>
+                    <td>{{m.getPotential(a).toFixed(1)}}</td>
+                </tr>
+            </tbody>
+        </table>
+        <div style="overflow: hidden">
+            <div class="container">
+                <h1 id="header">DPS</h1>
+                <div>
+                    Ability damage: <input type="number" v-model.number="m.abilityDamage" min="0"><br>
+                    Precise: <input type="number" v-model.number="m.preciseRank" min="0" max="5"><br>
+                    Equilibrium: <input type="number" v-model.number="m.equilibriumRank" min="0" max="3"><br>
+                    Biting: <input type="number" v-model.number="m.bitingRank" min="0" max="3"><br>
+                    Prayer boost: <input type="number" v-model.number="m.multiplicativeBoost" min="1" max="2" step="0.01">
+                </div>
+                <div>
+                    Damage: {{m.totalDamage.toFixed(0)}}<br>
+                    Ticks: {{m.totalTicks}}<br>
+                    Adrenaline: {{m.adrenaline}}<br>
+                    DPM: {{(100 * m.totalDamage / m.totalTicks).toFixed(2)}}<br>
+                </div>
+                <div>
+                    <button id="resetButton" class="btn btn-danger">Reset</button>
+                </div>
+                <div>
+                    <span style="float: left">Ability input:</span>
+                    <button id="sendButton" class="btn btn-primary">Send</button>
+                    <div class="resizableTextBox"><input id="abilityInput"></div>
+                </div>
+                <hr>
+                <pre>{{abilityInputStr()}}</pre>
+                <div>
+                    <input type="number" v-model.number="autopilotBranching" min="2" max="4">
+                    <input type="number" v-model.number="autopilotDepth" min="1" max="16">
+                    <input v-model="autopilotPrefix">
+                    <button id="autopilot" class="btn btn-primary">Autopilot</button>
+                </div>
+            </div>
+            
+        </div>
+    </div>
+    <script src="js/dps.js"></script>
+</body>
+
+</html>

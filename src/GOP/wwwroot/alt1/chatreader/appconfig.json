@@ -1,0 +1,15 @@
+{
+  "appName": "Chatreader app",
+  "description": "This app is an example for other developers, this text will show up in the app list.",
+  "appUrl": "/alt1/chatreader/",
+  "configUrl": "/alt1/chatreader/appconfig.json",
+  "defaultWidth": 300,
+  "defaultHeight": 300,
+  "minWidth": 200,
+  "minHeight": 200,
+  "maxWidth": 1000,
+  "maxHeight": 1000,
+  "requestHandlers": [],
+  "activators": [ "Drop Blue partyhat", "Drop Purple partyhat", "regex:Activate (?<abil>[\\w ]+)" ],
+  "permissions": "pixel,gamestate,overlay"
+}

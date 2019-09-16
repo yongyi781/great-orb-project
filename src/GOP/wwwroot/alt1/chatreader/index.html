@@ -1,0 +1,41 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+    <link rel="stylesheet" type="text/css" href="https://runeapps.org/nis/nis.css" />
+    <style type="text/css">
+        #result {
+            position: absolute;
+            top: 50px;
+            right: 5px;
+            bottom: 5px;
+            left: 5px;
+            white-space: pre;
+            background: rgba(0, 0, 0, 0.5);
+            outline: 1px solid gray;
+            padding: 5px;
+            font: 10pt monospace;
+            overflow-x: scroll;
+            overflow-y: auto;
+        }
+
+        #captureButton {
+            width: 100px;
+        }
+    </style>
+
+    <script defer src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
+        crossorigin="anonymous"></script>
+    <script defer src="/alt1/alt1lib.js"></script>
+    <script defer src="/alt1/imagedetect.js"></script>
+    <script defer src="/alt1/runeappslib.js"></script>
+    <script defer src="/alt1/imagelibs/chatbox.js"></script>
+    <script defer src="chatreader.js"></script>
+</head>
+
+<body class="nis">
+    <div id="captureButton" class="nisbutton">Capture</div>
+    <div id="result" class="nistext">Hello world!</div>
+</body>
+
+</html>

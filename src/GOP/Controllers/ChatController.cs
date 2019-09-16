@@ -157,7 +157,7 @@ namespace GOP.Controllers
             {
                 var chatMessage = new ChatMessage
                 {
-                    IpAddress = HttpContext.Connection.RemoteIpAddress.ToString(),
+                    IpAddress = HttpContext.Connection.RemoteIpAddress.ToShortString(),
                     Timestamp = DateTimeOffset.Now,
                     UserId = UserManager.GetUserIdInt32(User),
                     Text = message

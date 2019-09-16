@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>N-grams</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO"
+        crossorigin="anonymous">
+    <style>
+        pre {
+            font-size: 10pt;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1 id="header">N-grams</h1>
+        <p>Keep pressing d and f as randomly as you can. <span id="antioracle"></span></p>
+        <pre id="report"></pre>
+    </div>
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49"
+        crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy"
+        crossorigin="anonymous"></script>
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const N = Math.max(0, Math.min(12, parseInt(urlParams.get("n"), 10) || 5));
+        const M = Math.max(1, parseInt(urlParams.get("m"), 10) || 1);
+        let text = new Array(M).fill("");
+        let freqs = {};
+        let m = 0;
+
+        function formatReport() {
+            let keys = Object.keys(freqs).sort((a, b) => freqs[b] - freqs[a]);
+            let str = "";
+            for (let k of keys) {
+                str += k + "\t" + freqs[k] + "\r\n";
+            }
+            return str;
+        }
+
+        function processKey(key, update = false) {
+            if (key === 'f' || key === 'd') {
+                text[m] += key;
+
+                if (text[m].length >= N) {
+                    text[m] = text[m].substr(text[m].length - N);
+                    ++freqs[text[m]];
+                }
+                m = (m + 1) % M;
+                if (update) {
+                    updateReport();
+                }
+            }
+        }
+
+        function processStr(str) {
+            for (key of str) {
+                processKey(key);
+            }
+            updateReport();
+        }
+
+        function processRandomKeys(n = 1000) {
+            for (let i = 0; i < n; i++) { 
+                processKey(Math.random() < 0.5 ? 'd' : 'f');
+            }
+            updateReport();
+        }
+
+        // p = probability of pressing the opposite key
+        function processSimpleModel(p = 0.5, n = 1000) {
+            let prevIndex = 0;
+            for (let i = 0; i < n; i++) {
+                let index = Math.random() < p ? 1 - prevIndex : prevIndex;
+                processKey("df"[index]);
+                prevIndex = index;
+            }
+            updateReport();
+        }
+
+        function updateReport() {
+            document.querySelector("#report").innerHTML = formatReport();
+        }
+
+        function antiOracle(length = 100) {
+            let str = "";
+            while (text[m].length < N) {
+                let key = Math.random() < 0.5 ? 'd' : 'f';
+                processKey(key);
+                str += key;
+            }
+            for (let i = 0; i < length; i++) {
+                let s = text[m].substr(1);
+                let key = freqs[s + 'd'] < freqs[s + 'f'] ? 'd' : 'f';
+                processKey(key);
+                str += key;
+            }
+            return str;
+        }
+
+        document.querySelector("#header").innerHTML += " (N = " + N + ", M = " + M + ")"
+
+        for (let i = 0; i < Math.pow(2, N); i++) {
+            str = i.toString(2).replace(/[01]/g, s => "df"[s === '1' ? 1 : 0]).padStart(N, 'd');
+            freqs[str] = 0;
+        }
+
+        $(document).keydown(e => {
+            processKey(e.key, true);
+        });
+    </script>
+</body>
+
+</html>

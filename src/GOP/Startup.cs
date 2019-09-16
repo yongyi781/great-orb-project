@@ -82,8 +82,10 @@ namespace GOP
                 // Add Error handling middleware which catches all application specific errors and
                 // sends the request to the following path or controller action.
                 app.UseExceptionHandler("/Home/Error/500");
+                app.UseHsts();
             }
 
+            app.UseHttpsRedirection();
             app.UseResponseCompression();
 
             // Add cookie-based authentication to the request pipeline.

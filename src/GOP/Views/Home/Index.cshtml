@@ -21,8 +21,7 @@
 -- Timo (June 30, 2016)
 
 <h2>Announcements</h2>
-<div class="alert alert-success text-center" style="font-size: larger">8/6/2016 - Solo is now in 3D, and Multiplayer is back!</div>
-<ul>
+    <li>8/6/2016 - Solo is now in 3D, and Multiplayer is back!</li>
     <li>10/7/2016 - The Frequency Discrimination experiment works again. Try it!</li>
     <li>10/5/2016 - I made a little Javascript <a href="~/tone-generator.html" target="_blank">tone generator</a>. Check it out!
     <li>8/8/2016 - You can now submit custom altars again!</li>
@@ -220,11 +219,11 @@ These are duo angles for feeding orbs quickly.
     </environment>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <script src="~/js/utils.min.js"></script>
-    <script src="~/lib/signalr-client.js"></script>
+    <script src="~/lib/signalr.js"></script>
     <script>
         var baseTitle = document.title,
             newMessages = 0,
-            hubUrl = "http://" + document.location.host + "/hubs/chat",
+            hubUrl = location.origin + "/hubs/chat",
             hub,
             lastMessage,
             viewModel = new ChatViewModel(),
@@ -332,8 +331,8 @@ These are duo angles for feeding orbs quickly.
 
         function startConnection() {
             if (!Utils.isSearchCrawler()) {
-                connection = new signalR.HttpConnection(hubUrl);
-                hub = new signalR.HubConnection(connection);
+                hub = new signalR.HubConnectionBuilder().withUrl(hubUrl).build();
+                connection = hub.connection;
 
                 hub.onClosed = function (error) {
                     $("#connectionErrors").text(error).show();

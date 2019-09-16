@@ -85,7 +85,7 @@
     </div>
 
     <script src="https://code.jquery.com/jquery-3.1.1.min.js" integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8=" crossorigin="anonymous"></script>
-    <script src="lib/Tone.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/13.1.25/Tone.min.js"></script>
 
     <script>
         var rampTime = 0.01;
@@ -94,7 +94,8 @@
         var minFrequency = +$("#minFrequency").val(), maxFrequency = +$("#maxFrequency").val();
 
         function updateSynthPan() {
-            synth.disconnect(merge);
+            //synth.disconnect(merge);
+            synth.disconnect();
             if ($("#leftEar").prop("checked"))
                 synth.connect(merge.left);
             if ($("#rightEar").prop("checked"))
@@ -106,7 +107,7 @@
                 return;
 
             synth = new Tone.Synth({
-                oscillator: { type: "fmsine", modulationType: "square", modulationIndex: 0.05946 },
+                oscillator: { type: "fmsine", modulationType: "sine", modulationIndex: 0.05946 },
                 envelope: {
                     attack: rampTime,
                     attackCurve: "sine",

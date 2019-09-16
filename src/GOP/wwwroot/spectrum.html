@@ -1,10 +1,18 @@
 ﻿<!DOCTYPE html>
 <html>
+
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width" />
     <title>Pitch Spectrum Analyzer</title>
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.5/css/bootstrap.min.css" />
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.1.1.min.js"
+        integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8=" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
+        integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
+        crossorigin="anonymous"></script>
+    <script src="https://tonejs.github.io/build/Tone.js"></script>
     <style>
         canvas {
             background-color: black;
@@ -21,13 +29,22 @@
         .overflow-scroll {
             overflow-x: hidden;
         }
+
+        .form-inline>* {
+            margin: 0 1px;
+        }
     </style>
 </head>
+
 <body>
     <div class="container">
         <h1>Pitch spectrum analyzer</h1>
+        <div class="form-group">
+            <select class="form-control" id="microphones"></select>
+        </div>
         <div id="pureTone" class="form-inline">
-            <label for="frequency">Pure tone frequency:</label> <input type="number" class="form-control" id="frequency" value="880" />
+            <label for="frequency">Pure tone frequency:</label> <input type="number" class="form-control" id="frequency"
+                value="880" />
             <button class="btn btn-outline-primary" data-semitones="-1">-1</button>
             <button class="btn btn-outline-primary" data-semitones="1">+1</button>
             <button class="btn btn-outline-primary" data-semitones="-12">-12</button>
@@ -41,10 +58,12 @@
             <audio id="audio" class="full-width" controls></audio>
         </div>
         <div class="form-inline">
-            <button id="analyze" class="btn btn-primary">Stop analyzing</button>
+            <button id="analyze" class="btn btn-primary">Pause</button>
             <button id="clear" class="btn btn-danger">Clear</button>
-            <label for="maxFrequency">Max frequency:</label> <input type="number" class="form-control" id="maxFrequency" value="1500" />
-            <label for="falloff">Half-intensity falloff:</label> <input type="number" class="form-control" id="falloff" value="9" min="0" step="0.5" />
+            <label for="maxFrequency">Max frequency:</label> <input type="number" class="form-control" id="maxFrequency"
+                value="1500" />
+            <label for="falloff">Half-intensity falloff:</label> <input type="number" class="form-control" id="falloff"
+                value="9" min="0" step="0.5" />
             <span id="pitch"></span>
         </div>
         <div id="analysisContainer">
@@ -52,8 +71,6 @@
         </div>
     </div>
 
-    <script src="https://code.jquery.com/jquery-3.1.1.min.js" integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8=" crossorigin="anonymous"></script>
-    <script src="https://tonejs.github.io/build/Tone.min.js"></script>
     <!--<script>
         // Fix for close not working for external input > 0
 
@@ -72,31 +89,31 @@
             return this;
         };
     </script>-->
-    <script>
+    <!-- <script>
         /**
          *  Allows user select device
          */
-        Tone.UserMedia.prototype.openAny = function() {
+        Tone.UserMedia.prototype.openAny = function () {
             //do getUserMedia
             var constraints = {
-                audio : {
+                audio: {
                     "echoCancellation": false,
-                    "sampleRate" : this.context.sampleRate
+                    "sampleRate": this.context.sampleRate
                 }
             };
-            return navigator.mediaDevices.getUserMedia(constraints).then(function(stream){
+            return navigator.mediaDevices.getUserMedia(constraints).then(function (stream) {
                 //start a new source only if the previous one is closed
-                if (!this._stream){
+                if (!this._stream) {
                     this._stream = stream;
                     //Wrap a MediaStreamSourceNode around the live input stream.
                     this._mediaStream = this.context.createMediaStreamSource(stream);
                     //Connect the MediaStreamSourceNode to a gate gain node
-                    this._mediaStream.connect(this.output);
-                } 
+                    // this._mediaStream.connect(this.output);
+                }
                 return this;
             }.bind(this));
         };
-    </script>
+    </script> -->
     <script src="https://d3js.org/d3.v4.min.js"></script>
 
     <script>
@@ -129,9 +146,9 @@
         synth.connect(analyser);
 
         var audio = document.querySelector("#audio");
-        var audioSrc = Tone.context.createMediaElementSource(audio);
-        audioSrc.connect(analyser._analyser);
-        audioSrc.connect(Tone.context.destination);
+        // var audioSrc = Tone.context.createMediaElementSource(audio);
+        // audioSrc.connect(analyser._analyser);
+        // audioSrc.connect(Tone.Master);
 
         // Frequency analysis
 
@@ -166,7 +183,7 @@
         }
 
         function hann(x, N) {
-            return x <= 0 || x >= N ? 0 : 1/N * (1 - Math.cos(2*Math.PI*(x-(N-1)/2)/(N-1)));
+            return x <= 0 || x >= N ? 0 : 1 / N * (1 - Math.cos(2 * Math.PI * (x - (N - 1) / 2) / (N - 1)));
         }
 
         // position "x" in data, interpolation.
@@ -182,8 +199,8 @@
                 return Math.pow(2, (y + gain) / falloff);
             }
 
-            var low = Math.floor(x - windowSize/2);
-            var high = Math.max(low + 1, Math.ceil(x + windowSize/2));
+            var low = Math.floor(x - windowSize / 2);
+            var high = Math.max(low + 1, Math.ceil(x + windowSize / 2));
 
             var avg = 0;
             for (var i = low; i <= high; i++) {
@@ -194,7 +211,8 @@
         }
 
         function isAnythingPlaying() {
-            return isMicOpened || isPureTonePlaying || (audio.src !== "" && !audio.paused);
+            // return isMicOpened || isPureTonePlaying || (audio.src !== "" && !audio.paused);
+            return isMicOpened;
         }
 
         function paintSpectrum() {
@@ -244,6 +262,7 @@
         });
 
         $("#play").click(function () {
+            Tone.context.resume();
             if (isPureTonePlaying) {
                 isPureTonePlaying = false;
                 synth.triggerRelease();
@@ -255,21 +274,22 @@
             }
         });
 
-        $("#record").click(function () {
+        $("#record").click(async () => {
+            await Tone.context.resume();
             if (isMicOpened) {
                 isMicOpened = false;
                 mic.close();
-                $(this).text("Start recording");
+                $("#record").text("Start recording");
             } else {
                 isMicOpened = true;
-                mic.openAny();
-                $(this).text("Stop recording");
+                mic.open($("#microphones").val());
+                $("#record").text("Stop recording");
             }
         });
 
         $("#analyze").click(function () {
             isAnalyzing = !isAnalyzing;
-            $(this).text((isAnalyzing ? "Stop" : "Start") + " analyzing");
+            $(this).text(isAnalyzing ? "Pause" : "Resume");
         });
 
         $("#clear").click(function () {
@@ -289,8 +309,26 @@
             $("#frequency").val(newFreq);
         });
 
-        resizeCanvas();
-        requestAnimationFrame(paintSpectrum);
+        $("#microphones").change(() => {
+            if (isMicOpened) {
+                mic.close();
+                mic.open($("#microphones").val());
+            }
+        })
+
+        $(() => {
+            Tone.UserMedia.enumerateDevices().then(devices => {
+                for (let device of devices) {
+                    console.log(device);
+                    $("#microphones").append($("<option>", { value: device.deviceId, text: device.label }))
+                }
+                $("#microphones").val(devices[2].deviceId);
+            });
+            resizeCanvas();
+            requestAnimationFrame(paintSpectrum);
+        });
+
     </script>
 </body>
+
 </html>

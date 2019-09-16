@@ -61,7 +61,7 @@ namespace GOP.Controllers
                 {
                     Timestamp = DateTimeOffset.Now,
                     UserId = userId == -1 ? null : userId,
-                    IpAddress = HttpContext.Connection.RemoteIpAddress.ToString(),
+                    IpAddress = HttpContext.Connection.RemoteIpAddress.ToShortString(),
                     Settings = settings,
                     Data = data
                 };

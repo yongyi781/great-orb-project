@@ -51,7 +51,7 @@ namespace GOP
             var queryString = FormatForLog(context.Request.QueryString.ToString());
             var port = FormatForLog(context.Connection.LocalPort.ToString());
             var username = FormatForLog(context.User.Identity.Name);
-            var remoteIp = FormatForLog(context.Connection.RemoteIpAddress.ToString());
+            var remoteIp = FormatForLog(context.Connection.RemoteIpAddress.ToShortString());
             var userAgent = FormatForLog(context.Request.Headers["User-Agent"]);
             var referer = FormatForLog(context.Request.Headers["Referer"]);
 

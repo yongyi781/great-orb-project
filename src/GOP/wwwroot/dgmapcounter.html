@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Page</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" />
+</head>
+<body>
+    <div>
+        Press Ctrl+V to paste the map image.
+    </div>
+    <img id="img" />
+    <script>
+        var ctx;
+
+        function readMap(img) {
+            var canvas = document.createElement("canvas");
+            canvas.width = img.width;
+            canvas.height = img.height;
+            ctx = canvas.getContext("2d");
+            ctx.drawImage(img, 0, 0, img.width, img.height);
+            var pixelData = ctx.getImageData(2, 2, 1, 1).data;
+            console.log(pixelData);
+        }
+
+        window.addEventListener("paste", function (e) {
+            var items = (e.clipboardData || e.originalEvent.clipboardData).items;
+            // find pasted image among pasted items
+            var blob = null;
+            for (var i = 0; i < items.length; i++) {
+                if (items[i].type.indexOf("image") === 0) {
+                    blob = items[i].getAsFile();
+                }
+            }
+            // load image if there is a pasted image
+            if (blob !== null) {
+                var reader = new FileReader();
+                reader.onload = function (event) {
+                    document.getElementById("img").src = event.target.result;
+                    readMap(document.getElementById("img"));
+                };
+                reader.readAsDataURL(blob);
+            }
+        });
+    </script>
+</body>
+</html>

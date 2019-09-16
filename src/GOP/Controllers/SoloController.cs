@@ -75,7 +75,7 @@ namespace GOP.Controllers
             {
                 Timestamp = DateTimeOffset.Now,
                 UserId = UserManager.GetUserIdInt32(User),
-                IpAddress = HttpContext.Connection.RemoteIpAddress.ToString(),
+                IpAddress = HttpContext.Connection.RemoteIpAddress.ToShortString(),
                 NumberOfOrbs = numberOfOrbs,
                 Seed = seed,
                 Altar = altar,

@@ -58,19 +58,19 @@ namespace GOP
             if (IsGameRunning)
             {
                 await Clients.Client(context.ConnectionId).SendAsync("Reject", players);
-                await groups.RemoveAsync(context.ConnectionId, PlayingGroup);
-                await groups.AddAsync(context.ConnectionId, WaitlistGroup);
+                await groups.RemoveFromGroupAsync(context.ConnectionId, PlayingGroup);
+                await groups.AddToGroupAsync(context.ConnectionId, WaitlistGroup);
             }
             else if (players.TrueForAll(p => p.ConnectionId != context.ConnectionId))
             {
-                await groups.RemoveAsync(context.ConnectionId, WaitlistGroup);
-                await groups.AddAsync(context.ConnectionId, PlayingGroup);
+                await groups.RemoveFromGroupAsync(context.ConnectionId, WaitlistGroup);
+                await groups.AddToGroupAsync(context.ConnectionId, PlayingGroup);
                 lock (playersLock)
                 {
                     players.Add(new Player
                     {
                         ConnectionId = context.ConnectionId,
-                        IpAddress = httpContext.Connection.RemoteIpAddress.ToString(),
+                        IpAddress = httpContext.Connection.RemoteIpAddress.ToShortString(),
                         Username = DbContext.GetUsername(GopUser.GetCurrentUser(httpContext)),
                         Run = true,
                         IsWatching = true,

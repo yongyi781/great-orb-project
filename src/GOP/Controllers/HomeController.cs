@@ -31,7 +31,7 @@ namespace GOP.Controllers
             ViewData["NumberOfMessages"] = DbContext.ChatMessages.Count();
 
             // Sync nickname cookies and database
-            var ipAddress = HttpContext.Connection.RemoteIpAddress.ToString();
+            var ipAddress = HttpContext.Connection.RemoteIpAddress.ToShortString();
             var nickname = DbContext.Nicknames.Find(ipAddress);
             var cookieNickname = Request.Cookies[Utilities.NicknameCookieName];
             if (cookieNickname != null && nickname != null)

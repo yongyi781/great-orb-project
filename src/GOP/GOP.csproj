@@ -3,20 +3,16 @@
     <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp2.1</TargetFramework>
     <MvcRazorCompileOnPublish>true</MvcRazorCompileOnPublish>
-    <PackageTargetFallback>$(PackageTargetFallback);portable-net45+win8+wp8+wpa81;</PackageTargetFallback>
     <AssemblyName>GOP</AssemblyName>
     <UserSecretsId>aspnet5-GOP-b861afa2-78db-4387-a3bc-393f99145638</UserSecretsId>
+    <RuntimeFrameworkVersion>2.1.2</RuntimeFrameworkVersion>
     <RuntimeIdentifier>win10-x64</RuntimeIdentifier>
     <TypeScriptCompileBlocked>true</TypeScriptCompileBlocked>
     <TypeScriptToolsVersion>Latest</TypeScriptToolsVersion>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.All" Version="2.1.0-preview1-final" />
-  </ItemGroup>
-  <ItemGroup>
-    <DotNetCliToolReference Include="Microsoft.EntityFrameworkCore.Tools" Version="2.1.0-preview1-final" />
-    <DotNetCliToolReference Include="dotnet-user-secrets" Version="2.1.0-preview1-final" />
-    <DotNetCliToolReference Include="dotnet-aspnet-codegenerator" Version="2.1.0-preview1-final" />
+    <PackageReference Include="Microsoft.AspNetCore.All" />
+    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="2.2.2" PrivateAssets="All" />
   </ItemGroup>
   <ItemGroup>
     <Compile Remove="wwwroot\audio\**" />

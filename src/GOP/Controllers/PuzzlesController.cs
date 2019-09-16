@@ -54,7 +54,7 @@ namespace GOP.Controllers
             var currentUser = await GetCurrentUserAsync();
             var requireLogin = !User.Identity.IsAuthenticated &&
                 (from s in DbContext.PuzzleSubmissions.AsNoTracking()
-                 where s.IpAddress == HttpContext.Connection.RemoteIpAddress.ToString() && s.UserId != null
+                 where s.IpAddress == HttpContext.Connection.RemoteIpAddress.ToShortString() && s.UserId != null
                  select 0).Count() > 0;
 
             return View("Puzzle", new PuzzleViewModel
@@ -115,7 +115,7 @@ namespace GOP.Controllers
             {
                 PuzzleId = id,
                 Timestamp = DateTimeOffset.Now,
-                IpAddress = HttpContext.Connection.RemoteIpAddress.ToString(),
+                IpAddress = HttpContext.Connection.RemoteIpAddress.ToShortString(),
                 UserId = UserManager.GetUserIdInt32(User),
                 Score = score,
                 Code = code

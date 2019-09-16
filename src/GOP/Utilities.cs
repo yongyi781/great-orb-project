@@ -66,7 +66,7 @@ namespace GOP
                 throw new InvalidOperationException("Nickname cannot be more than 50 characters long.");
 
             context.Response.Cookies.Append(NicknameCookieName, desiredName);
-            var ipAddress = context.Connection.RemoteIpAddress.ToString();
+            var ipAddress = context.Connection.RemoteIpAddress.ToShortString();
             var nick = dbContext.Nicknames.Find(ipAddress);
             if (nick != null)
             {
@@ -88,7 +88,7 @@ namespace GOP
         public static void ClearNickname(HttpContext context, ApplicationDbContext dbContext)
         {
             context.Response.Cookies.Delete(NicknameCookieName);
-            var ipAddress = context.Connection.RemoteIpAddress.ToString();
+            var ipAddress = context.Connection.RemoteIpAddress.ToShortString();
             var nick = dbContext.Nicknames.Find(ipAddress);
             if (nick != null)
             {

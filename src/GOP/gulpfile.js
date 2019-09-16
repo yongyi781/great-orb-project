@@ -1,7 +1,5 @@
 var gulp = require("gulp"),
-    rimraf = require("rimraf"),
     concat = require("gulp-concat"),
-    cssmin = require("gulp-cssmin"),
     rename = require("gulp-rename"),
     uglify = require("gulp-uglify");
 
@@ -32,7 +30,7 @@ var filesToMinify = [
     "./wwwroot/js/utils.js"
 ];
 
-gulp.task('copy-assets', function () {
+gulp.task("copy-assets", function (done) {
     var assets = {
         lib: [
             "./node_modules/bootstrap/dist/js/bootstrap.js",
@@ -55,34 +53,35 @@ gulp.task('copy-assets', function () {
         ],
         fonts: [
             "./node_modules/font-awesome/fonts/*"
-       ]
+        ]
     };
     for (var type in assets) {
-        gulp.src(assets[type]).pipe(gulp.dest('./wwwroot/' + type));
+        gulp.src(assets[type]).pipe(gulp.dest("./wwwroot/" + type));
     }
+    done();
 });
 
 gulp.task("engine:js", () => {
-    gulp.src(engineScripts)
+    return gulp.src(engineScripts)
         .pipe(concat("./wwwroot/js/gop.js"))
         .pipe(gulp.dest("."));
 });
 
 gulp.task("gopui3d:js", () => {
-    gulp.src(gopui3dScripts)
+    return gulp.src(gopui3dScripts)
         .pipe(concat("./wwwroot/js/gopui3d.js"))
         .pipe(gulp.dest("."));
 });
 
-gulp.task("min:js", ["engine:js", "gopui3d:js"], () => {
-    gulp.src(filesToMinify)
+gulp.task("min:js", gulp.parallel("engine:js", "gopui3d:js"), () => {
+    return gulp.src(filesToMinify)
         .pipe(rename({ suffix: ".min" }))
         .pipe(uglify())
         .pipe(gulp.dest("./wwwroot/js/"));
 });
 
 gulp.task("signalr", () => {
-    gulp.src("./node_modules/@aspnet/signalr-client/dist/browser/signalr-client.js").pipe(gulp.dest("./wwwroot/lib"));
-})
+    return gulp.src("./node_modules/@aspnet/signalr/dist/browser/signalr.js").pipe(gulp.dest("./wwwroot/lib"));
+});
 
-gulp.task("default", ["signalr", "min:js"]);
+gulp.task("default", gulp.series("signalr", "min:js"));
