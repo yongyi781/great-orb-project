@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <!-- Copyright (c) 2012-2019 The MathJax Consortium -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>MathJax Live Preview</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <style>
+        #input {
+            border: 1px solid grey;
+            margin: 0 0 .25em;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        #output {
+            margin-top: .75em;
+            border: 1px solid grey;
+            padding: .25em;
+            min-height: 2em;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+
+        <h1>MathJax Live Preview</h1>
+        <div class="form-group form-check">
+            <label class="form-check-label">
+                <input type="checkbox" class="form-check-input" id="useMathBot"> Use MathBot delimiters
+            </label>
+        </div>
+
+        <textarea class="form-control" id="input" rows="15"></textarea>
+        <div id="output"></div>
+    </div>
+
+    <script>
+        let urlParams = new URLSearchParams(window.location.search);
+        let mathbotStyleStr = urlParams.get("mathbot");
+        let mathbotStyle = mathbotStyleStr == null || mathbotStyleStr == "true" || mathbotStyleStr == "1";
+
+        inlineChar = mathbotStyle ? "$$" : "$";
+        displayMath = [["\\[", "\\]"]];
+        if (!mathbotStyle) {
+            displayMath.push(["$$", "$$"]);
+        }
+
+        document.querySelector("#useMathBot").checked = mathbotStyle;
+
+        let macros = {};
+
+        for (let i = 0; i < 26; i++) {
+            let c = String.fromCharCode(65 + i);
+            macros["bb" + c] = "\\mathbb{" + c + "}";
+        }
+
+        MathJax = {
+            tex: {
+                inlineMath: [[inlineChar, inlineChar], ['\\(', '\\)']],
+                displayMath,
+                tags: "ams",
+                macros
+            }
+        };
+    </script>
+    <script id="MathJax-script" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>
+        var isTypesetting = false;
+        var defaultText = "Let $$x$$ be a solution to $$ax^2+bx+c=0$$. Then \\[x=\\frac{-b \\pm \\sqrt{b^2-4ac}}{2a}.\\]";
+
+        function convert() {
+            let input = document.querySelector("#input").value.trim();
+            localStorage.setItem("content", input);
+
+            if (isTypesetting) {
+                return;
+            }
+            let output = document.querySelector("#output");
+            output.textContent = input;
+
+            MathJax.texReset();
+            MathJax.typesetClear();
+            isTypesetting = true;
+            MathJax.typesetPromise([output]).catch(err => {
+                console.error(err);
+            }).then(() => {
+                isTypesetting = false;
+            });
+        }
+
+        document.querySelector("#input").addEventListener("keyup", convert);
+        
+        let useMathBot = document.querySelector("#useMathBot");
+        useMathBot.addEventListener("change", () => {
+            window.location.search = "mathbot=" + useMathBot.checked;
+        });
+
+        document.querySelector("#input").value = localStorage.getItem("content") || defaultText;
+        convert();
+    </script>
+</body>
+
+</html>
