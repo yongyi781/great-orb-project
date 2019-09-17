@@ -206,13 +206,13 @@
         this.gridTexture.wrapS = THREE.RepeatWrapping;
         this.gridTexture.wrapT = THREE.RepeatWrapping;
         this.gridTexture.repeat.set(this.size, this.size);
-        this.gridTexture.anisotropy = this.renderer.getMaxAnisotropy();
+        this.gridTexture.anisotropy = this.renderer.capabilities.getMaxAnisotropy();
 
         this.marbleTexture = this.textureLoader.load("/images/textures/marble.jpg");
-        this.marbleTexture.anisotropy = this.renderer.getMaxAnisotropy();
+        this.marbleTexture.anisotropy = this.renderer.capabilities.getMaxAnisotropy();
 
         this.waterTexture = this.textureLoader.load("/images/textures/water2.jpg");
-        this.waterTexture.anisotropy = this.renderer.getMaxAnisotropy();
+        this.waterTexture.anisotropy = this.renderer.capabilities.getMaxAnisotropy();
 
         const skyboxImagePrefix = "/images/textures/skyboxes/sea2/sea_";
         const skyboxSuffixes = ["rt", "lf", "up", "dn", "ft", "bk"];
@@ -234,8 +234,8 @@
         }));
 
         this.skybox = new THREE.Mesh(
-            new THREE.CubeGeometry(10000, 10000, 10000),
-            new THREE.MultiMaterial(materialArray));
+            new THREE.BoxGeometry(10000, 10000, 10000),
+            materialArray);
         this.skybox.rotation.x = Math.PI / 2;
         this.scene.add(this.skybox);
     }
@@ -340,14 +340,14 @@
                 mesh.castShadow = true;
                 if (i === 2) {
                     let alpha = this.getWaterAlpha();
-                    mesh.material.transparent = alpha < 1;
-                    mesh.material.opacity = alpha;
+                    (mesh.material as THREE.Material).transparent = alpha < 1;
+                    (mesh.material as THREE.Material).opacity = alpha;
                     mesh.castShadow = false;
                     (mesh.material as THREE.MeshLambertMaterial).map = this.waterTexture;
-                    mesh.material.needsUpdate = true;
+                    (mesh.material as THREE.Material).needsUpdate = true;
                 } else {
                     (mesh.material as THREE.MeshLambertMaterial).map = this.marbleTexture;
-                    mesh.material.needsUpdate = true;
+                    (mesh.material as THREE.Material).needsUpdate = true;
                 }
                 this.altarObjects.add(mesh);
             }
@@ -502,7 +502,7 @@
 
         let texture = new THREE.Texture(canvas);
         texture.magFilter = THREE.NearestFilter;
-        texture.anisotropy = this.renderer.getMaxAnisotropy();
+        texture.anisotropy = this.renderer.capabilities.getMaxAnisotropy();
         texture.needsUpdate = true;
         return texture;
     }
@@ -663,8 +663,9 @@
                 let orbObj = this.orbObjects[playerObj.player.currentOrb.index];
                 let attractDot: AttractDot;
                 let orbColor = new THREE.Color(this.orbColor);
-                let {h, s, } = orbColor.getHSL();
-                orbColor.setHSL(h, s, 0.75);
+                let hsl = { h: 0, s: 0, l: 0 };
+                orbColor.getHSL(hsl);
+                orbColor.setHSL(hsl.h, hsl.s, 0.75);
                 if (playerObj.player.repel) {
                     attractDot = new AttractDot(orbObj.mesh, playerObj.mesh, orbColor.getHex());
                 } else {

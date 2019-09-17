@@ -10,58 +10,31 @@
     <script src="lib/vue.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.15/lodash.min.js"
         integrity="sha256-VeNaFBVDhoX3H+gJ37DpT/nTuZTdjYro9yBruHjVmoQ=" crossorigin="anonymous"></script>
-    <style>
-        .list-complete-item {
-            transition: all 1s;
-            display: inline-block;
-            margin-right: 10px;
-        }
-
-        .list-complete-enter,
-        .list-complete-leave-to
-
-        /* .list-complete-leave-active below version 2.1.8 */
-            {
-            opacity: 0;
-            transform: translateY(30px);
-        }
-
-        .list-complete-leave-active {
-            position: absolute;
-        }
-    </style>
 </head>
 
 <body>
     <div id="app" class="container">
-        <button class="btn btn-primary" v-on:click="shuffle">Shuffle</button>
-        <button class="btn btn-primary" v-on:click="add">Add</button>
-        <button class="btn btn-primary" v-on:click="remove">Remove</button>
-        <transition-group name="list-complete" tag="p">
-            <span v-for="item in items" v-bind:key="item" class="list-complete-item">
-                {{ item }}
-            </span>
-        </transition-group>
+        <button class="btn btn-danger" @click="doSomething">Do something</button>
+        <div v-for="x in numbers">
+            <button class="btn btn-primary" :style="getStyle(x)">{{x}}</button>
+        </div>
     </div>
     <script>
         var app = new Vue({
             el: "#app",
             data: {
-                items: [1, 2, 3, 4, 5, 6, 7, 8, 9],
-                nextNum: 10
+                numbers: []
             },
             methods: {
-                randomIndex: function () {
-                    return Math.floor(Math.random() * this.items.length)
+                doSomething: function () {
+                    this.numbers = [];
+                    for (let i = 0; i < 5000; i++) {
+                        this.numbers.push(Math.floor(Math.random() * 2147483648));
+                    }
                 },
-                add: function () {
-                    this.items.splice(this.randomIndex(), 0, this.nextNum++)
-                },
-                remove: function () {
-                    this.items.splice(this.randomIndex(), 1)
-                },
-                shuffle: function () {
-                    this.items = _.shuffle(this.items)
+
+                getStyle: function (x) {
+                    return { backgroundColor: "#" + x.toString(16).padStart(6, "0").substr(0, 6) };
                 }
             }
         });

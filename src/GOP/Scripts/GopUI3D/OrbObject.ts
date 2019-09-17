@@ -34,8 +34,9 @@
         this.mesh.add(this.circle);
 
         let c = new THREE.Color(color as string);
-        let {h, s, l} = c.getHSL();
-        c.setHSL(h, s, Math.max(0.5, l));
+        let hsl = { h: 0, s: 0, l: 0 };
+        c.getHSL(hsl);
+        c.setHSL(hsl.h, hsl.s, Math.max(0.5, hsl.l));
         this.light = new THREE.PointLight(c.getHex(), 1.2, 15, 2);
     }
 

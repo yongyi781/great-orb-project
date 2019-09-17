@@ -3,14 +3,17 @@
   "compilerOptions": {
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
+    "lib": [ "dom", "es6", "es2015.promise", "es2015.collection" ],
     "noImplicitAny": true,
-    "lib": [ "dom", "es5", "es2015.promise", "es2015.collection" ],
     "outDir": "../wwwroot/js",
     "pretty": true,
-    "target": "es5"
+    "target": "es6"
   },
+  "include": [
+    "../node_modules/three/src/Three.d.ts",
+    "."
+  ],
   "exclude": [
-    "../node_modules",
-    "../wwwroot"
+    "multiplayer.ts"
   ]
 }

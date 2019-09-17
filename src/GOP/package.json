@@ -2,13 +2,14 @@
   "name": "gop",
   "version": "1.0.0",
   "devDependencies": {
+    "@types/jquery": "^3.3.31",
     "@types/qunit": "^2.9.0",
     "@types/stats": "^0.16.30",
     "gulp": "^4.0.2",
     "gulp-concat": "^2.6.1",
     "gulp-cssmin": "^0.2.0",
+    "gulp-terser": "^1.2.0",
     "gulp-rename": "^1.4.0",
-    "gulp-uglify": "^3.0.2",
     "rimraf": "^3.0.0",
     "typescript": "^3.6.3"
   },

@@ -1,7 +1,7 @@
-var gulp = require("gulp"),
+const gulp = require("gulp"),
     concat = require("gulp-concat"),
     rename = require("gulp-rename"),
-    uglify = require("gulp-uglify");
+    terser = require("gulp-terser");
 
 // Order is essential here.
 var engineScripts = [
@@ -30,24 +30,21 @@ var filesToMinify = [
     "./wwwroot/js/utils.js"
 ];
 
-gulp.task("copy-assets", function (done) {
+exports.copyAssets = function () {
     var assets = {
         lib: [
             "./node_modules/bootstrap/dist/js/bootstrap.js",
             "./node_modules/bootstrap/dist/js/bootstrap.min.js",
-            "./node_modules/tether/dist/js/tether.js",
-            "./node_modules/tether/dist/js/tether.min.js",
             "./node_modules/jquery/dist/jquery.js",
             "./node_modules/jquery/dist/jquery.min.js",
             "./node_modules/knockout/build/output/knockout-latest.debug.js",
             "./node_modules/knockout/build/output/knockout-latest.js",
             "./node_modules/stats.js/build/stats.min.js",
-            "./node_modules/tone/build/Tone.js",
-            "./node_modules/tone/build/Tone.min.js"
+            "./node_modules/tone/build/Tone.js"
         ],
         css: [
-            "./node_modules/bootswatch/cyborg/bootstrap.css",
-            "./node_modules/bootswatch/cyborg/bootstrap.min.css",
+            "./node_modules/bootswatch/dist/cyborg/bootstrap.css",
+            "./node_modules/bootswatch/dist/cyborg/bootstrap.min.css",
             "./node_modules/bootstrap-social/bootstrap-social.css",
             "./node_modules/font-awesome/css/font-awesome.css"
         ],
@@ -55,33 +52,32 @@ gulp.task("copy-assets", function (done) {
             "./node_modules/font-awesome/fonts/*"
         ]
     };
-    for (var type in assets) {
+    for (let type of assets) {
         gulp.src(assets[type]).pipe(gulp.dest("./wwwroot/" + type));
     }
-    done();
-});
+};
 
-gulp.task("engine:js", () => {
+exports.engineJs = function () {
     return gulp.src(engineScripts)
         .pipe(concat("./wwwroot/js/gop.js"))
         .pipe(gulp.dest("."));
-});
+};
 
-gulp.task("gopui3d:js", () => {
+exports.gopUI3DJs = function () {
     return gulp.src(gopui3dScripts)
         .pipe(concat("./wwwroot/js/gopui3d.js"))
         .pipe(gulp.dest("."));
-});
+};
 
-gulp.task("min:js", gulp.parallel("engine:js", "gopui3d:js"), () => {
+exports.minJs = function () {
+    exports.engineJs();
+    exports.gopUI3DJs();
     return gulp.src(filesToMinify)
         .pipe(rename({ suffix: ".min" }))
-        .pipe(uglify())
-        .pipe(gulp.dest("./wwwroot/js/"));
-});
+        .pipe(terser())
+        .pipe(gulp.dest("./wwwroot/js"));
+};
 
-gulp.task("signalr", () => {
+exports.signalR = function () {
     return gulp.src("./node_modules/@aspnet/signalr/dist/browser/signalr.js").pipe(gulp.dest("./wwwroot/lib"));
-});
-
-gulp.task("default", gulp.series("signalr", "min:js"));
+};

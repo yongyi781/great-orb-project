@@ -403,9 +403,9 @@ class GopUI {
         });
     }
 
-    onCanvasMouseDown(e: JQueryMouseEventObject) {
+    onCanvasMouseDown(e: JQuery.MouseEventBase) {
         let onContextMenuAttractOrbMouseDown = (orbIndex: number) => {
-            return (eInner: JQueryMouseEventObject) => {
+            return (eInner: JQuery.MouseEventBase) => {
                 if (eInner.button === 0) {
                     this.setPlayerAction(GameAction.attract(orbIndex, false, false, true));
                     this.hidePopupMenu();
@@ -453,7 +453,7 @@ class GopUI {
                     // Add attract and repel menu items
                     let attractMenuItem = $("<a class='context-menu-item'></a>")
                         .html((this.player.repel ? "Repel" : "Attract") + " <span style='color: yellow;'>Orb " + GameAction.orbIndexToChar(i) + "</span>")
-                        .mousedown(onContextMenuAttractOrbMouseDown(i)).on("contextmenu", eInner => eInner.preventDefault());
+                        .mousedown(onContextMenuAttractOrbMouseDown(i)).on("contextmenu", (eInner: JQuery.ContextMenuEvent) => eInner.preventDefault());
                     //let repelMenuItem = document.createElement("a");
                     this.$popupMenu.append(attractMenuItem);
                 }
@@ -640,7 +640,7 @@ class GopUI {
     /**
      * Returns the mouse click location of an event.
      */
-    private static getMouseClickLocation(e: JQueryMouseEventObject | MouseEvent) {
+    private static getMouseClickLocation(e: MouseEvent | JQuery.MouseEventBase) {
         let offX = (e.offsetX || e.pageX - $(e.target).offset().left);
         let offY = (e.offsetY || e.pageY - $(e.target).offset().top);
         return new Point(offX, offY);
