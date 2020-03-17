@@ -1,0 +1,162 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <title>Tone Clicks</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <style>
+        .container input[type=number] {
+            width: 100px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Tone Clicks</h1>
+        <div id="app">
+            <div class="form-group row">
+                <div class="col-sm-10">
+                    <button class="btn btn-primary" @click="addLooper()">Add a loop</button>
+                </div>
+            </div>
+            <div v-for="x in clickLoopers">
+                <hr>
+                <div class="form-group row">
+                    <label for="freq" class="col-sm-2 col-form-label">Frequency (Hz)</label>
+                    <div class="col-sm-10 form-inline">
+                        <div>
+                            <input type="number" id="freq" class="form-control" min="1" max="22050" v-model="x.freq"
+                                @change="x.update()" />
+                            <button class="btn btn-outline-primary" @click="x.addSemitones(-0.5)">-0.5</button>
+                            <button class="btn btn-outline-primary" @click="x.addSemitones(0.5)">+0.5</button>
+                            <button class="btn btn-outline-primary" @click="x.addSemitones(-1)">-1</button>
+                            <button class="btn btn-outline-primary" @click="x.addSemitones(1)">+1</button>
+                            <button class="btn btn-outline-primary" @click="x.addSemitones(-12)">-12</button>
+                            <button class="btn btn-outline-primary" @click="x.addSemitones(12)">+12</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label for="vol" class="col-sm-2 col-form-label">Volume (dB)</label>
+                    <div class="col-sm-10">
+                        <input type="number" id="vol" class="form-control" min="-100" max="0" v-model="x.volume"
+                            @change="x.update()" />
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label for="cycles" class="col-sm-2 col-form-label">Cycles</label>
+                    <div class="col-sm-10">
+                        <input type="number" id="cycles" class="form-control" min="1" max="100" v-model="x.cycles"
+                            @change="x.update()" />
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label for="interval" class="col-sm-2 col-form-label">Interval (ms)</label>
+                    <div class="col-sm-10">
+                        <input type="number" id="interval" class="form-control" min="1" max="12000" v-model="x.interval"
+                            @change="x.update()" />
+                    </div>
+                </div>
+            </div>
+            <hr>
+            <div class="form-group row">
+                <div class="col-sm-10">
+                    <button id="play" class="btn btn-lg btn-primary">Play</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="lib/tone_r13/Tone.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.6.10/vue.min.js"
+        integrity="sha256-chlNFSVx3TdcQ2Xlw7SvnbLAavAQLO0Y/LBiWX04viY=" crossorigin="anonymous"></script>
+    <script>
+        class ClickLooper {
+            constructor(index) {
+                this.index = index;
+                this.freq = localStorage.getItem(`freq${index}`) || 880;
+                this.volume = localStorage.getItem(`volume${index}`) || -40;
+                this.cycles = localStorage.getItem(`cycles${index}`) || 4;
+                this.interval = localStorage.getItem(`interval${index}`) || 600;
+                this.init();
+            }
+
+            init() {
+                if (!this.synth) {
+                    this.synth = new Tone.Synth({
+                        oscillator: {
+                            type: "sine"
+                        },
+                        envelope: {
+                            attack: 0.0002,
+                            attackCurve: "cosine",
+                            decay: 0,
+                            sustain: 1,
+                            release: 0.0002,
+                            releaseCurve: "cosine"
+                        }
+                    }).toMaster();
+
+                    this.loop = new Tone.Loop(time => {
+                        let ontime = this.cycles / this.freq;
+                        this.synth.triggerAttackRelease(this.freq, ontime, time, Tone.dbToGain(this.volume));
+                    }, this.interval / 1000);
+                }
+
+                this.update();
+            }
+
+            addSemitones(semitones) {
+                this.freq *= Math.pow(2, semitones / 12);
+            }
+
+            update() {
+                if (this.synth) {
+                    if (this.loop.interval !== this.interval / 1000) {
+                        this.loop.interval = this.interval / 1000;
+                    }
+
+                    let f = Math.max(0, Math.min(3, this.cycles - 1));
+                    this.synth.envelope.attack = this.synth.envelope.release = f / this.freq;
+                }
+
+                localStorage.setItem(`freq${this.index}`, this.freq);
+                localStorage.setItem(`volume${this.index}`, this.volume);
+                localStorage.setItem(`cycles${this.index}`, this.cycles);
+                localStorage.setItem(`interval${this.index}`, this.interval);
+            }
+
+            start() { this.loop.start(); }
+            stop() { this.loop.stop(); }
+        }
+
+        let app = new Vue({
+            el: "#app",
+            data: {
+                clickLoopers: [new ClickLooper(0)]
+            },
+            methods: {
+                addLooper: function () {
+                    this.clickLoopers.push(new ClickLooper(this.clickLoopers.length));
+                }
+            }
+        });
+
+        document.querySelector("#play").addEventListener("click", e => {
+            Tone.Transport.start();
+
+            if (app.clickLoopers[0].loop.state === Tone.State.Started) {
+                app.clickLoopers.forEach(x => x.stop());
+                e.target.innerText = "Play";
+            } else {
+                app.clickLoopers.forEach(x => x.start());
+                e.target.innerText = "Stop";
+            }
+        });
+    </script>
+</body>
+
+</html>

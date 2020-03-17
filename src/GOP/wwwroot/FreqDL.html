@@ -1,89 +1,107 @@
-﻿<!DOCTYPE html>
+﻿
+<!DOCTYPE html>
 <html>
+
 <head>
     <meta charset="utf-8" />
     <title>Frequency Discrimination Testing</title>
-    <link rel="stylesheet" href="css/bootstrap.min.css" />
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
     <style>
         .container input[type=number] {
             width: 100px;
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <h1>Frequency Discrimination Testing</h1>
-        <div class="form-horizontal" data-bind="visible: isConfiguring, with: parameters">
+        <div data-bind="visible: isConfiguring, with: parameters">
             <h2>Instructions</h2>
-            <p>Enter parameters in the fields below, then click begin. It is recommended to test only one ear at a time.</p>
-            <div class="form-group">
+            <p>Enter parameters in the fields below, then click begin. It is recommended to test only one ear at a time.
+            </p>
+            <div class="form-group row">
                 <label class="control-label col-sm-3">Ear:</label>
-                <div id="ear" class="form-inline col-sm-9">
-                    <div class="checkbox">
-                        <label>
-                            <input type="checkbox" data-bind="checked: leftEar">
+                <div id="ear" class="col-sm-9">
+                    <div class="form-check form-check-inline">
+                        <label class="form-check-label">
+                            <input class="form-check-input" type="checkbox" data-bind="checked: leftEar">
                             Left
                         </label>
                     </div>
-                    <div class="checkbox">
-                        <label>
-                            <input type="checkbox" data-bind="checked: rightEar">
+                    <div class="form-check form-check-inline">
+                        <label class="form-check-label">
+                            <input class="form-check-input" type="checkbox" data-bind="checked: rightEar">
                             Right
                         </label>
                     </div>
                 </div>
             </div>
-            <div class="form-group">
+            <div class="form-group row">
                 <label class="control-label col-sm-3">Calibration (dB):</label>
                 <div class="col-sm-9">
                     <input class="form-control" type="number" data-bind="value: calibration" autocomplete="off" />
                 </div>
             </div>
-            <div class="form-group">
+            <div class="form-group row">
                 <label class="control-label col-sm-3">Frequency (Hz):</label>
                 <div class="col-sm-9">
-                    <input class="form-control" type="number" data-bind="value: frequency" min="10" max="20000" step="0.01" autocomplete="off" />
+                    <input class="form-control" type="number" data-bind="value: frequency" min="10" max="20000"
+                        step="0.01" autocomplete="off" />
                 </div>
             </div>
-            <div class="form-group">
+            <div class="form-group row">
                 <label class="control-label col-sm-3">Initial difference (Hz):</label>
                 <div class="col-sm-9">
-                    <input class="form-control" type="number" data-bind="value: initialFreqDiff" min="0" step="0.01" autocomplete="off" />
+                    <input class="form-control" type="number" data-bind="value: initialFreqDiff" min="0" step="0.01"
+                        autocomplete="off" />
                 </div>
             </div>
-            <div class="form-group">
+            <div class="form-group row">
                 <label class="control-label col-sm-3">Use random level?</label>
                 <div class="col-sm-9">
-                    <input class="checkbox checkbox-inline" type="checkbox" data-bind="checked: useRandomLevel" />
+                    <div class="form-check">
+                        <input class="form-check-input position-static" type="checkbox" data-bind="checked: useRandomLevel" />
+                    </div>
                 </div>
             </div>
-            <div class="form-group">
+            <div class="form-group row">
                 <label class="control-label col-sm-3" data-bind="text: toneLevelLabel1()"></label>
                 <div class="col-sm-9">
-                    <input class="form-control" type="number" data-bind="value: toneMinLevel, attr: { min: minLevel() - calibration(), max: maxLevel() - calibration() }" autocomplete="off" />
+                    <input class="form-control" type="number"
+                        data-bind="value: toneMinLevel, attr: { min: minLevel() - calibration(), max: maxLevel() - calibration() }"
+                        autocomplete="off" />
                 </div>
             </div>
-            <div class="form-group">
+            <div class="form-group row">
                 <label class="control-label col-sm-3" data-bind="text: toneLevelLabel2()"></label>
                 <div class="col-sm-9">
-                    <input class="form-control" type="number" data-bind="value: toneMaxLevel, attr: { min: minLevel() - calibration(), max: maxLevel() - calibration() }" autocomplete="off" />
+                    <input class="form-control" type="number"
+                        data-bind="value: toneMaxLevel, attr: { min: minLevel() - calibration(), max: maxLevel() - calibration() }"
+                        autocomplete="off" />
                 </div>
             </div>
-            <div class="form-group">
+            <div class="form-group row">
                 <label class="control-label col-sm-3">Duration (ms):</label>
                 <div class="col-sm-9">
-                    <input class="form-control" type="number" data-bind="value: duration" min="0" max="20000" autocomplete="off" />
+                    <input class="form-control" type="number" data-bind="value: duration" min="0" max="20000"
+                        autocomplete="off" />
                 </div>
             </div>
-            <div class="form-group">
+            <div class="form-group row">
                 <label class="control-label col-sm-3">Show feedback?</label>
                 <div class="col-sm-9">
-                    <input class="checkbox checkbox-inline" type="checkbox" data-bind="checked: showFeedback" />
+                    <div class="form-check">
+                        <input class="form-check-input position-static" type="checkbox"
+                            data-bind="checked: showFeedback" />
+                    </div>
                 </div>
             </div>
-            <div class="form-group">
-                <div class="col-sm-offset-3 col-sm-9">
-                    <button class="btn btn-primary" id="beginButton" data-bind="enable: leftEar() || rightEar()">Begin</button>
+            <div class="form-group row">
+                <div class="col-sm-9">
+                    <button class="btn btn-primary" id="beginButton"
+                        data-bind="enable: leftEar() || rightEar()">Begin</button>
                 </div>
             </div>
         </div>
@@ -111,7 +129,9 @@
                 </tr>
                 <tr>
                     <th>Just noticeable difference (%)</th>
-                    <td data-bind="text: jnd() === undefined ? '' : (100 * jnd() / parameters.frequency()).toFixed(2) + ' %'"></td>
+                    <td
+                        data-bind="text: jnd() === undefined ? '' : (100 * jnd() / parameters.frequency()).toFixed(2) + ' %'">
+                    </td>
                 </tr>
                 <tr>
                     <th>Standard deviation</th>
@@ -125,7 +145,9 @@
             <button id="newExperiment" class="btn btn-primary">New experiment</button>
             <button id="copyData" class="btn btn-default">Copy data</button>
         </div>
-        <div id="history" data-bind="visible: (parameters.showFeedback() || showResults()) && results.history().length > 0" style="display: none">
+        <div id="history"
+            data-bind="visible: (parameters.showFeedback() || showResults()) && results.history().length > 0"
+            style="display: none">
             <h2>History</h2>
             <table id="historyTable" class="table table-striped">
                 <thead>
@@ -149,7 +171,8 @@
                         <td data-bind="text: correctAnswer"></td>
                         <td data-bind="text: correct ? 'Correct' : 'Incorrect'"></td>
                         <td data-bind="text: turnedAround ? 'Yes' : ''"></td>
-                        <td><button class="btn btn-primary btn-sm" data-bind="attr: { 'data-id': id }">Replay</button></td>
+                        <td><button class="btn btn-primary btn-sm" data-bind="attr: { 'data-id': id }">Replay</button>
+                        </td>
                     </tr>
                 </tbody>
             </table>
@@ -161,15 +184,21 @@
         </div>
     </div>
 
-    <script src="lib/jquery.min.js"></script>
-    <script src="lib/knockout-latest.js"></script>
-    <script src="lib/Tone.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js"
+        integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
+        integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/knockout/3.5.0/knockout-min.js"
+        integrity="sha256-Tjl7WVgF1hgGMgUKZZfzmxOrtoSf8qltZ9wMujjGNQk=" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/13.8.25/Tone.js"
+        integrity="sha256-RvvCPB+AX/5sltBUtzLs7u+XkRBrVExi9njthRa76LU=" crossorigin="anonymous"></script>
     <script src="js/utils.min.js"></script>
 
     <script>
-        var rampTime = 0.01;
-        var merge = new Tone.Merge().toMaster();
-        var synth = new Tone.Synth({
+        let rampTime = 0.01;
+        let merge = new Tone.Merge().toMaster();
+        let synth = new Tone.Synth({
             oscillator: { type: "sine" },
             envelope: {
                 attack: rampTime,
@@ -188,25 +217,25 @@
         function playTwoNotes(freq1, freq2, db1, db2, onTime, offTime, repetitions) {
             if (repetitions == null) repetitions = 1;
 
-            var delay = 0.1;
-            var now = Tone.now() + delay;
+            let delay = 0.1;
+            let now = Tone.now() + delay;
             for (var i = 0; i < repetitions; i++) {
-                synth.triggerAttackRelease(freq1, onTime, now + 2 * i * (onTime + offTime), synth.dbToGain(db1));
-                synth.triggerAttackRelease(freq2, onTime, now + (2 * i + 1) * (onTime + offTime), synth.dbToGain(db2));
+                synth.triggerAttackRelease(freq1, onTime, now + 2 * i * (onTime + offTime), Tone.dbToGain(db1));
+                synth.triggerAttackRelease(freq2, onTime, now + (2 * i + 1) * (onTime + offTime), Tone.dbToGain(db2));
             }
         }
 
         function a() {
-            var db1 = randomFloat(-11, -17);
-            var db2 = randomFloat(-11, -17);
-            var lowerDb = Math.min(db1, db2);
-            var upperDb = Math.max(db1, db2);
+            let db1 = randomFloat(-11, -17);
+            let db2 = randomFloat(-11, -17);
+            let lowerDb = Math.min(db1, db2);
+            let upperDb = Math.max(db1, db2);
 
             playTwoNotes(800, 850, db1, db2, 0.25, 0.1, 1);
         }
 
         function selectText(containerid) {
-            var range;
+            let range;
             if (document.selection) {
                 range = document.body.createTextRange();
                 range.moveToElementText(document.getElementById(containerid));
@@ -468,4 +497,5 @@
         ko.applyBindings(experimentViewModel);
     </script>
 </body>
+
 </html>

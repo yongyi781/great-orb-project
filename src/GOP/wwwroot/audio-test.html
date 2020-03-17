@@ -3,7 +3,7 @@
 <head>
     <title>Audio Test Page</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.5/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" rel="stylesheet" />
     <style>
         .container input[type=number] {
             width: 100px;
@@ -129,10 +129,34 @@
             </div>
             <button id="test5_play" class="btn btn-lg btn-primary">Play</button>
         </div>
+        <div id="test6">
+            <h2>Clicks</h2>
+            <div class="form-group form-inline">
+                <label for="test6_freq">Frequency:</label> <input type="number" id="test5_freq" class="form-control"
+                value="880" />
+                <label for="test6_volume">Volume:</label> <input type="number" id="test5_volume" class="form-control"
+                value="-23" min="-100" max="0" />
+            </div>
+            <div>
+                <button class="btn btn-outline-primary" data-semitones="-0.5">-0.5</button>
+                <button class="btn btn-outline-primary" data-semitones="0.5">+0.5</button>
+                <button class="btn btn-outline-primary" data-semitones="-1">-1</button>
+                <button class="btn btn-outline-primary" data-semitones="1">+1</button>
+                <button class="btn btn-outline-primary" data-semitones="-12">-12</button>
+                <button class="btn btn-outline-primary" data-semitones="12">+12</button>
+            </div>
+            <div class="form-group form-inline">
+                <label for="test6_ontime">On-time:</label>
+                <input type="number" id="test5_ontime" class="form-control" value="0.005" min="0" max="2" step="0.01" />
+            </div>
+            <button id="test6_play" class="btn btn-lg btn-primary">Play</button>
+        </div>
     </div>
 
-    <script src="https://code.jquery.com/jquery-3.1.1.min.js" integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8=" crossorigin="anonymous"></script>
-    <script src="lib/tone/build/Tone.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js"
+        integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/13.8.25/Tone.js"
+        integrity="sha256-RvvCPB+AX/5sltBUtzLs7u+XkRBrVExi9njthRa76LU=" crossorigin="anonymous"></script>
     <script type="text/javascript">
         var rampTime = 0.025;
         var synth, synthR, merge;
@@ -144,8 +168,8 @@
             var delay = 0.1;
             now += delay;
             for (var i = 0; i < repetitions; i++) {
-                synth.triggerAttackRelease(freq1, onTime, now + 2 * i * (onTime + offTime), synth.dbToGain(db1));
-                synth.triggerAttackRelease(freq2, onTime, now + (2 * i + 1) * (onTime + offTime), synth.dbToGain(db2));
+                synth.triggerAttackRelease(freq1, onTime, now + 2 * i * (onTime + offTime), Tone.dbToGain(db1));
+                synth.triggerAttackRelease(freq2, onTime, now + (2 * i + 1) * (onTime + offTime), Tone.dbToGain(db2));
             }
         }
 
@@ -219,7 +243,7 @@
 
             for (var i = 0; i < 10; i++) {
                 var vol = (i/9) * maxVol + (1 - i/9) * minVol;
-                synth.triggerAttackRelease(freq, onTime, now + i * onTime, synth.dbToGain(vol));
+                synth.triggerAttackRelease(freq, onTime, now + i * onTime, Tone.dbToGain(vol));
             }
         });
 
@@ -232,24 +256,24 @@
             var freq2 = +$("#test3_freq2").val();
             var onTime = +$("#test3_ontime").val();
 
-            synth.triggerAttackRelease(freq1, onTime, now, synth.dbToGain(+$("#test3_volume1").val()));
-            synth.triggerAttackRelease(freq2, onTime, now + onTime, synth.dbToGain(+$("#test3_volume2").val()));
-            synth.triggerAttackRelease(freq1, onTime, now + 2 * onTime, synth.dbToGain(+$("#test3_volume1").val()));
-            synth.triggerAttackRelease(freq2, onTime, now + 3 * onTime, synth.dbToGain(+$("#test3_volume2").val()));
+            synth.triggerAttackRelease(freq1, onTime, now, Tone.dbToGain(+$("#test3_volume1").val()));
+            synth.triggerAttackRelease(freq2, onTime, now + onTime, Tone.dbToGain(+$("#test3_volume2").val()));
+            synth.triggerAttackRelease(freq1, onTime, now + 2 * onTime, Tone.dbToGain(+$("#test3_volume1").val()));
+            synth.triggerAttackRelease(freq2, onTime, now + 3 * onTime, Tone.dbToGain(+$("#test3_volume2").val()));
             var t = now + 4 * onTime;
             onTime /= 2;
             for (var i = 0; i < 2; i++, t += 4 * onTime)
             {
-                synth.triggerAttackRelease(freq1, onTime, t, synth.dbToGain(+$("#test3_volume1").val()));
-                synth.triggerAttackRelease(freq2, onTime, t + onTime, synth.dbToGain(+$("#test3_volume2").val()));
-                synth.triggerAttackRelease(freq1, onTime, t + 2 * onTime, synth.dbToGain(+$("#test3_volume1").val()));
-                synth.triggerAttackRelease(freq2, onTime, t + 3 * onTime, synth.dbToGain(+$("#test3_volume2").val()));
+                synth.triggerAttackRelease(freq1, onTime, t, Tone.dbToGain(+$("#test3_volume1").val()));
+                synth.triggerAttackRelease(freq2, onTime, t + onTime, Tone.dbToGain(+$("#test3_volume2").val()));
+                synth.triggerAttackRelease(freq1, onTime, t + 2 * onTime, Tone.dbToGain(+$("#test3_volume1").val()));
+                synth.triggerAttackRelease(freq2, onTime, t + 3 * onTime, Tone.dbToGain(+$("#test3_volume2").val()));
             }
         });
 
         document.querySelector("#test4_play").addEventListener("click", function () {
             // function play(freq, onTime, t, vol) {
-            //     synth.triggerAttackRelease(freq, onTime, t, synth.dbToGain(vol));
+            //     synth.triggerAttackRelease(freq, onTime, t, Tone.dbToGain(vol));
             // }
 
             init();
@@ -265,7 +289,7 @@
             new Tone.Loop(function (t) {
                 var freq = centerFreq + 2 * freqWidth * (Math.random() - 0.5);
                 var vol = centerVol + 2 * volWidth * (Math.random() - 0.5);
-                synth.triggerAttackRelease(freq, onTime, t, synth.dbToGain(vol));
+                synth.triggerAttackRelease(freq, onTime, t, Tone.dbToGain(vol));
             }, interval).start("+0").stop("+5");
             Tone.Transport.start();
             // for (var i = 0, t = Tone.now() + 0.1; i < Math.min(200, 3 / interval); i++) {
@@ -281,6 +305,44 @@
         var test5Flag = false;
 
         document.querySelector("#test5_play").addEventListener("click", function () {
+            init();
+
+            var vol = $("#test5_volume").val();
+            var onTime = $("#test5_ontime").val();
+
+            if (test5Loop == null) {
+                test5Loop = new Tone.Loop(function () {
+                    var freq = $("#test5_freq").val(), freq2 = $("#test5_freq2").val();
+                    synth.frequency.value = test5Flag ? freq : freq2;
+                    synthR.frequency.value = test5Flag ? freq2 : freq;
+                    test5Flag = !test5Flag;
+                }, onTime).start();
+                Tone.Transport.start();
+            }
+
+            if (!test5Playing) {
+                test5Playing = true;
+                synth.volume.value = synthR.volume.value = vol;
+                synth.triggerAttack($("#test5_freq").val() / 2);
+                synthR.triggerAttack($("#test5_freq").val());
+                test5Loop.start();
+                $(this).text("Stop");
+            } else {
+                test5Playing = false;
+                synth.triggerRelease();
+                synthR.triggerRelease();
+                test5Loop.stop();
+                $(this).text("Play");
+            }
+            // for (var i = 0, t = Tone.now() + 0.1; i < Math.min(200, 3 / interval); i++) {
+            //     var freq = centerFreq + 2 * freqWidth * (Math.random() - 0.5);
+            //     var vol = vol + 2 * volWidth * (Math.random() - 0.5);
+            //     setTimeout(play, 0, freq, onTime, t, vol);
+            //     t += interval;
+            // }
+        });
+
+        document.querySelector("#test6_play").addEventListener("click", function () {
             init();
 
             var vol = $("#test5_volume").val();
@@ -343,7 +405,12 @@
             $("#test5_freq,#test5_freq2").val(function () { return +$(this).val() * Math.pow(2, semitones/12); });
         });
 
-        ["#test1", "#test2", "#test3", "#test4", "#test5"].forEach(function (x) {
+        $("#test6 button[data-semitones]").click(function () {
+            var semitones = $(this).data("semitones");
+            $("#test6_freq").val(function () { return +$(this).val() * Math.pow(2, semitones/12); });
+        });
+
+        ["#test1", "#test2", "#test3", "#test4", "#test5", "#test6"].forEach(function (x) {
             $(x).keydown(function (e) {
                 if (e.key === "Enter") {
                     e.preventDefault();

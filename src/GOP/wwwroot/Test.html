@@ -7,37 +7,74 @@
     <meta http-equiv="x-ua-compatible" content="IE=10">
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet"
         integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
-    <script src="lib/vue.js"></script>
+        
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.15/lodash.min.js"
         integrity="sha256-VeNaFBVDhoX3H+gJ37DpT/nTuZTdjYro9yBruHjVmoQ=" crossorigin="anonymous"></script>
+    <style>
+        .color-block {
+            width: 32px;
+            height: 32px;
+            float: left;
+            text-align: center;
+            vertical-align: middle;
+        }
+
+        canvas {
+            margin: 0px auto;
+            display: block;
+        }
+    </style>
 </head>
 
 <body>
     <div id="app" class="container">
-        <button class="btn btn-danger" @click="doSomething">Do something</button>
-        <div v-for="x in numbers">
-            <button class="btn btn-primary" :style="getStyle(x)">{{x}}</button>
+        <div>
+            <button id="doSomethng" class="btn btn-primary" @click="doSomething">Click</button>
+        </div>
+        <select v-model="thing">
+            <option :value="{ name: 'a', code: 1123 }">Hello</option>
+            <option :value="'b'" :data-a="2234">Bye</option>
+        </select>
+        <div>
+            <canvas id="myCanvas" width="300" height="300"></canvas>
+        </div>
+        <div>
+            {{result}}
         </div>
     </div>
+    
+    <script src="lib/vue.js"></script>
+    <script src="https://d3js.org/d3.v5.min.js"></script>
+    <script src="js/hsluv.min.js"></script>
     <script>
-        var app = new Vue({
+        let canvas = document.querySelector("#myCanvas");
+        let vm = new Vue({
             el: "#app",
             data: {
-                numbers: []
+                result: "asdf",
+                thing: { a: "3", value: "hmm" }
+            },
+            watch: {
+                thing: function (e, a) {
+                    console.log(e);
+                    console.log(a);
+                }
             },
             methods: {
                 doSomething: function () {
-                    this.numbers = [];
-                    for (let i = 0; i < 5000; i++) {
-                        this.numbers.push(Math.floor(Math.random() * 2147483648));
+                    let xs = [];
+                    let t0 = performance.now();
+                    for (let i = 0; i < 1000000; i++) {
+                        xs.push(Math.random());
                     }
-                },
-
-                getStyle: function (x) {
-                    return { backgroundColor: "#" + x.toString(16).padStart(6, "0").substr(0, 6) };
+                    xs.sort();
+                    let t1= performance.now();
+                    this.result = `${xs[0]}, ${t1-t0} ms`;
                 }
             }
         });
+        let context = canvas.getContext("2d");
+        context.fillRect(100, 100, 100, 100);
     </script>
 </body>
 

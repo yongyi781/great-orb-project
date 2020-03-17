@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Test Page</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="x-ua-compatible" content="IE=10">
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.15/lodash.min.js"
+        integrity="sha256-VeNaFBVDhoX3H+gJ37DpT/nTuZTdjYro9yBruHjVmoQ=" crossorigin="anonymous"></script>
+    <style>
+        .color-block {
+            width: 32px;
+            height: 32px;
+            float: left;
+            text-align: center;
+            vertical-align: middle;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="app" class="container">
+        <div class="form-group">
+            <input class="form-control" v-model="colorType">
+        </div>
+        <div class="form-group">
+            <input type="range" class="form-control" v-model="brightness" min="0" max="1" step="0.01">
+        </div>
+        <div v-for="h in 12">
+            <div class="color-block" :style="{ backgroundColor: getColor(colorType, (h-1)/12) }">{{h-1}}</div>
+        </div>
+    </div>
+    <script src="lib/vue.js"></script>
+    <script src="https://d3js.org/d3.v5.min.js"></script>
+    <script src="js/hsluv.min.js"></script>
+    <script>
+        var app = new Vue({
+            el: "#app",
+            data: {
+                brightness: 0.65,
+                colorType: "hsluv"
+            },
+            methods: {
+                cubehelix: function (h) {
+                    let hue = (h + 1 / 4) % 1;
+                    return d3.cubehelix(360 * hue, 1, this.brightness);
+                },
+
+                hcl: function (h) {
+                    let hh = (h + 0.4) % 1;
+                    return d3.hcl(360 * hh, 80, 100 * this.brightness);
+                },
+
+                hsluv: function (h) {
+                    let hh = (h + 0.4) % 1;
+                    return hsluv.hsluvToHex([360 * hh, 80, 100 * this.brightness]);
+                },
+
+                hsluv: function (h) {
+                    let hh = (h + 0.35) % 1;
+                    return hsluv.hsluvToHex([360 * hh, 80, 100 * this.brightness]);
+                },
+
+                getColor: function (type, h) {
+                    switch (type) {
+                        case "hcl":
+                            return this.hcl(h);
+                        case "hsluv":
+                            return this.hsluv(h);
+                        default:
+                            return this.cubehelix(h);
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+
+</html>

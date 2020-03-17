@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Exploring graphs that behave like manifolds">
+    <title>Living on a Möbius strip</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+    <style>
+        canvas {
+            margin: 12px auto;
+            display: block;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="app" class="container">
+        <h1>Living on a Möbius strip (and other manifolds)</h1>
+        <p>
+            This interactive demo shows what it would be like to live on a Möbius strip and other manifolds. The
+            manifolds are modeled with graphs that are built out of rooms, each having doors pointing left, up, right,
+            and down. Rooms with the same number are in fact the same room. The view is what you would see if you were
+            on the manifold.
+        </p>
+        <p>Use the arrow keys to move, and Shift + left/right arrows to rotate. Explore as many rooms as you can.</p>
+        <div class="form-check">
+            <label class="form-check-label">
+                <input type="checkbox" class="form-check-input" v-model="godMode">
+                God mode (mark every room as visited)
+            </label>
+        </div>
+        <div class="form-check">
+            <label class="form-check-label">
+                <input type="checkbox" class="form-check-input" v-model="allowMultipleInEdges">
+                Allow multiple in-edges (creates weird non-manifolds)
+            </label>
+        </div>
+        <div class="form-inline">
+            <div class="form-group">
+                <label for="drawDistance">Draw distance:</label>
+                <input type="number" class="form-control mx-sm-3" id="drawDistance" v-model="drawDistance" min="0" max="15">
+            </div>
+        </div>
+        <label for="graphSelect">Choose graph type:</label>
+        <div class="form-group">
+            <select class="form-control" name="graphSelect" id="graphSelect" v-model="graph">
+                <option value="K5" data-code="1e2 2e3 3e4 4e5 5e1 1n3 2n4 3n5 4n1 5n2">Complete graph of order 5
+                </option>
+                <option value="octahedron" data-code="1w2 1n3 1e4 1s5 6w2w 6s3 6e4e 6n5 2n3w 3e4n 4s5e 5w2s">Vertices of
+                    octahedron / faces of cube</option>
+                <option value="flatcube" data-code="1n2 2e3 3s4 4w1 5e6 6s7 7w8 8n5 1w6 2n7 3e8 4s5">Flat cube vertices
+                </option>
+                <option value="1room" data-code="1n1w 1e1e">Interesting 1-room manifold
+                </option>
+                <option value="mobius" selected>Möbius strip</option>
+                <option value="klein">Klein bottle</option>
+                <option value="projective">Projective plane</option>
+                <option value="B">Weird graph</option>
+                <option value="mobius2">Weird graph 2</option>
+                <option value="random">Random graph</option>
+                <option value="custom">Custom</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="customCode">Code: </label>
+            <form id="codeForm" class="input-group" onsubmit="return false;" novalidate>
+                <input type="text" class="form-control" name="customCode" id="customCode"
+                    aria-describedby="customCodeHelp" placeholder="Custom code" autocapitalize="off" autocomplete="off"
+                    v-model="code">
+                <div class="input-group-append">
+                    <button class="btn btn-primary" type="submit" id="codeSubmit">Go!</button>
+                </div>
+                <div id="invalidCodeFeedback" class="invalid-feedback">
+                    {{ invalidCodeFeedback }}
+                </div>
+            </form>
+            <small id="customCodeHelp" class="form-text text-muted">e.g. <code>1n2s 2n1e</code>. Use
+                <code>!</code> or <code>'</code>
+                to flip orientation.
+            </small>
+        </div>
+        <canvas id="mainCanvas" tabindex="0" width="320" height="320"></canvas>
+        <div>
+            <span id="status">{{ statusText }}</span>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.4.1.slim.js"
+        integrity="sha256-BTlTdQO9/fascB1drekrDVkaKd9PkwBymMlHOiG+qLI=" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.bundle.min.js"
+        integrity="sha384-6khuMg9gaYr5AxOqhkVIODVIvm9ynTT5J4V1cfthmT+emCG6yVmEZsRHdxlotUnm"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.min.js"></script>
+    <script src="js/Room.js"></script>
+    <script src="js/GraphUI.js"></script>
+    <script src="js/main.js"></script>
+</body>
+
+</html>

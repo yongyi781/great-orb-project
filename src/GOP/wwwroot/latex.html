@@ -6,7 +6,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>MathJax Live Preview</title>
+    <title>LaTeX Live Preview</title>
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet"
         integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
     <style>
@@ -31,7 +31,7 @@
 
     <div class="container">
 
-        <h1>MathJax Live Preview</h1>
+        <h1>LaTeX Live Preview</h1>
         <div class="form-group form-check">
             <label class="form-check-label">
                 <input type="checkbox" class="form-check-input" id="useMathBot"> Use MathBot delimiters
@@ -45,7 +45,7 @@
     <script>
         let urlParams = new URLSearchParams(window.location.search);
         let mathbotStyleStr = urlParams.get("mathbot");
-        let mathbotStyle = mathbotStyleStr == null || mathbotStyleStr == "true" || mathbotStyleStr == "1";
+        let mathbotStyle = mathbotStyleStr == "true" || mathbotStyleStr == "1";
 
         inlineChar = mathbotStyle ? "$$" : "$";
         displayMath = [["\\[", "\\]"]];
@@ -74,7 +74,7 @@
     <script id="MathJax-script" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script>
         var isTypesetting = false;
-        var defaultText = "Let $$x$$ be a solution to $$ax^2+bx+c=0$$. Then \\[x=\\frac{-b \\pm \\sqrt{b^2-4ac}}{2a}.\\]";
+        var defaultText = "Let $x$ be a solution to $ax^2+bx+c=0$. Then \\[x=\\frac{-b \\pm \\sqrt{b^2-4ac}}{2a}.\\]";
 
         function convert() {
             let input = document.querySelector("#input").value.trim();
