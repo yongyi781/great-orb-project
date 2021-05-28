@@ -33,7 +33,7 @@
         </div>
     </div>
     <script src="lib/vue.js"></script>
-    <script src="https://d3js.org/d3.v5.min.js"></script>
+    <script src="https://d3js.org/d3.v6.min.js"></script>
     <script src="js/hsluv.min.js"></script>
     <script>
         var app = new Vue({
@@ -55,11 +55,6 @@
 
                 hsluv: function (h) {
                     let hh = (h + 0.4) % 1;
-                    return hsluv.hsluvToHex([360 * hh, 80, 100 * this.brightness]);
-                },
-
-                hsluv: function (h) {
-                    let hh = (h + 0.35) % 1;
                     return hsluv.hsluvToHex([360 * hh, 80, 100 * this.brightness]);
                 },
 

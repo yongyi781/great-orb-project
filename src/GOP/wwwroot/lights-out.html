@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <title>Lights Out Solver</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -36,20 +37,25 @@
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <h1>Dungeoneering Lights Out Solver</h1>
-        <p>This utility will solve the Lights Out dungeoneering puzzle <strong>in the least amount of moves</strong>, without forcing.</p>
+        <p>This utility will solve the Lights Out dungeoneering puzzle <strong>in the least amount of moves</strong>,
+            without forcing.</p>
         <p>
-            Left-click to change the color of a square, right-click to change the color of a square along with its neighbors. When you click Solve, the tiles marked 1 are the tiles to imbue.
+            Left-click to imbue, right-click to force. When you click Solve, the tiles marked 1 are the tiles to imbue.
         </p>
         <div class="center">
             <div class="inline-block">
-                <button class="btn btn-primary" id="solve">Solve</button>
+                <button class="btn btn-success" id="solve">Solve</button>
                 <button class="btn btn-warning" id="unsolve">Unsolve</button>
                 <button class="btn btn-danger" id="reset">Reset</button>
+                <button class="btn btn-default" id="randomize">Randomize</button>
                 <table id="board" class="board">
                 </table>
+                <input type="number" class="form-control" name="code" id="code" aria-describedby="helpId"
+                    placeholder="Code">
             </div>
         </div>
     </div>
@@ -57,25 +63,25 @@
     <script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
 
     <script>
-        var N = 5;
-        var $board = $("#board");
-        var $squares = [];
-        var vector = [];
-        var offsets = [[0, 0], [-1, 0], [1, 0], [0, -1], [0, 1]];
+        let N = 5;
+        let $board = $("#board");
+        let $squares = [];
+        let vector = [];
+        let offsets = [[0, 0], [-1, 0], [1, 0], [0, -1], [0, 1]];
 
-        var lightsOutMatrix = [[1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 1, 0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 1, 0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1]];
+        let lightsOutMatrix = [[1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 1, 0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 1, 0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1]];
 
-        var pseudoinverse = [[0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1, 1, 1, 0], [0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 1, 0, 1, 1, 0, 1, 1], [0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 0, 1, 0, 1, 1, 1, 0, 1], [0, 0, 1, 1, 1, 0, 1, 0, 0, 0, 1, 1, 0, 1, 1, 0, 1, 0, 0, 0, 0, 0, 1, 1, 1], [0, 0, 0, 1, 1, 0, 0, 1, 0, 1, 0, 1, 1, 1, 0, 1, 0, 0, 0, 0, 1, 0, 1, 1, 0], [0, 0, 1, 0, 1, 0, 1, 1, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0], [0, 0, 1, 0, 0, 0, 1, 1, 1, 0, 1, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 1, 1, 0], [0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1], [0, 0, 1, 0, 0, 0, 1, 1, 1, 0, 1, 0, 0, 1, 1, 1, 0, 0, 1, 0, 0, 1, 1, 0, 0], [0, 0, 1, 0, 1, 0, 1, 1, 0, 1, 1, 0, 1, 0, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 1], [0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0, 1, 0, 1, 1, 1, 1, 1, 0, 0, 1, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 0, 0], [0, 0, 0, 1, 1, 0, 0, 1, 0, 0, 0, 1, 1, 0, 1, 1, 0, 0, 0, 1, 1, 0, 1, 1, 0], [0, 0, 1, 1, 1, 0, 1, 0, 1, 0, 1, 1, 1, 0, 0, 0, 0, 0, 1, 0, 1, 1, 0, 1, 1], [0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 0, 1, 0, 0, 0, 1, 1, 0, 1, 0, 0, 1, 0, 1, 1], [0, 0, 1, 0, 0, 0, 1, 1, 1, 0, 1, 0, 0, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1, 0, 0], [0, 0, 1, 1, 0, 0, 1, 0, 0, 1, 1, 1, 0, 0, 1, 0, 1, 1, 1, 0, 0, 0, 1, 0, 0], [0, 0, 1, 0, 1, 0, 1, 1, 0, 1, 1, 0, 1, 0, 0, 1, 1, 0, 1, 1, 1, 0, 0, 0, 0], [0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 0, 1, 0, 0, 0, 1, 1, 0, 1, 1, 0, 1, 0, 1, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1], [0, 0, 0, 1, 1, 0, 0, 1, 0, 0, 0, 1, 1, 0, 1, 1, 0, 1, 0, 1, 1, 1, 0, 0, 0], [0, 0, 1, 1, 1, 0, 1, 0, 1, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0], [0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 0, 1, 0, 0, 0, 1, 1, 0, 1, 1, 0, 1, 0, 0, 0], [1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 1, 0, 1, 0, 1], [0, 1, 1, 1, 0, 1, 0, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 0, 1, 0, 1, 1, 1, 0]];
+        let pseudoinverse = [[0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1, 1, 1, 0], [0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 1, 0, 1, 1, 0, 1, 1], [0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 0, 1, 0, 1, 1, 1, 0, 1], [0, 0, 1, 1, 1, 0, 1, 0, 0, 0, 1, 1, 0, 1, 1, 0, 1, 0, 0, 0, 0, 0, 1, 1, 1], [0, 0, 0, 1, 1, 0, 0, 1, 0, 1, 0, 1, 1, 1, 0, 1, 0, 0, 0, 0, 1, 0, 1, 1, 0], [0, 0, 1, 0, 1, 0, 1, 1, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0], [0, 0, 1, 0, 0, 0, 1, 1, 1, 0, 1, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 1, 1, 0], [0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1], [0, 0, 1, 0, 0, 0, 1, 1, 1, 0, 1, 0, 0, 1, 1, 1, 0, 0, 1, 0, 0, 1, 1, 0, 0], [0, 0, 1, 0, 1, 0, 1, 1, 0, 1, 1, 0, 1, 0, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 1], [0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0, 1, 0, 1, 1, 1, 1, 1, 0, 0, 1, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 0, 0], [0, 0, 0, 1, 1, 0, 0, 1, 0, 0, 0, 1, 1, 0, 1, 1, 0, 0, 0, 1, 1, 0, 1, 1, 0], [0, 0, 1, 1, 1, 0, 1, 0, 1, 0, 1, 1, 1, 0, 0, 0, 0, 0, 1, 0, 1, 1, 0, 1, 1], [0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 0, 1, 0, 0, 0, 1, 1, 0, 1, 0, 0, 1, 0, 1, 1], [0, 0, 1, 0, 0, 0, 1, 1, 1, 0, 1, 0, 0, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1, 0, 0], [0, 0, 1, 1, 0, 0, 1, 0, 0, 1, 1, 1, 0, 0, 1, 0, 1, 1, 1, 0, 0, 0, 1, 0, 0], [0, 0, 1, 0, 1, 0, 1, 1, 0, 1, 1, 0, 1, 0, 0, 1, 1, 0, 1, 1, 1, 0, 0, 0, 0], [0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 0, 1, 0, 0, 0, 1, 1, 0, 1, 1, 0, 1, 0, 1, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1], [0, 0, 0, 1, 1, 0, 0, 1, 0, 0, 0, 1, 1, 0, 1, 1, 0, 1, 0, 1, 1, 1, 0, 0, 0], [0, 0, 1, 1, 1, 0, 1, 0, 1, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0], [0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 0, 1, 0, 0, 0, 1, 1, 0, 1, 1, 0, 1, 0, 0, 0], [1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 1, 0, 1, 0, 1], [0, 1, 1, 1, 0, 1, 0, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 0, 1, 0, 1, 1, 1, 0]];
 
         // All the vectors in the nullspace of the Lights Out matrix, or that flip all the tiles.
-        var nullOrFlipAllVectors = [[[0, 0, 0, 0, 0], [0, 0, 0, 0, 0], [0, 0, 0, 0, 0], [0, 0, 0, 0, 0], [0, 0, 0, 0, 0]], [[1, 0, 1, 0, 1], [1, 0, 1, 0, 1], [0, 0, 0, 0, 0], [1, 0, 1, 0, 1], [1, 0, 1, 0, 1]], [[0, 1, 1, 1, 0], [1, 0, 1, 0, 1], [1, 1, 0, 1, 1], [1, 0, 1, 0, 1], [0, 1, 1, 1, 0]], [[1, 1, 0, 1, 1], [0, 0, 0, 0, 0], [1, 1, 0, 1, 1], [0, 0, 0, 0, 0], [1, 1, 0, 1, 1]], [[0, 1, 1, 0, 1], [0, 1, 1, 1, 0], [0, 0, 1, 1, 1], [1, 1, 0, 1, 1], [1, 1, 0, 0, 0]], [[1, 1, 0, 0, 0], [1, 1, 0, 1, 1], [0, 0, 1, 1, 1], [0, 1, 1, 1, 0], [0, 1, 1, 0, 1]], [[0, 0, 0, 1, 1], [1, 1, 0, 1, 1], [1, 1, 1, 0, 0], [0, 1, 1, 1, 0], [1, 0, 1, 1, 0]], [[1, 0, 1, 1, 0], [0, 1, 1, 1, 0], [1, 1, 1, 0, 0], [1, 1, 0, 1, 1], [0, 0, 0, 1, 1]]];
+        let nullOrFlipAllVectors = [[[0, 0, 0, 0, 0], [0, 0, 0, 0, 0], [0, 0, 0, 0, 0], [0, 0, 0, 0, 0], [0, 0, 0, 0, 0]], [[1, 0, 1, 0, 1], [1, 0, 1, 0, 1], [0, 0, 0, 0, 0], [1, 0, 1, 0, 1], [1, 0, 1, 0, 1]], [[0, 1, 1, 1, 0], [1, 0, 1, 0, 1], [1, 1, 0, 1, 1], [1, 0, 1, 0, 1], [0, 1, 1, 1, 0]], [[1, 1, 0, 1, 1], [0, 0, 0, 0, 0], [1, 1, 0, 1, 1], [0, 0, 0, 0, 0], [1, 1, 0, 1, 1]], [[0, 1, 1, 0, 1], [0, 1, 1, 1, 0], [0, 0, 1, 1, 1], [1, 1, 0, 1, 1], [1, 1, 0, 0, 0]], [[1, 1, 0, 0, 0], [1, 1, 0, 1, 1], [0, 0, 1, 1, 1], [0, 1, 1, 1, 0], [0, 1, 1, 0, 1]], [[0, 0, 0, 1, 1], [1, 1, 0, 1, 1], [1, 1, 1, 0, 0], [0, 1, 1, 1, 0], [1, 0, 1, 1, 0]], [[1, 0, 1, 1, 0], [0, 1, 1, 1, 0], [1, 1, 1, 0, 0], [1, 1, 0, 1, 1], [0, 0, 0, 1, 1]]];
 
         function init() {
-            for (var y = 0; y < N; y++) {
+            for (let y = N - 1; y >= 0; y--) {
                 vector[y] = [];
                 $squares[y] = [];
-                var $tr = $("<tr/>");
-                for (var x = 0; x < N; x++) {
+                let $tr = $("<tr/>");
+                for (let x = 0; x < N; x++) {
                     vector[y][x] = 0;
                     $squares[y][x] = $("<td/>").data({ x, y });
                     $tr.append($squares[y][x]);
@@ -88,20 +94,27 @@
             return value >= 0 && value < N;
         }
 
-        function flip(x, y) {
-            if (vector[y][x] === 1) {
-                vector[y][x] = 0;
-                $squares[y][x].removeClass("on");
-            } else {
+        function set(x, y, value) {
+            if (value) {
                 vector[y][x] = 1;
                 $squares[y][x].addClass("on");
+            } else {
+                vector[y][x] = 0;
+                $squares[y][x].removeClass("on");
             }
         }
 
-        function touch(x, y) {
-            $squares[y][x].toggleClass("one");
+        function flip(x, y) {
+            set(x, y, !vector[y][x]);
+            $("#code").val(getCode());
+        }
+
+        function touch(x, y, mark = true) {
+            if (mark)
+                $squares[y][x].toggleClass("one");
+
             offsets.forEach(function (offset) {
-                var xi = x + offset[0], yi = y + offset[1];
+                let xi = x + offset[0], yi = y + offset[1];
                 if (isInRange(xi) && isInRange(yi)) {
                     flip(xi, yi);
                 }
@@ -111,18 +124,18 @@
         // Tricky point: vector is actually a square array, but we treat it as a column vector in multiplying.
         // Also, this is done mod 2.
         function multiply(matrix, vector) {
-            var n = vector.length;
+            let n = vector.length;
 
-            var result = [];
-            for (var y = 0; y < n; y++) {
+            let result = [];
+            for (let y = 0; y < n; y++) {
                 result[y] = [];
-                for (var x = 0; x < n; x++) {
+                for (let x = 0; x < n; x++) {
                     result[y][x] = 0;
                 }
             }
-            for (var i = 0; i < n * n; i++) {
-                var x = i % n, y = Math.floor(i / n);
-                for (var j = 0; j < n * n; j++) {
+            for (let i = 0; i < n * n; i++) {
+                let x = i % n, y = Math.floor(i / n);
+                for (let j = 0; j < n * n; j++) {
                     result[y][x] += matrix[i][j] * vector[Math.floor(j / n)][j % n];
                     result[y][x] %= 2;
                 }
@@ -131,10 +144,10 @@
         }
 
         function add(vector1, vector2) {
-            var result = [];
-            for (var y = 0; y < N; y++) {
+            let result = [];
+            for (let y = 0; y < N; y++) {
                 result[y] = [];
-                for (var x = 0; x < N; x++) {
+                for (let x = 0; x < N; x++) {
                     result[y][x] = (vector1[y][x] + vector2[y][x]) % 2;
                 }
             }
@@ -142,9 +155,9 @@
         }
 
         function totalOnes(vector) {
-            var result = 0;
-            for (var y = 0; y < N; y++) {
-                for (var x = 0; x < N; x++) {
+            let result = 0;
+            for (let y = 0; y < N; y++) {
+                for (let x = 0; x < N; x++) {
                     result += vector[y][x];
                 }
             }
@@ -152,8 +165,8 @@
         }
 
         function equal(vector1, vector2) {
-            for (var y = 0; y < N; y++) {
-                for (var x = 0; x < N; x++) {
+            for (let y = 0; y < N; y++) {
+                for (let x = 0; x < N; x++) {
                     if (vector1[y][x] !== vector2[y][x]) {
                         return false;
                     }
@@ -168,27 +181,57 @@
 
         function getAllSolutions(vector) {
             // Multiply by solution matrix
-            var solVector = multiply(pseudoinverse, vector);
+            let solVector = multiply(pseudoinverse, vector);
             return nullOrFlipAllVectors.map(function (v) { return add(v, solVector); });
         }
 
         function updateSolvable() {
-            var solvable = isSolvable(vector);
+            let solvable = isSolvable(vector);
             $("#solve, #unsolve").prop("disabled", !solvable);
             $("#solve").text(solvable ? "Solve" : "Unsolvable");
+        }
+
+        function reset() {
+            for (let y = 0; y < N; y++) {
+                for (let x = 0; x < N; x++) {
+                    vector[y][x] = 0;
+                    $squares[y][x].removeClass("on").removeClass("one");
+                }
+            }
+            updateSolvable();
+            $("#code").val(getCode());
+        }
+
+        function getCode() {
+            let code = 0;
+            for (let y = 0; y < N; y++) {
+                for (let x = 0; x < N; x++) {
+                    if (vector[y][x] == 1)
+                        code ^= (1 << ((N * y) + x));
+                }
+            }
+            return code;
+        }
+
+        function setCode(code) {
+            for (let y = 0; y < N; y++) {
+                for (let x = 0; x < N; x++) {
+                    set(x, y, code & (1 << ((N * y) + x)));
+                }
+            }
         }
 
         init();
 
         $("#board").on("mousedown", "td", function (e) {
             e.preventDefault();
-            var $td = $(e.target);
-            var x = $td.data("x"), y = $td.data("y");
+            let $td = $(e.target);
+            let x = $td.data("x"), y = $td.data("y");
 
             if (e.button === 0) {
-                flip(x, y);
-            } else if (e.button === 2) {
                 touch(x, y);
+            } else if (e.button === 2) {
+                flip(x, y);
             }
 
             updateSolvable();
@@ -197,12 +240,12 @@
         $("#board").contextmenu(function (e) { e.preventDefault(); });
 
         $("#solve").click(function () {
-        	var minSol = getAllSolutions(vector)
+            let minSol = getAllSolutions(vector)
                 .map(function (v) { return { vector: v, total: totalOnes(v) }; })
                 .reduce(function (prev, curr) { return prev.total < curr.total ? prev : curr });
 
-            for (var y = 0; y < N; y++) {
-                for (var x = 0; x < N; x++) {
+            for (let y = 0; y < N; y++) {
+                for (let x = 0; x < N; x++) {
                     if (minSol.vector[y][x] === 1) {
                         touch(x, y);
                     }
@@ -211,8 +254,8 @@
         });
 
         $("#unsolve").click(function () {
-            for (var y = 0; y < N; y++) {
-                for (var x = 0; x < N; x++) {
+            for (let y = 0; y < N; y++) {
+                for (let x = 0; x < N; x++) {
                     if ($squares[y][x].hasClass("one")) {
                         touch(x, y);
                     }
@@ -221,14 +264,27 @@
         });
 
         $("#reset").click(function () {
-            for (var y = 0; y < N; y++) {
-                for (var x = 0; x < N; x++) {
-                    vector[y][x] = 0;
-                    $squares[y][x].removeClass("on").removeClass("one");
+            reset();
+        });
+
+        $("#randomize").click(function () {
+            reset();
+            for (let y = 0; y < N; y++) {
+                for (let x = 0; x < N; x++) {
+                    if (Math.random() < 0.5) {
+                        touch(x, y, false);
+                    }
                 }
             }
             updateSolvable();
         });
+
+        document.querySelector("#code").addEventListener("change", () => {
+            let code = $("#code").val() & ((1 << (N * N)) - 1);
+            $("#code").val(code);
+            setCode(code);
+        });
     </script>
 </body>
+
 </html>

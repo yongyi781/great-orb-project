@@ -16,6 +16,11 @@ class GraphUI {
         this.unvisitedRoomTextColor = "#ccc";
         this.wallColor = "#333";
         this.playerImage = this.loadImage("img/player.png");
+        this.moveMapping = { ArrowLeft: Dir.W, ArrowRight: Dir.E, ArrowUp: Dir.N, ArrowDown: Dir.S };
+        this.turnMapping = {
+            ArrowLeft: rotateCounterclockwise,
+            ArrowRight: rotateClockwise
+        };
         // Put origin in the center.
         context.textAlign = "center";
         context.textBaseline = "middle";
@@ -25,24 +30,24 @@ class GraphUI {
                 e.preventDefault();
                 context.canvas.focus();
                 let c = context.getTransform().inverse().transformPoint(pt(e.offsetX, e.offsetY));
-                let p = ui.toGameCoords(c);
+                let p = this.toGameCoords(c);
                 let pf = pt(Math.round(p.x), Math.round(p.y));
                 let dir = Dir.fromPoint(pf);
                 if (dir >= 0) {
-                    ui.movePlayer(dir);
+                    this.movePlayer(dir);
                 }
             }
         });
         document.addEventListener("keydown", e => {
             if (e.target === document.body || e.target === this.canvas) {
-                if (!e.shiftKey && e.key in moveMapping) {
+                if (!e.shiftKey && e.key in this.moveMapping) {
                     e.preventDefault();
-                    let dir = moveMapping[e.key];
+                    let dir = this.moveMapping[e.key];
                     this.movePlayer(dir);
                 }
-                else if (e.shiftKey && e.key in turnMapping) {
+                else if (e.shiftKey && e.key in this.turnMapping) {
                     e.preventDefault();
-                    this.roomView.transform = this.roomView.transform.compose(turnMapping[e.key]);
+                    this.roomView.transform = this.roomView.transform.compose(this.turnMapping[e.key]);
                     this.render();
                 }
             }

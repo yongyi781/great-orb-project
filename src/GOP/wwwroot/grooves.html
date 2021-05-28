@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <title>Test 2</title>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.1.1/css/all.css"
+        integrity="sha384-O8whS3fhG2OnA5Kas0Y9l3cfpmYjapjI0E4theH4iuMD+pLhbf6JI0jIMfYcK3yZ" crossorigin="anonymous">
+    <style>
+        .center {
+            text-align: center;
+        }
+        
+        .groove {
+            cursor: pointer;
+            display: inline-block;
+            width: 48px;
+            height: 48px;
+            background-image: url("/images/grooves.png");
+        }
+
+        .groove-spiked {
+            background-image: url("/images/grooves-spiked.png");
+            cursor: default;
+        }
+
+        .groove-correct {
+            cursor: default;
+            background-color: #ffff80;
+        }
+
+        .complete::after {
+            content: url("/images/icon-tick.png");
+        }
+
+        #grooves div {
+            vertical-align: middle;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Grooves</h1>
+        <div class="center">
+            <div id="grooves"></div>
+            Play the grooves game!
+            <button id="reset" class="btn btn-warning" disabled>Reset</button>
+        </div>
+        <div>
+            <div id="history" cols="30" rows="10" readonly></div>
+        </div>
+    </div>
+
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.4.1.slim.js"
+        integrity="sha256-BTlTdQO9/fascB1drekrDVkaKd9PkwBymMlHOiG+qLI=" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.bundle.min.js"
+        integrity="sha384-6khuMg9gaYr5AxOqhkVIODVIvm9ynTT5J4V1cfthmT+emCG6yVmEZsRHdxlotUnm"
+        crossorigin="anonymous"></script>
+    <script>
+        const NUM_ROWS = 3;
+        const NUM_GROOVES = 4;
+
+        const groovesDiv = document.querySelector("#grooves");
+        const historyDiv = document.querySelector("#history");
+        const resetButton = document.querySelector("#reset");
+        const rowDivs = [];
+        const grooves = [];
+        const correctGrooves = [];
+
+        let activeRow = 0;
+
+        let u = new URLSearchParams(location.search);
+        let algorithm = u.get("alg");
+        let prob = parseFloat(u.get("p")) || 0.15;
+
+        function reset() {
+            activeRow = 0;
+            resetButton.disabled = true;
+            for (let y = NUM_ROWS - 1; y >= 0; y--) {
+                rowDivs[y].className = "";
+                for (let x = 0; x < NUM_GROOVES; x++) {
+                    grooves[y][x].className = "groove";
+                    grooves[y][x].removeAttribute("data-clicked");
+                }
+            }
+
+            switch (algorithm) {
+                case "fair":
+                    for (let y = 0; y < NUM_ROWS; y++) {
+                        correctGrooves[y] = 1 + Math.floor(Math.random() * 4);
+                    }
+                    break;
+                default:
+                    correctGrooves.length = 0;
+                    break;
+            }
+        }
+
+        function advanceRow() {
+            let y = activeRow++;
+            rowDivs[y].classList.add("complete");
+            if (activeRow === NUM_ROWS) {
+                // Append to history
+                let numFails = 0;
+                for (let y = 0; y < NUM_ROWS; y++) {
+                    numFails += grooves[y].filter(d => d.classList.contains("groove-spiked")).length;
+                }
+                historyDiv.innerHTML += `${correctGrooves.join("")}, ${numFails}/9 fails<br>`;
+                resetButton.disabled = false;
+            }
+        }
+
+        function clickGroove(x, y) {
+            if (y !== activeRow || grooves[y][x].hasAttribute("data-clicked"))
+                return;
+
+            let success;
+            if (correctGrooves[y] != null) {
+                console.log("fair");
+                success = correctGrooves[y] === x + 1;
+            } else if (grooves[y].filter(d => d.classList.contains("groove-spiked")).length === 3) {
+                console.log(1);
+                success = true;
+            } else {
+                console.log(prob);
+                success = Math.random() < prob;
+            }
+
+            if (success) {
+                grooves[y][x].classList.add("groove-correct");
+                correctGrooves[y] = x + 1;
+                advanceRow();
+            } else {
+                grooves[y][x].classList.add("groove-spiked");
+            }
+            grooves[y][x].setAttribute("data-clicked", true);
+        }
+
+        resetButton.addEventListener("click", reset);
+
+        // Initialize
+        for (let y = NUM_ROWS - 1; y >= 0; y--) {
+            grooves[y] = [];
+            rowDivs[y] = groovesDiv.appendChild(document.createElement("div"));
+            for (let x = 0; x < NUM_GROOVES; x++) {
+                let div = document.createElement("div");
+                div.addEventListener("click", e => clickGroove(x, y));
+                grooves[y][x] = rowDivs[y].appendChild(div);
+            }
+        }
+
+        reset();
+    </script>
+</body>
+
+</html>

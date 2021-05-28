@@ -92,11 +92,6 @@ const codeSubmit = document.querySelector("#codeSubmit");
 const container = document.querySelector("#app");
 mainCanvas.width = mainCanvas.height = Math.min(innerWidth - 20, innerHeight - 200);
 const ui = new GraphUI(context, vm.drawDistance);
-const moveMapping = { ArrowLeft: Dir.W, ArrowRight: Dir.E, ArrowUp: Dir.N, ArrowDown: Dir.S };
-const turnMapping = {
-    ArrowLeft: rotateCounterclockwise,
-    ArrowRight: rotateClockwise
-};
 function getRandomColor() {
     var letters = '0123456789ABCDEF';
     var color = '#';

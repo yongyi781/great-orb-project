@@ -24,6 +24,35 @@
             display: block;
         }
     </style>
+    <style>
+        @font-face {
+            font-family: "Computer Modern";
+            src: url('https://mirrors.ctan.org/fonts/cm-unicode/fonts/otf/cmunss.otf');
+        }
+
+        @font-face {
+            font-family: "Computer Modern";
+            src: url('https://mirrors.ctan.org/fonts/cm-unicode/fonts/otf/cmunsx.otf');
+            font-weight: bold;
+        }
+
+        @font-face {
+            font-family: "Computer Modern";
+            src: url('https://mirrors.ctan.org/fonts/cm-unicode/fonts/otf/cmunsi.otf');
+            font-style: italic, oblique;
+        }
+
+        @font-face {
+            font-family: "Computer Modern";
+            src: url('https://mirrors.ctan.org/fonts/cm-unicode/fonts/otf/cmunbxo.otf');
+            font-weight: bold;
+            font-style: italic, oblique;
+        }
+
+        body {
+            font-family: "Computer Modern", sans-serif;
+        }
+    </style>
 </head>
 
 <body>
@@ -64,7 +93,7 @@
                 doSomething: function () {
                     let xs = [];
                     let t0 = performance.now();
-                    for (let i = 0; i < 1000000; i++) {
+                    for (let i = 0; i < 10000; i++) {
                         xs.push(Math.random());
                     }
                     xs.sort();

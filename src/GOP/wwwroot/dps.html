@@ -2,15 +2,18 @@
 <html>
 
 <head>
-    <title>N-grams</title>
+    <title>DPS</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO"
-        crossorigin="anonymous">
-    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css"
+        integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+        integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
         crossorigin="anonymous"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49"
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js"
+        integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49"
         crossorigin="anonymous"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy"
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"
+        integrity="sha384-OgVRvuATP1z7JjHLkuOU7Xw704+h835Lr+6QL9UvYjZE3Ipu6Tp75j7Bh/kR0JKI"
         crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
     <style>
@@ -47,7 +50,6 @@
             word-wrap: break-word;
             height: 300px;
         }
-
     </style>
 </head>
 
@@ -80,22 +82,51 @@
         <div style="overflow: hidden">
             <div class="container">
                 <h1 id="header">DPS</h1>
-                <div>
-                    Ability damage: <input type="number" v-model.number="m.abilityDamage" min="0"><br>
-                    Precise: <input type="number" v-model.number="m.preciseRank" min="0" max="5"><br>
-                    Equilibrium: <input type="number" v-model.number="m.equilibriumRank" min="0" max="3"><br>
-                    Biting: <input type="number" v-model.number="m.bitingRank" min="0" max="3"><br>
-                    Prayer boost: <input type="number" v-model.number="m.multiplicativeBoost" min="1" max="2" step="0.01">
-                </div>
+                <fieldset>
+                    <div class="form-group row">
+                        <label for="abilityDamage" class="col-sm-3 col-form-label col-form-label-sm">Ability damage</label>
+                        <div class="col-sm-9">
+                            <input type="number" class="form-control form-control-sm" id="abilityDamage" v-model.number="m.abilityDamage" aplaceholder="Ability damage">
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label for="preciseRank" class="col-sm-3 col-form-label col-form-label-sm">Precise</label>
+                        <div class="col-sm-9">
+                            <input type="number" class="form-control form-control-sm" id="preciseRank" v-model.number="m.preciseRank" min="0" max="6">
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label for="eqRank" class="col-sm-3 col-form-label col-form-label-sm">Equilibrium</label>
+                        <div class="col-sm-9">
+                            <input type="number" class="form-control form-control-sm" id="eqRank" v-model.number="m.equilibriumRank" min="0" max="4">
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label for="bitingRank" class="col-sm-3 col-form-label col-form-label-sm">Biting</label>
+                        <div class="col-sm-9">
+                            <input type="number" class="form-control form-control-sm" id="bitingRank" v-model.number="m.bitingRank" min="0" max="4">
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label for="prayerBoost" class="col-sm-3 col-form-label col-form-label-sm">Prayer boost</label>
+                        <div class="col-sm-9">
+                            <input type="number" class="form-control form-control-sm" id="prayerBoost" v-model.number="m.multiplicativeBoost" min="1" max="2" step="0.01">
+                        </div>
+                    </div>
+                </fieldset>
+                <hr>
                 <div>
                     Damage: {{m.totalDamage.toFixed(0)}}<br>
                     Ticks: {{m.totalTicks}}<br>
                     Adrenaline: {{m.adrenaline}}<br>
                     DPM: {{(100 * m.totalDamage / m.totalTicks).toFixed(2)}}<br>
+                    Buffs active: {{activeBuffs}}
                 </div>
+                <hr>
                 <div>
                     <button id="resetButton" class="btn btn-danger">Reset</button>
                 </div>
+                <hr>
                 <div>
                     <span style="float: left">Ability input:</span>
                     <button id="sendButton" class="btn btn-primary">Send</button>
@@ -103,14 +134,14 @@
                 </div>
                 <hr>
                 <pre>{{abilityInputStr()}}</pre>
-                <div>
+                <!-- <div>
                     <input type="number" v-model.number="autopilotBranching" min="2" max="4">
                     <input type="number" v-model.number="autopilotDepth" min="1" max="16">
                     <input v-model="autopilotPrefix">
                     <button id="autopilot" class="btn btn-primary">Autopilot</button>
-                </div>
+                </div> -->
             </div>
-            
+
         </div>
     </div>
     <script src="js/dps.js"></script>

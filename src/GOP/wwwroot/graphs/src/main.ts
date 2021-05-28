@@ -103,12 +103,6 @@ mainCanvas.width = mainCanvas.height = Math.min(innerWidth - 20, innerHeight- 20
 
 const ui = new GraphUI(context, vm.drawDistance);
 
-const moveMapping: Record<string, Dir> = { ArrowLeft: Dir.W, ArrowRight: Dir.E, ArrowUp: Dir.N, ArrowDown: Dir.S };
-const turnMapping: Record<string, Permutation> = {
-    ArrowLeft: rotateCounterclockwise,
-    ArrowRight: rotateClockwise
-};
-
 function getRandomColor() {
     var letters = '0123456789ABCDEF';
     var color = '#';

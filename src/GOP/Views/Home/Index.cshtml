@@ -325,7 +325,10 @@ These are duo angles for feeding orbs quickly.
             if (newMessages > 0) {
                 newMessagesStr = "(" + newMessages + ") ";
                 if (Notification.permission === "granted" && enableNotificationsCheckbox.checked) {
-                    new Notification("New message");
+                    let notif = new Notification("New message");
+                    notif.addEventListener("click", () => {
+                        focus();
+                    });
                 }
             }
             document.title = newMessagesStr + baseTitle;
