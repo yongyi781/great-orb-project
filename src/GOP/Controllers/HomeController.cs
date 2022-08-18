@@ -13,7 +13,7 @@ namespace GOP.Controllers
 {
     public class HomeController : Controller
     {
-        public HomeController(IHostingEnvironment applicationEnvironment,
+        public HomeController(IWebHostEnvironment applicationEnvironment,
             ApplicationDbContext dbContext,
             UserManager<ApplicationUser> userManager)
         {
@@ -22,7 +22,7 @@ namespace GOP.Controllers
             UserManager = userManager;
         }
 
-        public IHostingEnvironment ApplicationEnvironment { get; set; }
+        public IWebHostEnvironment ApplicationEnvironment { get; set; }
         public ApplicationDbContext DbContext { get; set; }
         public UserManager<ApplicationUser> UserManager { get; set; }
 
@@ -98,10 +98,8 @@ namespace GOP.Controllers
             }
             if (!alreadyExists)
             {
-                using (var fs = System.IO.File.OpenWrite(Path.Combine(targetDir, fileNameWithExt)))
-                {
-                    await file.CopyToAsync(fs);
-                }
+                using var fs = System.IO.File.OpenWrite(Path.Combine(targetDir, fileNameWithExt));
+                await file.CopyToAsync(fs);
             }
 
             return Content("http://" + Request.Host + "/uploads/" + Uri.EscapeDataString(fileNameWithExt));

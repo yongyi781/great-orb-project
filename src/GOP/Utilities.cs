@@ -22,7 +22,7 @@ namespace GOP
 
         public static string FormatValue(double? value, string format)
         {
-            return value == null ? null : value.Value.ToString(format);
+            return value?.ToString(format);
         }
 
         // Returns if two streams are equal.

@@ -18,14 +18,14 @@ namespace GOP.Models
 
         public bool CacheViewUsers { get; set; }
 
-        public DbSet<ChatMessage> ChatMessages { get; set; }
-        public DbSet<Nickname> Nicknames { get; set; }
-        public DbSet<GopAltar> GopAltars { get; set; }
-        public DbSet<SoloGame> SoloGames { get; set; }
-        public DbSet<MultiplayerGame> MultiplayerGames { get; set; }
-        public DbSet<Puzzle> Puzzles { get; set; }
-        public DbSet<PuzzleSubmission> PuzzleSubmissions { get; set; }
-        public DbSet<DeadPracticeResult> DeadPracticeResults { get; set; }
+        public DbSet<ChatMessage>? ChatMessages { get; set; }
+        public DbSet<Nickname>? Nicknames { get; set; }
+        public DbSet<GopAltar>? GopAltars { get; set; }
+        public DbSet<SoloGame>? SoloGames { get; set; }
+        public DbSet<MultiplayerGame>? MultiplayerGames { get; set; }
+        public DbSet<Puzzle>? Puzzles { get; set; }
+        public DbSet<PuzzleSubmission>? PuzzleSubmissions { get; set; }
+        public DbSet<DeadPracticeResult>? DeadPracticeResults { get; set; }
 
         private Dictionary<string, ChatMessageViewUser> ipAddressToViewUserCache = new Dictionary<string, ChatMessageViewUser>();
         private Dictionary<int, ChatMessageViewUser> userIdToViewUserCache = new Dictionary<int, ChatMessageViewUser>();

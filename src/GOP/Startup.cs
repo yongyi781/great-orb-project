@@ -1,20 +1,13 @@
-﻿using GOP.Hubs;
-using GOP.Models;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
+﻿using GOP.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using System;
 
 namespace GOP
 {
     public class Startup
     {
-        public Startup(IHostingEnvironment env)
+        public Startup(IWebHostEnvironment env)
         {
             // Setup configuration sources.
             var builder = new ConfigurationBuilder()
@@ -43,11 +36,12 @@ namespace GOP
                 .AddRoleStore<RoleStore<IdentityRole<int>, ApplicationDbContext, int>>()
                 .AddDefaultTokenProviders();
 
-            services.AddAuthentication().AddFacebook(options =>
-            {
-                options.AppId = Configuration["Authentication:Facebook:AppId"];
-                options.AppSecret = Configuration["Authentication:Facebook:AppSecret"];
-            });
+            services.AddAuthentication();
+            //.AddFacebook(options =>
+            //{
+            //    options.AppId = Configuration["Authentication:Facebook:AppId"];
+            //    options.AppSecret = Configuration["Authentication:Facebook:AppSecret"];
+            //});
 
             // Configure the options for the authentication middleware.
             // You can add options for Google, Twitter and other middleware as shown below.
@@ -57,7 +51,7 @@ namespace GOP
             services.AddLogging();
 
             // Add MVC services to the services container.
-            services.AddMvc();
+            services.AddMvc(o => o.EnableEndpointRouting = false);
 
             services.AddResponseCompression();
 
@@ -68,22 +62,13 @@ namespace GOP
         }
 
         // Configure is called after ConfigureServices is called.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ILoggerFactory loggerFactory)
         {
             app.UseStatusCodePagesWithReExecute("/Home/Error/{0}");
             // Add the following to the request pipeline only in development environment.
-            if (env.IsDevelopment())
-            {
-                app.UseDeveloperExceptionPage();
-                app.UseDatabaseErrorPage();
-            }
-            else
-            {
-                // Add Error handling middleware which catches all application specific errors and
-                // sends the request to the following path or controller action.
-                app.UseExceptionHandler("/Home/Error/500");
-                app.UseHsts();
-            }
+            // Add Error handling middleware which catches all application specific errors and
+            // sends the request to the following path or controller action.
+            app.UseExceptionHandler("/Home/Error/500");
 
             app.UseHttpsRedirection();
             app.UseResponseCompression();
@@ -95,11 +80,11 @@ namespace GOP
 
             app.UseStaticFiles(new StaticFileOptions { ServeUnknownFileTypes = true });
             app.UseWebSockets();
-            app.UseSignalR(routes =>
-            {
-                routes.MapHub<ChatHub>("/hubs/chat");
-                routes.MapHub<MultiplayerHub>("/hubs/multiplayer");
-            });
+            //app.UseSignalR(routes =>
+            //{
+            //    routes.MapHub<ChatHub>("/hubs/chat");
+            //    routes.MapHub<MultiplayerHub>("/hubs/multiplayer");
+            //});
 
             // Add MVC to the request pipeline.
             app.UseMvc(routes =>

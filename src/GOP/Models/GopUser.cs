@@ -18,7 +18,7 @@ namespace GOP.Models
         public int? UserId { get; private set; }
         public string IpAddress { get; private set; }
 
-        public static GopUser GetCurrentUser(HttpContext context)
+        public static GopUser? GetCurrentUser(HttpContext context)
         {
             return context == null ? null : new GopUser(context.User.GetUserIdInt32(), context.Connection.RemoteIpAddress.ToShortString());
         }
@@ -36,16 +36,16 @@ namespace GOP.Models
         /// </summary>
         /// <param name="other">The other GopUser.</param>
         /// <returns>true if this equals other; otherwise, false.</returns>
-        public bool Equals(GopUser other)
+        public bool Equals(GopUser? other)
         {
-            if (UserId != null && other.UserId != null)
+            if (UserId != null && other?.UserId != null)
                 return UserId == other.UserId;
-            if (UserId == null && other.UserId == null)
-                return IpAddress == other.IpAddress;
+            if (UserId == null && other?.UserId == null)
+                return IpAddress == other?.IpAddress;
             return false;
         }
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             var gopUser = obj as GopUser;
             return gopUser != null && Equals(gopUser);

@@ -1,164 +1,159 @@
 ﻿<!DOCTYPE html>
 <html>
 <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="Hang out, play GOP, chat, and do GOP puzzles (and drink tea)." />
-    <meta property='og:title' content="Vief's Trapdoor" />
-    <meta property='og:site_name' content="Vief's Trapdoor" />
-    <meta property='og:image' content='/images/yellow-attractor-96x96.png' />
-    @*<meta property='og:url' content='http://72.182.7.173/' />*@
-    <meta property='og:description' content="Hang out, play GOP, chat, and do GOP puzzles (and drink tea)." />
-    <title>@ViewData["Title"] - Vief's Trapdoor</title>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<meta name="description" content="Hang out, play GOP, chat, and do GOP puzzles (and drink tea)." />
+	<meta property='og:title' content="Vief's Trapdoor" />
+	<meta property='og:site_name' content="Vief's Trapdoor" />
+	<meta property='og:image' content='/images/yellow-attractor-96x96.png' />
+	@*<meta property='og:url' content='http://72.182.7.173/' />*@
+	<meta property='og:description' content="Hang out, play GOP, chat, and do GOP puzzles (and drink tea)." />
+	<title>@ViewData["Title"] - Vief's Trapdoor</title>
 
-    <environment names="Development">
-        <link rel="stylesheet" href="~/css/bootstrap.css" />
-    </environment>
-    <environment names="Staging,Production">
-        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootswatch/3.3.7/cyborg/bootstrap.min.css"
-              asp-fallback-href="~/css/bootstrap.min.css"
-              asp-fallback-test-class="hidden" asp-fallback-test-property="display" asp-fallback-test-value="none" />
-    </environment>
-    <link rel="stylesheet" href="~/css/font-awesome.css" />
-    <link rel="stylesheet" href="~/css/bootstrap-social.css" />
-    <link rel="stylesheet" href="~/css/site.css" />
-    @if (Convert.ToBoolean(ViewData["UseDataTable"]))
-    {
-        <link rel="stylesheet" href="https://cdn.datatables.net/plug-ins/1.10.7/integration/bootstrap/3/dataTables.bootstrap.css" />
-    }
-    @RenderSection("styles", false)
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootswatch/3.3.7/cyborg/bootstrap.min.css"
+		  asp-fallback-href="~/css/bootstrap.min.css"
+		  asp-fallback-test-class="hidden" asp-fallback-test-property="display" asp-fallback-test-value="none" />
+	<link rel="stylesheet" href="~/css/font-awesome.css" />
+	<link rel="stylesheet" href="~/css/bootstrap-social.css" />
+	<link rel="stylesheet" href="~/css/site.css" />
+	@if (Convert.ToBoolean(ViewData["UseDataTable"]))
+	{
+		<link rel="stylesheet" href="https://cdn.datatables.net/plug-ins/1.10.7/integration/bootstrap/3/dataTables.bootstrap.css" />
+	}
+	@RenderSection("styles", false)
 </head>
 <body>
-    <div class="fill-height">
-        <nav class="navbar navbar-default navbar-static-top" role="navigation">
-            <div class="container">
-                <div class="navbar-header">
-                    <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-ex1-collapse">
-                        <span class="sr-only">Toggle navigation</span>
-                        <span class="icon-bar"></span>
-                        <span class="icon-bar"></span>
-                        <span class="icon-bar"></span>
-                    </button>
-                    <a class="navbar-brand" href="~/">Vief's Trapdoor</a>
-                </div>
-                <div class="collapse navbar-collapse navbar-ex1-collapse">
-                    <ul class="nav navbar-nav">
-                        <li>
-                            <a href="#" class="dropdown-toggle" data-toggle="dropdown">Play <b class="caret"></b></a>
-                            <ul class="dropdown-menu">
-                                <li><a asp-controller="Solo" asp-action="Index">Solo</a></li>
-                                <li><a asp-controller="Solo" asp-action="Index" asp-route-start="[[2,0],[-2,0]]">1.5</a></li>
-                                <li><a asp-controller="Solo" asp-action="Legacy">Solo (Legacy)</a></li>
-                                <li><a asp-controller="Solo" asp-action="History">Solo History</a></li>
-                                <li role="separator" class="divider"></li>
-                                <li><a asp-controller="Multiplayer" asp-action="Index">Multiplayer</a></li>
-                                <li><a asp-controller="Multiplayer" asp-action="History">Multiplayer History</a></li>
-                                <li role="separator" class="divider"></li>
-                                <li><a asp-controller="Altars" asp-action="Index">Altars</a></li>
-                            </ul>
-                        </li>
-                        <li><a asp-controller="Hiscores" asp-action="Index">Hiscores</a></li>
-                       <li>
-                            <a href="#" class="dropdown-toggle" data-toggle="dropdown">Puzzles <b class="caret"></b></a>
-                            <ul class="dropdown-menu">
-                                <li><a asp-controller="Puzzles" asp-action="Index">Play Puzzles</a></li>
-                                <li><a asp-controller="Puzzles" asp-action="Leaderboard">Leaderboard</a></li>
-                            </ul>
-                        </li>
-                        <li>
-                            <a href="#" class="dropdown-toggle" data-toggle="dropdown">Tools <b class="caret"></b></a>
-                            <ul class="dropdown-menu">
-                                <li><a asp-controller="Tools" asp-action="Anglemap">Angle Map and Altar Editor</a></li>
-                                <li><a asp-controller="Tools" asp-action="SpawnLister">Spawn Sequencer</a></li>
-                                <li><a asp-controller="DeadPractice" asp-action="Index">Dead Practice</a></li>
-                                <li><a href="~/tone-generator.html" target="_blank">Tone Generator</a></li>
-                                <li><a href="~/freqdl.html" target="_blank">Frequency Discrimination Experiment</a></li>
-                                <li><a href="~/lights-out.html" target="_blank">Dungeoneering Lights Out Solver</a></li>
-                                <li><a asp-controller="Tools" asp-action="Index">All Tools</a></li>
-                                <li role="separator" class="divider"></li>
-                                <li><a asp-controller="Tests" asp-action="GameEngine">Game Engine Tests</a></li>
-                            </ul>
-                        </li>
-                        @if (User.IsInRole("Administrators"))
-                        {
-                            <li class="dropdown">
-                                <a href="#" class="dropdown-toggle" data-toggle="dropdown">Admin <b class="caret"></b></a>
-                                <ul class="dropdown-menu">
-                                    <li><a href="~/Admin/ChatInfo">Chat Info</a></li>
-                                    <li><a href="~/Admin/Puzzles">Puzzle Submissions</a></li>
-                                </ul>
-                            </li>
-                        }
-                    </ul>
-                    @if (User.Identity.IsAuthenticated)
-                    {
-                        <form id="logoutForm" asp-controller="Account" asp-action="LogOut" asp-route-returnurl="@Context.Request.Path" class="navbar-right">
-                            <ul class="nav navbar-nav navbar-right">
-                                <li><p class="navbar-text">Hello <b>@User.Identity.Name</b>!</p></li>
-                                <li><a href="#" onclick="$('#logoutForm').submit()">Log out</a></li>
-                            </ul>
-                        </form>
-                    }
-                    else
-                    {
-                        <ul class="nav navbar-nav navbar-right">
-                            <li><a href="#" class="navbar-right" data-toggle="modal" data-target="#loginModal">Log in</a></li>
-                        </ul>
-                    }
-                </div>
-            </div>
-        </nav>
-        <div class="container container-main">
-            @RenderBody()
-        </div>
-        <div class="push"></div>
-    </div>
-    <footer>
-        Copyright © @DateTime.Now.Year Icy001
-        @if (ViewBag.HideSourceFooterLink == null || !ViewBag.HideSourceFooterLink)
-        {
-            @: • <a href="http://github.com/yongyi781/great-orb-project">Source</a>
-        }
-        • <a href="~/Changelog">Changelog</a>
-    </footer>
-    <div id="loginModal" class="modal fade" tabindex="-1" role="dialog">
-        <div class="modal-dialog modal-sm">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-                    <h3 class="modal-title">Log in</h3>
-                </div>
-                <div class="modal-body">
-                    <form id="facebookForm" asp-controller="Account" asp-action="ExternalLogin" asp-route-provider="Facebook" asp-route-returnurl="@Context.Request.Path">
-                        <button type="submit" class="btn btn-social btn-facebook">
-                            <i class="fa fa-facebook"></i> Log in with Facebook
-                        </button>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
+	<div class="fill-height">
+		<nav class="navbar navbar-default navbar-static-top" role="navigation">
+			<div class="container">
+				<div class="navbar-header">
+					<button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-ex1-collapse">
+						<span class="sr-only">Toggle navigation</span>
+						<span class="icon-bar"></span>
+						<span class="icon-bar"></span>
+						<span class="icon-bar"></span>
+					</button>
+					<a class="navbar-brand" href="~/">Vief's Trapdoor</a>
+				</div>
+				<div class="collapse navbar-collapse navbar-ex1-collapse">
+					<ul class="nav navbar-nav">
+						<li>
+							<a href="#" class="dropdown-toggle" data-toggle="dropdown">Play <b class="caret"></b></a>
+							<ul class="dropdown-menu">
+								<li><a asp-controller="Solo" asp-action="Index">Solo</a></li>
+								<li><a asp-controller="Solo" asp-action="Index" asp-route-start="[[2,0],[-2,0]]">1.5</a></li>
+								<li><a asp-controller="Solo" asp-action="Legacy">Solo (Legacy)</a></li>
+								<li><a asp-controller="Solo" asp-action="History">Solo History</a></li>
+								<li role="separator" class="divider"></li>
+								<li><a asp-controller="Multiplayer" asp-action="Index">Multiplayer</a></li>
+								<li><a asp-controller="Multiplayer" asp-action="History">Multiplayer History</a></li>
+								<li role="separator" class="divider"></li>
+								<li><a asp-controller="Altars" asp-action="Index">Altars</a></li>
+							</ul>
+						</li>
+						<li><a asp-controller="Hiscores" asp-action="Index">Hiscores</a></li>
+						<li>
+							<a href="#" class="dropdown-toggle" data-toggle="dropdown">Puzzles <b class="caret"></b></a>
+							<ul class="dropdown-menu">
+								<li><a asp-controller="Puzzles" asp-action="Index">Play Puzzles</a></li>
+								<li><a asp-controller="Puzzles" asp-action="Leaderboard">Leaderboard</a></li>
+							</ul>
+						</li>
+						<li>
+							<a href="#" class="dropdown-toggle" data-toggle="dropdown">Tools <b class="caret"></b></a>
+							<ul class="dropdown-menu">
+								<li><a asp-controller="Tools" asp-action="Anglemap">Angle Map and Altar Editor</a></li>
+								<li><a asp-controller="Tools" asp-action="SpawnLister">Spawn Sequencer</a></li>
+								<li><a asp-controller="DeadPractice" asp-action="Index">Dead Practice</a></li>
+								<li><a href="~/tone-generator.html" target="_blank">Tone Generator</a></li>
+								<li><a href="~/freqdl.html" target="_blank">Frequency Discrimination Experiment</a></li>
+								<li><a href="~/lights-out.html" target="_blank">Dungeoneering Lights Out Solver</a></li>
+								<li><a asp-controller="Tools" asp-action="Index">All Tools</a></li>
+								<li role="separator" class="divider"></li>
+								<li><a asp-controller="Tests" asp-action="GameEngine">Game Engine Tests</a></li>
+							</ul>
+						</li>
+						@if (User.IsInRole("Administrators"))
+						{
+							<li class="dropdown">
+								<a href="#" class="dropdown-toggle" data-toggle="dropdown">Admin <b class="caret"></b></a>
+								<ul class="dropdown-menu">
+									<li><a href="~/Admin/ChatInfo">Chat Info</a></li>
+									<li><a href="~/Admin/Puzzles">Puzzle Submissions</a></li>
+								</ul>
+							</li>
+						}
+					</ul>
+					@if (User.Identity.IsAuthenticated)
+					{
+						<form id="logoutForm" asp-controller="Account" asp-action="LogOut" asp-route-returnurl="@Context.Request.Path" class="navbar-right">
+							<ul class="nav navbar-nav navbar-right">
+								<li><p class="navbar-text">Hello <b>@User.Identity.Name</b>!</p></li>
+								<li><a href="#" onclick="$('#logoutForm').submit()">Log out</a></li>
+							</ul>
+						</form>
+					}
+					else
+					{
+						<ul class="nav navbar-nav navbar-right">
+							<li><a href="#" class="navbar-right" data-toggle="modal" data-target="#loginModal">Log in</a></li>
+						</ul>
+					}
+				</div>
+			</div>
+		</nav>
+		<div class="container container-main">
+			@RenderBody()
+		</div>
+		<div class="push"></div>
+	</div>
+	<footer>
+		Copyright © @DateTime.Now.Year Icy001
+		@if (ViewBag.HideSourceFooterLink == null || !ViewBag.HideSourceFooterLink)
+		{
+			@: • <a href="http://github.com/yongyi781/great-orb-project">Source</a>
+		}
+		• <a href="~/Changelog">Changelog</a>
+	</footer>
+	<div id="loginModal" class="modal fade" tabindex="-1" role="dialog">
+		<div class="modal-dialog modal-sm">
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+					<h3 class="modal-title">Log in</h3>
+				</div>
+				<div class="modal-body">
+					<form id="facebookForm" asp-controller="Account" asp-action="ExternalLogin" asp-route-provider="Facebook" asp-route-returnurl="@Context.Request.Path">
+						<button type="submit" class="btn btn-social btn-facebook">
+							<i class="fa fa-facebook"></i> Log in with Facebook
+						</button>
+					</form>
+				</div>
+			</div>
+		</div>
+	</div>
 
-    <environment names="Development">
-        <script src="~/lib/jquery.js"></script>
-        <script src="~/lib/tether.js"></script>
-        <script src="~/lib/bootstrap.js"></script>
-    </environment>
-    <environment names="Staging,Production">
-        <script src="https://code.jquery.com/jquery-3.1.0.min.js"
-                asp-fallback-src="~/lib/jquery.min.js"
-                asp-fallback-test="window.jQuery">
-        </script>
-        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"
-                asp-fallback-src="~/lib/bootstrap/dist/js/bootstrap.min.js"
-                asp-fallback-test="window.jQuery">
-        </script>
-    </environment>
-    @if (Convert.ToBoolean(ViewData["UseDataTable"]))
-    {
-        <script src="https://cdn.datatables.net/1.10.7/js/jquery.dataTables.min.js"></script>
-        <script src="https://cdn.datatables.net/plug-ins/1.10.7/integration/bootstrap/3/dataTables.bootstrap.js"></script>
-    }
-    @RenderSection("scripts", required: false)
+	<environment names="Development">
+		<script src="~/lib/jquery.js"></script>
+		<script src="~/lib/tether.js"></script>
+		<script src="~/lib/bootstrap.js"></script>
+	</environment>
+	<environment names="Staging,Production">
+		<script src="https://code.jquery.com/jquery-3.1.0.min.js"
+				asp-fallback-src="~/lib/jquery.min.js"
+				asp-fallback-test="window.jQuery">
+		</script>
+		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"
+				asp-fallback-src="~/lib/bootstrap/dist/js/bootstrap.min.js"
+				asp-fallback-test="window.jQuery">
+		</script>
+	</environment>
+	@if (Convert.ToBoolean(ViewData["UseDataTable"]))
+	{
+		<script src="https://cdn.datatables.net/1.10.7/js/jquery.dataTables.min.js"></script>
+		<script src="https://cdn.datatables.net/plug-ins/1.10.7/integration/bootstrap/3/dataTables.bootstrap.js"></script>
+	}
+	@RenderSection("scripts", required: false)
 </body>
 </html>

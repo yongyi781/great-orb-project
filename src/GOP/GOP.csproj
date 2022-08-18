@@ -1,19 +1,14 @@
 ﻿<Project ToolsVersion="15.0" Sdk="Microsoft.NET.Sdk.Web">
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>netcoreapp2.1</TargetFramework>
-    <MvcRazorCompileOnPublish>true</MvcRazorCompileOnPublish>
+    <TargetFramework>net6.0-windows10.0.22000.0</TargetFramework>
+    <Nullable>enable</Nullable>
     <AssemblyName>GOP</AssemblyName>
     <UserSecretsId>aspnet5-GOP-b861afa2-78db-4387-a3bc-393f99145638</UserSecretsId>
-    <RuntimeFrameworkVersion>2.1.2</RuntimeFrameworkVersion>
-    <RuntimeIdentifier>win10-x64</RuntimeIdentifier>
     <TypeScriptCompileBlocked>true</TypeScriptCompileBlocked>
     <TypeScriptToolsVersion>Latest</TypeScriptToolsVersion>
+    <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
-  <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.All" />
-    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="2.2.2" PrivateAssets="All" />
-  </ItemGroup>
   <ItemGroup>
     <Compile Remove="wwwroot\audio\**" />
     <Compile Remove="wwwroot\data\**" />
@@ -33,6 +28,9 @@
     <None Remove="wwwroot\data\**" />
     <None Remove="wwwroot\downloads\**" />
     <None Remove="wwwroot\freqdl_results\**" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Remove="Startup.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Remove="requests.log" />
@@ -64,6 +62,13 @@
     <None Remove="Scripts\tests\engine.ts" />
     <None Remove="Scripts\tests\parsingFormatting.ts" />
     <None Remove="Scripts\utils.ts" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.Facebook" Version="6.0.8" />
+    <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="6.0.8" />
+    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="6.0.8" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="6.0.8" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
   </ItemGroup>
   <ItemGroup>
     <TypeScriptCompile Include="Scripts\anglemap.ts" />

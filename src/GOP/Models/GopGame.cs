@@ -1,5 +1,4 @@
-﻿using System;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace GOP.Models
@@ -13,21 +12,21 @@ namespace GOP.Models
 
         public int Altar { get; set; }
         [ForeignKey("Altar")]
-        public GopAltar GopAltar { get; set; }
+        public GopAltar? GopAltar { get; set; }
 
         public int Score { get; set; }
         [Required]
-        public string Code { get; set; }
+        public string Code { get; set; } = "";
     }
 
     public class SoloGame : GopGame
     {
         public int? UserId { get; set; }
-        public ApplicationUser User { get; set; }
+        public ApplicationUser? User { get; set; }
 
         [Required]
         [Column(TypeName = "varchar(50)")]
-        public string IpAddress { get; set; }
+        public string IpAddress { get; set; } = "";
 
     }
 
@@ -35,6 +34,6 @@ namespace GOP.Models
     {
         public int NumberOfPlayers { get; set; }
         [Required]
-        public string Usernames { get; set; }
+        public string Usernames { get; set; } = "";
     }
 }

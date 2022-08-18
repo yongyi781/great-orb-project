@@ -1,10 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Logging;
-using System;
-using System.IO;
-using System.Threading.Tasks;
-
-namespace GOP
+﻿namespace GOP
 {
     public class RequestLoggerMiddleware
     {
@@ -12,7 +6,7 @@ namespace GOP
 
         private readonly RequestDelegate next;
         private readonly ILogger logger;
-        private readonly StreamWriter writer;
+        private readonly StreamWriter? writer;
         private readonly object lockObject = new object();
 
         public RequestLoggerMiddleware(RequestDelegate next, ILogger<RequestLoggerMiddleware> logger)
@@ -45,13 +39,13 @@ namespace GOP
             if (writer == null)
                 return;
 
-            var localIp = FormatForLog(context.Connection.LocalIpAddress.ToString());
+            var localIp = FormatForLog(context.Connection.LocalIpAddress?.ToString());
             var method = FormatForLog(context.Request.Method);
             var url = FormatForLog(context.Request.Path.ToString());
             var queryString = FormatForLog(context.Request.QueryString.ToString());
             var port = FormatForLog(context.Connection.LocalPort.ToString());
-            var username = FormatForLog(context.User.Identity.Name);
-            var remoteIp = FormatForLog(context.Connection.RemoteIpAddress.ToShortString());
+            var username = FormatForLog(context.User.Identity?.Name);
+            var remoteIp = FormatForLog(context.Connection.RemoteIpAddress?.ToShortString());
             var userAgent = FormatForLog(context.Request.Headers["User-Agent"]);
             var referer = FormatForLog(context.Request.Headers["Referer"]);
 
@@ -66,7 +60,7 @@ namespace GOP
             }
         }
 
-        private string FormatForLog(string str)
+        private string FormatForLog(string? str)
         {
             if (string.IsNullOrEmpty(str))
                 return "-";
