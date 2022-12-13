@@ -5,25 +5,9 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
-//namespace GOP
-//{
-//    public class Program
-//    {
-//        public static void Main(string[] args)
-//        {
-//            BuildWebHost(args).Run();
-//        }
-
-//        public static IWebHost BuildWebHost(string[] args) =>
-//            WebHost.CreateDefaultBuilder(args)
-//                .UseUrls("http://+:80", "https://+:443")
-//                .UseStartup<Startup>()
-//                .Build();
-//    }
-//}
-
 var builder = WebApplication.CreateBuilder(args);
 builder.WebHost.UseUrls("http://+:80", "https://+:443");
+builder.Configuration.AddUserSecrets<Program>();
 
 // Add services to the container.
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
@@ -37,6 +21,7 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole<int>>(options =>
     .AddUserStore<UserStore<ApplicationUser, IdentityRole<int>, ApplicationDbContext, int>>()
     .AddRoleStore<RoleStore<IdentityRole<int>, ApplicationDbContext, int>>()
     .AddDefaultTokenProviders();
+
 builder.Services.AddAuthentication().AddFacebook(o =>
 {
     o.AppId = builder.Configuration["Authentication:Facebook:AppId"];

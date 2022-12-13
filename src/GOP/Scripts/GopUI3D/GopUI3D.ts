@@ -20,7 +20,7 @@
     zoomSpeed = 10;
     mouseWheelZoomFactor = 0.0002;
     timerRadius = 40;
-    orbVisibilityRadius = 15;
+    orbVisibilityRadius = 1000;
     allowPlayerSwitching = true;
     autoTick = true;
 
