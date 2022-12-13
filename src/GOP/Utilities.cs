@@ -1,9 +1,4 @@
 ﻿using GOP.Models;
-using Microsoft.AspNetCore.Http;
-using System;
-using System.IO;
-using System.Linq;
-using System.Net;
 using System.Text.Encodings.Web;
 using System.Text.RegularExpressions;
 

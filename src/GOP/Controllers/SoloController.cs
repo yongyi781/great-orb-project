@@ -28,12 +28,12 @@ namespace GOP.Controllers
             return View();
         }
 
-        public async Task<IActionResult> Legacy(int? altar, string spawns, int reach = DefaultReach, int numOrbs = 3, int ticks = DefaultTicks)
+        public async Task<IActionResult> Legacy(string spawns, int reach = DefaultReach, int ticks = DefaultTicks)
         {
             DbContext.CacheViewUsers = true;
             DbContext.LoadUsersIntoCache();
             
-            var soloGames = GetSoloGames().OrderByDescending(g => g.Id).Take(10);
+            var soloGames = GetSoloGames().AsEnumerable().OrderByDescending(g => g.Id).Take(10);
 
             var isCustomGameType = spawns != null || reach != DefaultReach || ticks != DefaultTicks;
             var currentUser = await GetCurrentUserAsync();
@@ -65,7 +65,7 @@ namespace GOP.Controllers
             var result = DbContext.SoloGames.Where(g => g.Id == id).FirstOrDefault();
             if (result == null)
                 return NotFound();
-            return new ObjectResult(GetSoloGameView(result));
+            return new ObjectResult(GetSoloGameView(result, DbContext));
         }
 
         [HttpPost("api/[controller]")]
@@ -85,18 +85,18 @@ namespace GOP.Controllers
 
             DbContext.SoloGames.Add(soloGame);
             DbContext.SaveChanges();
-            return GetSoloGameView(soloGame);
+            return GetSoloGameView(soloGame, DbContext);
         }
 
         private IQueryable<SoloGameView> GetSoloGames() =>
             from game in DbContext.SoloGames.AsNoTracking()
-            select GetSoloGameView(game);
+            select GetSoloGameView(game, DbContext);
 
-        private SoloGameView GetSoloGameView(SoloGame game) => new SoloGameView
+        private static SoloGameView GetSoloGameView(SoloGame game, ApplicationDbContext db) => new SoloGameView
         {
             Id = game.Id,
             Timestamp = game.Timestamp,
-            Username = DbContext.GetUsername(new GopUser(game.UserId, game.IpAddress)),
+            Username = db.GetUsername(new GopUser(game.UserId, game.IpAddress)),
             NumberOfOrbs = game.NumberOfOrbs,
             Seed = game.Seed,
             Altar = game.Altar,

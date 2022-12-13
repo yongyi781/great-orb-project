@@ -37,6 +37,11 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole<int>>(options =>
     .AddUserStore<UserStore<ApplicationUser, IdentityRole<int>, ApplicationDbContext, int>>()
     .AddRoleStore<RoleStore<IdentityRole<int>, ApplicationDbContext, int>>()
     .AddDefaultTokenProviders();
+builder.Services.AddAuthentication().AddFacebook(o =>
+{
+    o.AppId = builder.Configuration["Authentication:Facebook:AppId"];
+    o.AppSecret = builder.Configuration["Authentication:Facebook:AppSecret"];
+});
 builder.Services.AddControllersWithViews();
 builder.Services.AddSignalR();
 builder.Services.AddLogging();
@@ -66,6 +71,7 @@ app.UseResponseCompression();
 app.UseRouting();
 
 app.UseAuthentication();
+app.UseAuthorization();
 
 app.UseMiddleware<RequestLoggerMiddleware>();
 app.UseStaticFiles(new StaticFileOptions { ServeUnknownFileTypes = true });

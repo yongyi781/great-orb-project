@@ -12,8 +12,8 @@
 	<title>@ViewData["Title"] - Vief's Trapdoor</title>
 
 	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootswatch/3.3.7/cyborg/bootstrap.min.css"
-		  asp-fallback-href="~/css/bootstrap.min.css"
-		  asp-fallback-test-class="hidden" asp-fallback-test-property="display" asp-fallback-test-value="none" />
+	asp-fallback-href="~/css/bootstrap.min.css"
+	asp-fallback-test-class="hidden" asp-fallback-test-property="display" asp-fallback-test-value="none" />
 	<link rel="stylesheet" href="~/css/font-awesome.css" />
 	<link rel="stylesheet" href="~/css/bootstrap-social.css" />
 	<link rel="stylesheet" href="~/css/site.css" />
@@ -116,8 +116,8 @@
 		}
 		• <a href="~/Changelog">Changelog</a>
 	</footer>
-	<div id="loginModal" class="modal fade" tabindex="-1" role="dialog">
-		<div class="modal-dialog modal-sm">
+	<div id="loginModal" class="modal fade" tabindex="-1">
+		<div class="modal-dialog">
 			<div class="modal-content">
 				<div class="modal-header">
 					<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
@@ -137,18 +137,17 @@
 	<environment names="Development">
 		<script src="~/lib/jquery.js"></script>
 		<script src="~/lib/tether.js"></script>
-		<script src="~/lib/bootstrap.js"></script>
 	</environment>
 	<environment names="Staging,Production">
 		<script src="https://code.jquery.com/jquery-3.1.0.min.js"
-				asp-fallback-src="~/lib/jquery.min.js"
-				asp-fallback-test="window.jQuery">
-		</script>
-		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"
-				asp-fallback-src="~/lib/bootstrap/dist/js/bootstrap.min.js"
-				asp-fallback-test="window.jQuery">
+	asp-fallback-src="~/lib/jquery.min.js"
+	asp-fallback-test="window.jQuery">
 		</script>
 	</environment>
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"
+   asp-fallback-src="~/lib/bootstrap/dist/js/bootstrap.min.js"
+   asp-fallback-test="window.jQuery">
+	</script>
 	@if (Convert.ToBoolean(ViewData["UseDataTable"]))
 	{
 		<script src="https://cdn.datatables.net/1.10.7/js/jquery.dataTables.min.js"></script>

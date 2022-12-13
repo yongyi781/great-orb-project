@@ -1,13 +1,14 @@
 ﻿<Project ToolsVersion="15.0" Sdk="Microsoft.NET.Sdk.Web">
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net6.0-windows10.0.22000.0</TargetFramework>
+    <TargetFramework>net7.0-windows10.0.22621.0</TargetFramework>
     <Nullable>enable</Nullable>
     <AssemblyName>GOP</AssemblyName>
     <UserSecretsId>aspnet5-GOP-b861afa2-78db-4387-a3bc-393f99145638</UserSecretsId>
     <TypeScriptCompileBlocked>true</TypeScriptCompileBlocked>
     <TypeScriptToolsVersion>Latest</TypeScriptToolsVersion>
     <ImplicitUsings>enable</ImplicitUsings>
+    <ApplicationIcon>wwwroot\favicon-large.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
     <Compile Remove="wwwroot\audio\**" />

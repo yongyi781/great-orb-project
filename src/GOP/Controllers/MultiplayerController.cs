@@ -2,10 +2,6 @@
 using GOP.ViewModels;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace GOP.Controllers
 {
@@ -98,8 +94,8 @@ namespace GOP.Controllers
             orderby game.Id descending
             select GetMultiplayerGameView(game);
 
-        private MultiplayerGameView GetMultiplayerGameView(MultiplayerGame game) =>
-            new MultiplayerGameView
+        private static MultiplayerGameView GetMultiplayerGameView(MultiplayerGame game) =>
+            new()
             {
                 Id = game.Id,
                 Timestamp = game.Timestamp,
