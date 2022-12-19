@@ -59,7 +59,7 @@ class GopUI {
         },
 
         client: {
-            visibilityRadius: 1000,
+            visibilityRadius: 15,
             latency: 0,
             tickInterval: 600,
             useServer: false,

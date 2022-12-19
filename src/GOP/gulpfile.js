@@ -52,7 +52,7 @@ exports.copyAssets = function () {
             "./node_modules/font-awesome/fonts/*"
         ]
     };
-    for (let type of assets) {
+    for (let type of Object.keys(assets)) {
         gulp.src(assets[type]).pipe(gulp.dest("./wwwroot/" + type));
     }
 };
